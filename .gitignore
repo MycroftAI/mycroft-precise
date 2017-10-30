@@ -1,0 +1,11 @@
+dist/
+build/
+cache/
+.idea/
+__pycache__/
+*.pb
+*.params
+*.net
+*.pbtxt
+keyword.trained.txt
+other/
