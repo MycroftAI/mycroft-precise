@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 from setuptools import setup, find_packages
+from precise import __version__
 
 setup(
-    name='Mycroft Precise',
-    version='0.1.0',
+    name='mycroft-precise',
+    version=__version__,
     packages=find_packages(),
     entry_points={
         'console_scripts': [

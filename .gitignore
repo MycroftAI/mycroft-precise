@@ -3,6 +3,7 @@ build/
 cache/
 .idea/
 __pycache__/
+*.egg-info/
 *.pb
 *.params
 *.net

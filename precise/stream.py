@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import sys
+
+from argparse import ArgumentParser
+
 sys.path += ['.']  # noqa
 
 import os
@@ -8,6 +11,7 @@ import json
 import numpy as np
 from speechpy.main import mfcc
 from precise.params import ListenerParams
+from precise import __version__
 
 
 def load_graph(model_file):
@@ -80,22 +84,26 @@ def main():
     stdout = sys.stdout
     sys.stdout = sys.stderr
 
-    if sys.stdin.isatty() or len(sys.argv) > 3 or len(sys.argv) == 1 or (len(sys.argv) == 3 and not sys.argv[2].isdigit()):
-        print('Usage:', sys.argv[0], 'MODEL_NAME [CHUNK_SIZE] < audio.wav')
-        print('    stdin should be a stream of raw int16 audio,')
-        print('    written in groups of CHUNK_SIZE samples.')
-        print()
-        print('    If no CHUNK_SIZE is given it will read until EOF.')
-        print()
-        print('    For every chunk, an inference will be given')
-        print('    via stdout as a float string, one per line')
-        sys.exit(1)
+    parser = ArgumentParser(description=
+                            'stdin should be a stream of raw int16 audio,'
+                            'written in groups of CHUNK_SIZE samples.'
+                            'If no CHUNK_SIZE is given it will read until EOF.'
+                            'For every chunk, an inference will be given'
+                            'via stdout as a float string, one per line')
+    parser.add_argument('-v', '--version', action='version', version=__version__)
+    parser.add_argument('model_name')
+    parser.add_argument('chunk_size', type=int, nargs='?', default=-1)
+    parser.usage = parser.format_usage().strip().replace('usage: ', '') + ' < audio.wav'
+    args = parser.parse_args()
+
+    if sys.stdin.isatty():
+        parser.error('Please pipe audio via stdin using < audio.wav')
 
     global tf
     import tensorflow
     tf = tensorflow
 
-    listener = Listener(sys.argv[1], int(sys.argv[2]) if 2 < len(sys.argv) else -1)
+    listener = Listener(args.model_name, args.chunk_size)
 
     try:
         while True:
