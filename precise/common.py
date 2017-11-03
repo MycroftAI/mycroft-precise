@@ -79,10 +79,20 @@ def to_np(x):
     return arr
 
 
+def glob_all(folder, filter):
+    """Recursive glob"""
+    import os
+    import fnmatch
+    matches = []
+    for root, dirnames, filenames in os.walk(folder):
+        for filename in fnmatch.filter(filenames, filter):
+            matches.append(os.path.join(root, filename))
+    return matches
+
+
 def find_wavs(folder):
     """Finds keyword and not-keyword wavs in folder"""
-    from glob import glob
-    return glob(folder + '/keyword/*.wav'), glob(folder + '/not-keyword/**/*.wav', recursive=True)
+    return glob_all(folder + '/keyword', '*.wav'), glob_all(folder + '/not-keyword', '*.wav')
 
 
 def load_data(prefix):

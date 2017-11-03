@@ -6,7 +6,6 @@ sys.path += ['.']  # noqa
 import os
 import json
 import numpy as np
-from json.decoder import JSONDecodeError
 from speechpy.main import mfcc
 from precise.params import ListenerParams
 
@@ -53,7 +52,7 @@ class Listener:
         try:
             with open(model_name + '.params') as f:
                 return ListenerParams(**json.loads(f))
-        except (OSError, JSONDecodeError, TypeError):
+        except (OSError, ValueError, TypeError):
             from precise.common import pr
             return pr
 
