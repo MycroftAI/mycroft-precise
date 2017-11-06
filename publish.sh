@@ -13,14 +13,13 @@ arch="$(python3 -c 'import platform; print(platform.machine())')"
 mv ../precise-stream "$arch/"
 
 if ! git config user.name || ! git config user.email; then
-    read -p "Enter git email:" email
-    read -p "Enter git name:" name
-    git config credential.helper store
+    read -p "Enter git email: " email
+    read -p "Enter git name: " name
     git config --global user.email "$email"
     git config --global user.name "$name"
 fi
 
-git commit --amend --no-edit
+git commit -a --amend --no-edit
 git push origin dist --force
 cd ../../
 
