@@ -6,7 +6,8 @@ sudo pip3 install pyinstaller
 pyinstaller -y precise.stream.spec
 
 cd dist/
-[ -d repo ] || git clone https://github.com/MycroftAI/precise-data -b dist repo
+rm -rf repo
+[ -d repo ] || git clone git@github.com:MycroftAI/precise-data.git -b dist repo
 cd repo/
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"
