@@ -8,9 +8,14 @@ upload_file() {
     [ -f "$cfg_file" ] && s3cmd put $1 $remote_url --acl-public -c ~/.s3cfg.mycroft-artifact-writer || echo "Could not find $cfg_file. Skipping upload."
 }
 
-# Usage: show_version stable|unstable
+# Usage: find_type stable|unstable
+find_type() {
+    [ "$1" = "stable" ] && echo "release" || echo "daily"
+}
+
+# Usage: find_version stable|unstable
 find_version() {
-    [ "$1" = "stable" ] && $(git describe --abbrev=0) || date +%s
+    [ "$1" = "stable" ] && git describe --abbrev=0 || date +%s
 }
 
 find_arch() {
@@ -29,13 +34,14 @@ set -e
 
 check_args "$@"
 
-version="$(find_version)"
+type="$(find_type $@)"
+version="$(find_version $@)"
 arch="$(find_arch)"
 
 sudo pip3 install pyinstaller
 pyinstaller -y precise.stream.spec
 
 echo $version > latest
-upload_file dist/precise-stream bootstrap.mycroft.ai/artifacts/static/release/$arch/$version/
-upload_file latest bootstrap.mycroft.ai/artifacts/static/release/$arch/
+upload_file dist/precise-stream bootstrap.mycroft.ai/artifacts/static/$type/$arch/$version/
+upload_file latest bootstrap.mycroft.ai/artifacts/static/$type/$arch/
 
