@@ -4,7 +4,7 @@
 upload_file() {
     file="$1"
     remote_url="s3://$2"
-	cfg_file="~/.s3cfg.mycroft-artifact-writer"
+	eval cfg_file="~/.s3cfg.mycroft-artifact-writer"
     [ -f "$cfg_file" ] && s3cmd put $1 $remote_url --acl-public -c ~/.s3cfg.mycroft-artifact-writer || echo "Could not find $cfg_file. Skipping upload."
 }
 
