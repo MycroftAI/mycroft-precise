@@ -16,8 +16,6 @@ set -e
 wait_for_apt
 sudo apt-get install -y python3-pip libblas-dev python3-scipy cython python3-h5py portaudio19-dev
 
-git fetch && git reset --hard origin/rnn
-
 arch="$(python3 -c 'import platform; print(platform.machine())')"
 
 if ! python3 -c 'import tensorflow' 2>/dev/null && [ "$arch" = "armv7l" ]; then
