@@ -35,5 +35,7 @@ arch="$(find_arch)"
 sudo pip3 install pyinstaller
 pyinstaller -y precise.stream.spec
 
+echo $version > latest
 upload_file dist/precise-stream bootstrap.mycroft.ai/artifacts/static/release/$arch/$version/
+upload_file latest bootstrap.mycroft.ai/artifacts/static/release/$arch/
 
