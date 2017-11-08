@@ -1,26 +1,39 @@
 #!/usr/bin/env bash
 
+# Usage: upload_file FILE REMOTE_PATH
+upload_file() {
+    file="$1"
+    remote_url="s3://$2"
+	cfg_file="~/.s3cfg.mycroft-artifact-writer"
+    [ -f "$cfg_file" ] && s3cmd put $1 $remote_url --acl-public -c ~/.s3cfg.mycroft-artifact-writer || echo "Could not find $cfg_file. Skipping upload."
+}
+
+# Usage: show_version stable|unstable
+find_version() {
+    [ "$1" = "stable" ] && $(git describe --abbrev=0) || date +%s
+}
+
+find_arch() {
+	python3 -c 'import platform; print(platform.machine())'
+}
+
+# Usage: check_args "$@"
+check_args() {
+    if [ $# != 1 ]; then
+        echo "Usage: $1 stable|unstable"
+        exit 1
+    fi
+}
+
 set -e
+
+check_args "$@"
+
+version="$(find_version)"
+arch="$(find_arch)"
 
 sudo pip3 install pyinstaller
 pyinstaller -y precise.stream.spec
 
-cd dist/
-rm -rf repo
-[ -d repo ] || git clone git@github.com:MycroftAI/precise-data.git -b dist repo
-cd repo/
-
-arch="$(python3 -c 'import platform; print(platform.machine())')"
-mv ../precise-stream "$arch/"
-
-if ! git config user.name || ! git config user.email; then
-    read -p "Enter git email: " email
-    read -p "Enter git name: " name
-    git config --global user.email "$email"
-    git config --global user.name "$name"
-fi
-
-git commit -a --amend --no-edit
-git push origin dist --force
-cd ../../
+upload_file dist/precise-stream bootstrap.mycroft.ai/artifacts/static/release/$arch/$version/
 
