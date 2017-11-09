@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+found_exe() {
+    hash "$1" 2>/dev/null
+}
+
 apt_is_locked() {
     fuser /var/lib/dpkg/lock >/dev/null 2>&1
 }
@@ -13,8 +17,10 @@ wait_for_apt() {
 
 set -e
 
-wait_for_apt
-sudo apt-get install -y python3-pip libblas-dev python3-scipy cython python3-h5py portaudio19-dev
+if found_exe apt-get; then
+	wait_for_apt
+	sudo apt-get install -y python3-pip libblas-dev python3-scipy cython python3-h5py portaudio19-dev
+fi
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"
 
