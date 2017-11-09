@@ -11,18 +11,15 @@ from precise.common import *
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('-m', '--model', help='Keras model to load (default: keyword.net)',
-                        default='keyword.net')
-    parser.add_argument('-d', '--data-dir',
-                        help='Directory to load test data from (default: data/test)',
-                        default='data/test')
+    parser.add_argument('-m', '--model', default='keyword.net')
+    parser.add_argument('-t', '--test-dir', default='data/test')
     parser.set_defaults(load=True, save_best=True)
     args = parser.parse_args()
 
     from keras.models import load_model
 
-    filenames = sum(find_wavs(args.data_dir), [])
-    inputs, outputs = load_data(args.data_dir)
+    filenames = sum(find_wavs(args.test_dir), [])
+    inputs, outputs = load_data(args.test_dir)
     predictions = load_model(args.model).predict(inputs)
 
     num_correct = 0

@@ -7,7 +7,7 @@
 import sys
 sys.path += ['.']
 
-import argparse
+from argparse import ArgumentParser
 import os
 from os.path import split, isfile
 
@@ -61,9 +61,9 @@ def convert(model_path, out_file):
     del sess
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Convert keyword model from Keras to TensorFlow')
-    parser.add_argument('--model','-m', default='keyword.net', help='Input Keras model', type=argparse.FileType())
-    parser.add_argument('--out', '-o', default='keyword.pb', help='Output TensorFlow protobuf')
+    parser = ArgumentParser(description='Convert keyword model from Keras to TensorFlow')
+    parser.add_argument('-m', '--model', default='keyword.net', help='Input Keras model')
+    parser.add_argument('-o', '--out', default='keyword.pb', help='Output TensorFlow protobuf')
     args = parser.parse_args()
 
-    convert(args.model.name, args.out)
+    convert(args.model, args.out)
