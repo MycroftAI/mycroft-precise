@@ -4,7 +4,7 @@ from os.path import isfile
 from precise.params import ListenerParams
 
 
-pr = ListenerParams(window_t=0.2, hop_t=0.1, buffer_t=1.5,
+pr = ListenerParams(window_t=0.1, hop_t=0.05, buffer_t=1.5,
                     sample_rate=16000, sample_depth=2,
                     n_mfcc=13, n_filt=20, n_fft=512)
 
