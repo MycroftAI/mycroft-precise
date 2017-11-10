@@ -55,7 +55,7 @@ class Listener:
     def _load_params(self, model_name):
         try:
             with open(model_name + '.params') as f:
-                return ListenerParams(**json.loads(f))
+                return ListenerParams(**json.load(f))
         except (OSError, ValueError, TypeError):
             from precise.common import pr
             return pr
