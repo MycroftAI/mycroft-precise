@@ -10,3 +10,10 @@ __pycache__/
 *.pbtxt
 keyword.trained.txt
 other/
+
+# jenkins branch
+wake-words.txt
+all/
+hey-mycroft/
+mycroft-precise/
+
