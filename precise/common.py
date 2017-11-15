@@ -181,8 +181,8 @@ def create_model(model_name, should_load):
         from keras.models import Sequential
 
         model = Sequential()
-        model.add(GRU(lstm_units, activation='linear', input_shape=(pr.n_features, pr.feature_size), dropout=0.2, name='net'))
+        model.add(GRU(lstm_units, activation='linear', input_shape=(pr.n_features, pr.feature_size), dropout=0.3, name='net'))
         model.add(Dense(1, activation='sigmoid'))
 
-    model.compile('rmsprop', 'mse', metrics=['accuracy'])
+    model.compile('rmsprop', 'binary_crossentropy', metrics=['accuracy'])
     return model
