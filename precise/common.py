@@ -1,6 +1,13 @@
 # Python 3
+from os import makedirs
+
 import numpy as np
-from os.path import isfile
+from os.path import isfile, join, dirname
+
+import wavio
+from keras.layers.convolutional import Conv1D
+from keras.layers.wrappers import TimeDistributed
+
 from precise.params import ListenerParams
 
 
@@ -9,6 +16,9 @@ pr = ListenerParams(window_t=0.1, hop_t=0.05, buffer_t=1.5,
                     n_mfcc=13, n_filt=20, n_fft=512)
 
 lstm_units = 20
+inhibit_t = 0.4
+inhibit_dist_t = 1.0
+inhibit_hop_t = 0.1
 
 
 def vectorize_raw(audio):
@@ -34,6 +44,21 @@ def vectorize(audio):
         features = features[-pr.n_features:]
 
     return features
+
+
+def vectorize_inhibit(audio):
+    """
+    Returns an array of inputs generated from the
+    keyword audio that shouldn't cause an activation
+    """
+    def samp(x):
+        return int(pr.sample_rate * x)
+    inputs = []
+    for offset in range(samp(inhibit_t), samp(inhibit_dist_t), samp(inhibit_hop_t)):
+        if len(audio) - offset < samp(pr.buffer_t / 2.):
+            break
+        inputs.append(vectorize(audio[:-offset]))
+    return np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size))
 
 
 def load_vector(name, vectorizer=vectorize):
@@ -71,14 +96,6 @@ def load_audio(file):
     return data.astype(np.float32) / float(np.iinfo(data.dtype).max)
 
 
-def to_np(x):
-    """list<np.array> to np.array"""
-    arr = np.empty((len(x),) + x[0].shape)
-    for i in range(len(x)):
-        arr[i] = x[i]
-    return arr
-
-
 def glob_all(folder, filter):
     """Recursive glob"""
     import os
@@ -102,7 +119,7 @@ def load_data(prefix):
     def add(filenames, output):
         nonlocal inputs, outputs
         inputs += [load_vector(f) for f in filenames]
-        outputs += [np.array(output)] * len(filenames)
+        outputs += [np.array([output])] * len(filenames)
 
     kww, nkw = find_wavs(prefix)
 
@@ -112,7 +129,45 @@ def load_data(prefix):
     print('Loading not-keyword...')
     add(nkw, 0.0)
 
-    return to_np(inputs), to_np(outputs)
+    return np.array(inputs), np.array(outputs)
+
+
+def load_gen_data(prefix):
+    """Generate inhibitory data"""
+    kws, _ = find_wavs(prefix)
+    inputs = np.empty((0, pr.n_features, pr.feature_size))
+    for f in kws:
+        new_vec = load_vector(f, vectorize_inhibit)
+        inputs = np.concatenate([inputs, new_vec])
+    return inputs, np.ones((len(inputs), 1))
+
+
+def write_gen_data(prefix):
+    """Copies fragments from keyword/ to not-keyword/generated/keyword/"""
+    fd = join(prefix, 'not-keyword', 'generated')
+
+    kws, _ = find_wavs(prefix)
+    for f in kws:
+        def samp(x):
+            return int(pr.sample_rate * x)
+
+        audio = load_audio(f)
+        for offset in range(samp(inhibit_t), samp(inhibit_dist_t), samp(inhibit_hop_t)):
+            if len(audio) - offset < samp(pr.buffer_t / 2.):
+                break
+
+            fn = join(fd, 'kw-' + f.replace(prefix + '/', ''))
+            makedirs(dirname(fn), exist_ok=True)
+            aud = audio[max(0, len(audio) - offset - samp(pr.buffer_t)):-offset]
+            aud = (aud * np.iinfo(np.int16).max).astype(np.int16)
+            wavio.write(fn, aud, pr.sample_rate)
+
+
+def load_all_data(prefix):
+    """Loads both data and generated inhibitory data"""
+    inputs, outputs = load_data(prefix)
+    gen_inputs, gen_outputs = load_gen_data(prefix)
+    return np.concatenate([inputs, gen_inputs]), np.concatenate([outputs, gen_outputs])
 
 
 def create_model(model_name, should_load):
