@@ -5,8 +5,6 @@ sys.path += ['.']
 
 from io import StringIO
 
-from precise.common import vectorize, pr
-
 silent = False
 should_save = False
 enable_sound = False
@@ -44,16 +42,16 @@ from random import randint
 session_id = randint(0, 1000)
 chunk_id = 0
 
-import pyaudio
+from precise.common import *
+from pyaudio import PyAudio, get_format_from_width
 from os.path import join
-from pyaudio import PyAudio
 import numpy as np
 
 
 class PreciseRecognizer:
     def __init__(self):
         from keras.models import load_model
-        self.model = load_model('keyword.net')
+        self.model = load_precise_model('lstm-tanh-less-fp-2.net')
 
     @staticmethod
     def buffer_to_audio(buffer):
@@ -68,7 +66,7 @@ CHANNELS = 1
 CHUNK_SIZE = 1024
 RATE = pr.sample_rate
 WIDTH = 2  # Int16
-FORMAT = pyaudio.get_format_from_width(WIDTH)
+FORMAT = get_format_from_width(WIDTH)
 BUFFER_LEN = WIDTH * CHANNELS * pr.max_samples
 
 p = PyAudio()

@@ -16,11 +16,9 @@ def main():
     parser.set_defaults(load=True, save_best=True)
     args = parser.parse_args()
 
-    from keras.models import load_model
-
     filenames = sum(find_wavs(args.test_dir), [])
     inputs, outputs = load_data(args.test_dir)
-    predictions = load_model(args.model).predict(inputs)
+    predictions = load_precise_model(args.model).predict(inputs)
 
     num_correct = 0
     false_pos, false_neg = [], []

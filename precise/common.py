@@ -5,8 +5,6 @@ import numpy as np
 from os.path import isfile, join, dirname
 
 import wavio
-from keras.layers.convolutional import Conv1D
-from keras.layers.wrappers import TimeDistributed
 
 from precise.params import ListenerParams
 
@@ -170,11 +168,26 @@ def load_all_data(prefix):
     return np.concatenate([inputs, gen_inputs]), np.concatenate([outputs, gen_outputs])
 
 
+def weighted_log_loss(yt, yp):
+    """Binary crossentropy with a bias towards false negatives"""
+    from keras import backend as K
+
+    a = yt * K.log(yp + K.epsilon())
+    b = (1 - yt) * K.log(1 + K.epsilon() - yp)
+    return -1 * K.mean((0.5 + yp) * (a + b))
+
+
+def load_precise_model(model_name: str):
+    import keras.losses
+    keras.losses.weighted_log_loss = weighted_log_loss
+    from keras.models import load_model
+    return load_model(model_name)
+
+
 def create_model(model_name, should_load):
     if isfile(model_name) and should_load:
         print('Loading from ' + model_name + '...')
-        from keras.models import load_model
-        model = load_model(model_name)
+        model = load_precise_model(model_name)
     else:
         from keras.layers.core import Dense
         from keras.layers.recurrent import GRU

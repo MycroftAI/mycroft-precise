@@ -25,7 +25,7 @@ def convert(model_path, out_file):
     print('Converting', model_path, 'to', out_file, '...')
 
     import tensorflow as tf
-    from keras.models import load_model
+    from precise.common import load_precise_model
     from keras import backend as K
 
     out_dir, filename = split(out_file)
@@ -33,7 +33,7 @@ def convert(model_path, out_file):
     os.makedirs(out_dir, exist_ok=True)
 
     K.set_learning_phase(0)
-    model = load_model(model_path)
+    model = load_precise_model(model_path)
 
     out_name = 'net_output'
     tf.identity(model.output, name=out_name)
