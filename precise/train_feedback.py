@@ -8,10 +8,7 @@ sys.path += ['.']  # noqa
 
 import argparse
 from glob import glob
-from os import makedirs
-from os.path import join, basename, splitext
-
-import wavio
+from os.path import basename, splitext
 
 from precise.common import *
 

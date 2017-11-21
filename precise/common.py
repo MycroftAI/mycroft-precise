@@ -1,12 +1,9 @@
 # Python 3
-from os import makedirs
-from typing import Tuple, List, Any
 
 import numpy as np
+from os import makedirs
 from os.path import isfile, join, dirname
-
-import wavio
-
+from typing import Tuple, List, Any
 from precise.params import ListenerParams
 
 
@@ -143,6 +140,7 @@ def load_gen_data(prefix: str) -> Tuple[np.array, np.array]:
 
 def write_gen_data(prefix: str):
     """Copies fragments from keyword/ to not-keyword/generated/keyword/"""
+    import wavio
     fd = join(prefix, 'not-keyword', 'generated')
 
     kws, _ = find_wavs(prefix)
