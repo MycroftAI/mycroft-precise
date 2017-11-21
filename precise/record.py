@@ -8,6 +8,7 @@ from pyaudio import PyAudio, paInt16
 from precise.common import pr
 from argparse import ArgumentParser
 
+
 def main():
     parser = ArgumentParser('Implementation demo of precise-stream')
     parser.add_argument('-m', '--model', default='keyword.pb')

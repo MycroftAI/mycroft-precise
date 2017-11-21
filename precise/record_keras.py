@@ -50,13 +50,12 @@ import numpy as np
 
 class PreciseRecognizer:
     def __init__(self):
-        from keras.models import load_model
         self.model = load_precise_model('lstm-tanh-less-fp-2.net')
 
     @staticmethod
-    def buffer_to_audio(buffer):
+    def buffer_to_audio(buffer: bytearray) -> np.array:
         """Convert a raw mono audio byte string to numpy array of floats"""
-        return np.fromstring(buffer, dtype='<i2').astype(np.float32, order='C') / 32768.0
+        return np.fromstring(str(buffer), dtype='<i2').astype(np.float32, order='C') / 32768.0
 
     def found_wake_word(self, raw_data):
         inp = vectorize(self.buffer_to_audio(raw_data))
@@ -75,7 +74,7 @@ stream = p.open(RATE, CHANNELS, FORMAT, True, frames_per_buffer=CHUNK_SIZE)
 buffer = b'\0' * BUFFER_LEN
 
 
-def save(buffer, debug=False):
+def save(buffer: bytearray, debug=False):
     if not should_save:
         return
 

@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-
-from argparse import ArgumentParser
-
 sys.path += ['.']  # noqa
 
 import os
@@ -12,9 +9,11 @@ import numpy as np
 from speechpy.main import mfcc
 from precise.params import ListenerParams
 from precise import __version__
+from argparse import ArgumentParser
+from typing import BinaryIO
 
 
-def load_graph(model_file):
+def load_graph(model_file: str) -> tf.Graph:
     graph = tf.Graph()
     graph_def = tf.GraphDef()
 
@@ -26,13 +25,13 @@ def load_graph(model_file):
     return graph
 
 
-def buffer_to_audio(buffer):
+def buffer_to_audio(buffer: bytes) -> np.array:
     """Convert a raw mono audio byte string to numpy array of floats"""
-    return np.fromstring(buffer, dtype='<i2').astype(np.float32, order='C') / 32768.0
+    return np.fromstring(str(buffer), dtype='<i2').astype(np.float32, order='C') / 32768.0
 
 
 class NetworkRunner:
-    def __init__(self, model_name):
+    def __init__(self, model_name: str):
         self.graph = load_graph(model_name)
 
         self.inp_var = self.graph.get_operation_by_name('import/net_input').outputs[0]
@@ -40,19 +39,19 @@ class NetworkRunner:
 
         self.sess = tf.Session(graph=self.graph)
 
-    def run(self, inp):
+    def run(self, inp: np.array) -> float:
         return self.sess.run(self.out_var, {self.inp_var: inp[np.newaxis]})[0][0]
 
 
 class Listener:
-    def __init__(self, model_name, chunk_size):
+    def __init__(self, model_name: str, chunk_size: int):
         self.buffer = np.array([])
         self.pr = self._load_params(model_name)
         self.features = np.zeros((self.pr.n_features, self.pr.feature_size))
         self.read_size = -1 if chunk_size == -1 else self.pr.sample_depth * chunk_size
         self.runner = NetworkRunner(model_name)
 
-    def _load_params(self, model_name):
+    def _load_params(self, model_name: str) -> ListenerParams:
         try:
             with open(model_name + '.params') as f:
                 return ListenerParams(**json.load(f))
@@ -60,7 +59,7 @@ class Listener:
             from precise.common import pr
             return pr
 
-    def update(self, stream):
+    def update(self, stream: BinaryIO) -> float:
         chunk = stream.read(self.read_size)
         if len(chunk) == 0:
             raise EOFError

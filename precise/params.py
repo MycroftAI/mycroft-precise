@@ -4,7 +4,7 @@ from collections import namedtuple
 from math import floor
 
 
-def _make_cls():
+def _make_cls() -> type:
     cls = namedtuple('ListenerParams', 'window_t hop_t buffer_t sample_rate sample_depth n_mfcc n_filt n_fft')
 
     def add_prop(name, fn):

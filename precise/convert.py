@@ -10,17 +10,16 @@ sys.path += ['.']
 from argparse import ArgumentParser
 import os
 from os.path import split, isfile
-
 from shutil import copyfile
 
 
-def convert(model_path, out_file):
+def convert(model_path: str, out_file: str):
     """
     Converts an HD5F file from Keras to a .pb for use with TensorFlow
 
     Args:
-        model_path (str): location of Keras model
-          out_file (str): location to write protobuf
+        model_path: location of Keras model
+          out_file: location to write protobuf
     """
     print('Converting', model_path, 'to', out_file, '...')
 

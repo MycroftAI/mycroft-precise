@@ -1,5 +1,6 @@
 # Python 3
 from os import makedirs
+from typing import Tuple, List, Any
 
 import numpy as np
 from os.path import isfile, join, dirname
@@ -19,16 +20,16 @@ inhibit_dist_t = 1.0
 inhibit_hop_t = 0.1
 
 
-def vectorize_raw(audio):
+def vectorize_raw(audio: np.array) -> np.array:
     """Turns audio into feature vectors, without clipping for length"""
     from speechpy.main import mfcc
     return mfcc(audio, pr.sample_rate, pr.window_t, pr.hop_t, pr.n_mfcc, pr.n_filt, pr.n_fft)
 
 
-def vectorize(audio):
+def vectorize(audio: np.array) -> np.array:
     """
     Args:
-        audio (array<float>): Audio verified to be of `sample_rate`
+        audio: Audio verified to be of `sample_rate`
 
     Returns:
         array<float>: Vector representation of audio
@@ -44,7 +45,7 @@ def vectorize(audio):
     return features
 
 
-def vectorize_inhibit(audio):
+def vectorize_inhibit(audio: np.array) -> np.array:
     """
     Returns an array of inputs generated from the
     keyword audio that shouldn't cause an activation
@@ -59,7 +60,7 @@ def vectorize_inhibit(audio):
     return np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size))
 
 
-def load_vector(name, vectorizer=vectorize):
+def load_vector(name: str, vectorizer=vectorize) -> np.array:
     """Loads and caches a vector input from a wav or npy file"""
     import os
 
@@ -76,12 +77,12 @@ def load_vector(name, vectorizer=vectorize):
     return vec
 
 
-def load_audio(file):
+def load_audio(file: Any) -> np.array:
     """
     Args:
-        file (any): Audio filename or file object
+        file: Audio filename or file object
     Returns:
-        rate, array<float>: Sample rate and audio samples from 0..1
+        samples: Sample rate and audio samples from 0..1
     """
     import wavio
     wav = wavio.read(file)
@@ -94,7 +95,7 @@ def load_audio(file):
     return data.astype(np.float32) / float(np.iinfo(data.dtype).max)
 
 
-def glob_all(folder, filter):
+def glob_all(folder: str, filter: str) -> List[str]:
     """Recursive glob"""
     import os
     import fnmatch
@@ -105,12 +106,12 @@ def glob_all(folder, filter):
     return matches
 
 
-def find_wavs(folder):
+def find_wavs(folder: str) -> Tuple[List[str], List[str]]:
     """Finds keyword and not-keyword wavs in folder"""
     return glob_all(folder + '/keyword', '*.wav'), glob_all(folder + '/not-keyword', '*.wav')
 
 
-def load_data(prefix):
+def load_data(prefix: str) -> Tuple[np.array, np.array]:
     inputs = []
     outputs = []
 
@@ -130,7 +131,7 @@ def load_data(prefix):
     return np.array(inputs), np.array(outputs)
 
 
-def load_gen_data(prefix):
+def load_gen_data(prefix: str) -> Tuple[np.array, np.array]:
     """Generate inhibitory data"""
     kws, _ = find_wavs(prefix)
     inputs = np.empty((0, pr.n_features, pr.feature_size))
@@ -140,7 +141,7 @@ def load_gen_data(prefix):
     return inputs, np.ones((len(inputs), 1))
 
 
-def write_gen_data(prefix):
+def write_gen_data(prefix: str):
     """Copies fragments from keyword/ to not-keyword/generated/keyword/"""
     fd = join(prefix, 'not-keyword', 'generated')
 
@@ -161,30 +162,43 @@ def write_gen_data(prefix):
             wavio.write(fn, aud, pr.sample_rate)
 
 
-def load_all_data(prefix):
+def load_all_data(prefix: str) -> Tuple[np.array, np.array]:
     """Loads both data and generated inhibitory data"""
     inputs, outputs = load_data(prefix)
     gen_inputs, gen_outputs = load_gen_data(prefix)
     return np.concatenate([inputs, gen_inputs]), np.concatenate([outputs, gen_outputs])
 
 
-def weighted_log_loss(yt, yp):
+def weighted_log_loss(yt, yp) -> Any:
     """Binary crossentropy with a bias towards false negatives"""
     from keras import backend as K
 
+    weight = 0.5  # [0..1] where 1 is inf bias
+
     a = yt * K.log(yp + K.epsilon())
     b = (1 - yt) * K.log(1 + K.epsilon() - yp)
-    return -1 * K.mean((0.5 + yp) * (a + b))
+    return -1 * K.mean((1. - weight + yp) * (a + b))
 
 
-def load_precise_model(model_name: str):
+def load_precise_model(model_name: str) -> Any:
+    """Loads a Keras model from file, handling custom loss function"""
     import keras.losses
     keras.losses.weighted_log_loss = weighted_log_loss
     from keras.models import load_model
     return load_model(model_name)
 
 
-def create_model(model_name, should_load):
+def create_model(model_name: str, should_load: bool) -> Any:
+    """
+    Load or create a precise model
+
+    Args:
+        model_name: Name of model
+        should_load: Whether to check if the model already exists
+
+    Returns:
+        model: Loaded Keras model
+    """
     if isfile(model_name) and should_load:
         print('Loading from ' + model_name + '...')
         model = load_precise_model(model_name)

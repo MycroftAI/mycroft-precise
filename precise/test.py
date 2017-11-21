@@ -30,7 +30,7 @@ def main():
         else:
             num_correct += 1
 
-    def prc(a, b):  # Rounded percent
+    def prc(a: int, b: int):  # Rounded percent
         return round(100.0 * a / b, 2)
 
     print('=== False Positives ===')
