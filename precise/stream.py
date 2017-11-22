@@ -14,7 +14,7 @@ from argparse import ArgumentParser
 from typing import BinaryIO
 
 
-def load_graph(model_file: str) -> tf.Graph:
+def load_graph(model_file: str):  # returns: tf.Graph
     graph = tf.Graph()
     graph_def = tf.GraphDef()
 
@@ -28,7 +28,7 @@ def load_graph(model_file: str) -> tf.Graph:
 
 def buffer_to_audio(buffer: bytes) -> np.array:
     """Convert a raw mono audio byte string to numpy array of floats"""
-    return np.fromstring(str(buffer), dtype='<i2').astype(np.float32, order='C') / 32768.0
+    return np.fromstring(buffer, dtype='<i2').astype(np.float32, order='C') / 32768.0
 
 
 class NetworkRunner:
@@ -72,7 +72,8 @@ class Listener:
             remaining = self.pr.window_samples - (
                 self.pr.hop_samples - (len(self.buffer) - self.pr.window_samples) % self.pr.hop_samples)
             new_features = mfcc(self.buffer, self.pr.sample_rate, self.pr.window_t, self.pr.hop_t, self.pr.n_mfcc, self.pr.n_filt, self.pr.n_fft)
-
+            if len(new_features) > len(self.features):
+                new_features = new_features[-len(self.features):]
             self.features = np.concatenate([self.features[len(new_features):], new_features])
             self.buffer = self.buffer[-remaining:]
 

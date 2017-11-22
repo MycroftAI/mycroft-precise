@@ -56,7 +56,7 @@ class PreciseRecognizer:
     @staticmethod
     def buffer_to_audio(buffer: bytearray) -> np.array:
         """Convert a raw mono audio byte string to numpy array of floats"""
-        return np.fromstring(str(buffer), dtype='<i2').astype(np.float32, order='C') / 32768.0
+        return np.fromstring(buffer, dtype='<i2').astype(np.float32, order='C') / 32768.0
 
     def found_wake_word(self, raw_data):
         inp = vectorize(self.buffer_to_audio(raw_data))
