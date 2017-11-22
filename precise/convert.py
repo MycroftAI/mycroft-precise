@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-#
 # Attribution: This script was adapted from https://github.com/amir-abdi/keras_to_tensorflow
-#
 # Copyright (c) 2017 Mycroft AI Inc.
 
 import sys

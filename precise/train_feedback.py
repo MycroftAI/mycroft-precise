@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) 2017 Mycroft AI Inc.
 # This script trains the network, selectively choosing
 # segments from data/random that cause an activation. These
 # segments are moved into data/not-keyword and the network is retrained

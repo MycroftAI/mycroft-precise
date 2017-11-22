@@ -1,4 +1,5 @@
 # Python 3
+# Copyright (c) 2017 Mycroft AI Inc.
 
 from collections import namedtuple
 from math import floor

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) 2017 Mycroft AI Inc.
 
 import sys
 sys.path += ['.']

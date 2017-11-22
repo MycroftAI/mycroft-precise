@@ -1,4 +1,5 @@
 # Python 3
+# Copyright (c) 2017 Mycroft AI Inc.
 
 import numpy as np
 from os import makedirs
