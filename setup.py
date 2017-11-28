@@ -22,7 +22,8 @@ setup(
         'speechpy',
         'pyaudio',
         'keras',
-        'wavio'
+        'wavio',
+        # 'precise-runner'  # Needs to get uploaded to PyPi first
     ],
 
     author='Matthew Scholefield',
