@@ -23,6 +23,7 @@ setup(
         'pyaudio',
         'keras',
         'wavio',
+        'typing',
         # 'precise-runner'  # Needs to get uploaded to PyPi first
     ],
 
