@@ -22,8 +22,10 @@ setup(
         'speechpy',
         'pyaudio',
         'keras',
+        'h5py',
         'wavio',
         'typing',
+        'dataset',
         # 'precise-runner'  # Needs to get uploaded to PyPi first
     ],
 

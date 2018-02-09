@@ -3,12 +3,23 @@
 # Copyright (c) 2017 Mycroft AI Inc.
 
 import sys
-sys.path += ['.']
 
-from argparse import ArgumentParser
+sys.path += ['.']  # noqa
+
 import os
 from os.path import split, isfile
 from shutil import copyfile
+from precise.common import create_parser
+
+usage = """
+Convert keyword model from Keras to TensorFlow
+
+:model str
+    Input Keras model (.net)
+
+:-o --out str {model}.pb
+    Custom output TensorFlow protobuf filename
+"""
 
 
 def convert(model_path: str, out_file: str):
@@ -17,7 +28,7 @@ def convert(model_path: str, out_file: str):
 
     Args:
         model_path: location of Keras model
-          out_file: location to write protobuf
+        out_file: location to write protobuf
     """
     print('Converting', model_path, 'to', out_file, '...')
 
@@ -57,10 +68,9 @@ def convert(model_path: str, out_file: str):
 
     del sess
 
-if __name__ == '__main__':
-    parser = ArgumentParser(description='Convert keyword model from Keras to TensorFlow')
-    parser.add_argument('-m', '--model', default='keyword.net', help='Input Keras model')
-    parser.add_argument('-o', '--out', default='keyword.pb', help='Output TensorFlow protobuf')
-    args = parser.parse_args()
 
-    convert(args.model, args.out)
+if __name__ == '__main__':
+    args = create_parser(usage).parse_args()
+
+    model_name = args.model.replace('.net', '')
+    convert(args.model, args.out.format(model=model_name))

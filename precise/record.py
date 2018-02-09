@@ -5,26 +5,68 @@ import sys
 
 sys.path += ['.', 'runner']  # noqa
 
-from argparse import ArgumentParser
-from psutil import Popen
-from precise_runner import PreciseRunner
 from threading import Event
+from random import randint
+from argparse import ArgumentParser
+from os.path import join
+from subprocess import call
+import numpy as np
+
+from precise.common import buffer_to_audio, save_audio, create_parser
+from precise.network_runner import Listener
+from precise_runner import PreciseRunner
+from precise_runner.runner import ListenerEngine
+
+usage = '''
+Run a model on microphone audio input
+
+:model str
+    Either Keras (.net) or Tensorflow (.pb) model to run
+
+:-c --chunk-size int 2048
+    Samples between inferences
+
+:-s --save-dir str -
+    Folder to save false positives
+
+:-p --save-prefix str -
+    Prefix for saved filenames
+'''
+
+session_id, chunk_num = '%03d' % randint(0, 999), 0
 
 
 def main():
-    parser = ArgumentParser('Implementation demo of precise-stream')
-    parser.add_argument('-m', '--model', default='keyword.pb')
-    args = parser.parse_args()
-
-    def on_prediction(prob):
-        print('!' if prob > 0.5 else '.', end='', flush=True)
+    args = create_parser(usage).parse_args()
 
     def on_activation():
-        Popen(['aplay', 'data/activate.wav'])
+        call(['aplay', '-q', 'data/activate.wav'])
+        if args.save_dir:
+            global chunk_num
+            nm = join(args.save_dir, args.save_prefix + session_id + '.' + str(chunk_num) + '.wav')
+            save_audio(nm, audio_buffer)
+            print()
+            print('Saved to ' + nm + '.')
+            chunk_num += 1
 
-    PreciseRunner('./precise/stream.py', args.model, on_prediction=on_prediction, on_activation=on_activation).start()
+    def on_prediction(conf):
+        print('!' if conf > 0.5 else '.', end='', flush=True)
+
+    listener = Listener(args.model, args.chunk_size)
+    audio_buffer = np.zeros(listener.pr.buffer_samples, dtype=float)
+
+    def get_prediction(chunk):
+        nonlocal audio_buffer
+        audio = buffer_to_audio(chunk)
+        audio_buffer = np.concatenate((audio_buffer[len(audio):], audio))
+        return listener.update(chunk)
+
+    engine = ListenerEngine(listener)
+    engine.get_prediction = get_prediction
+    runner = PreciseRunner(engine, 1024, on_activation=on_activation, on_prediction=on_prediction)
+    runner.start()
     Event().wait()  # Wait forever
+
 
 if __name__ == '__main__':
     main()
-

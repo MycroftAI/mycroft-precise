@@ -22,15 +22,23 @@ if found_exe apt-get; then
 	sudo apt-get install -y python3-pip libblas-dev python3-scipy cython python3-h5py portaudio19-dev
 fi
 
-arch="$(python3 -c 'import platform; print(platform.machine())')"
+python=.venv/bin/python
+pip=.venv/bin/pip
 
-if ! python3 -c 'import tensorflow' 2>/dev/null && [ "$arch" = "armv7l" ]; then
-    wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-	sudo pip3 install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-	sudo pip3 uninstall mock || true
-    sudo pip3 install mock
+if [ ! -f "$pip" ]; then
+    python3 -m venv .venv/
+    curl https://bootstrap.pypa.io/get-pip.py | .venv/bin/python
 fi
 
-sudo pip3 install --upgrade pip
-sudo pip3 install -e .
+arch="$(python3 -c 'import platform; print(platform.machine())')"
+
+if ! $python -c 'import tensorflow' 2>/dev/null && [ "$arch" = "armv7l" ]; then
+    wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+	$pip install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+	$pip uninstall mock || true
+    $pip install mock
+    rm tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+fi
+
+$pip install -e .
 

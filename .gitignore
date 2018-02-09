@@ -8,13 +8,13 @@ __pycache__/
 *.params
 *.net
 *.pbtxt
-keyword.trained.txt
+*.txt
 other/
+.venv/
 
 # jenkins branch
 wake-words.txt
 all/
-hey-mycroft/
 mycroft-precise/
 models/
 

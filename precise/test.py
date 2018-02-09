@@ -2,37 +2,54 @@
 # Copyright (c) 2017 Mycroft AI Inc.
 
 import sys
+from time import sleep
+
 sys.path += ['.']  # noqa
 
-from argparse import ArgumentParser
+from precise.common import load_precise_model, inject_params, create_parser
+from precise.train_data import TrainData
 
-from precise.common import *
+usage = '''
+Test a model against a dataset
+
+:model str
+    Keras model file (.net) to test
+
+:-t --use-train
+    Evaluate training data instead of test data
+'''
 
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument('-m', '--model', default='keyword.net')
-    parser.add_argument('-t', '--test-dir', default='data/test')
-    parser.set_defaults(load=True, save_best=True)
-    args = parser.parse_args()
+    args = TrainData.parse_args(create_parser(usage))
 
-    filenames = sum(find_wavs(args.test_dir), [])
-    inputs, outputs = load_data(args.test_dir)
+    inject_params(args.model)
+
+    data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
+    train, test = data.load()
+    inputs, targets = train if args.use_train else test
+
+    filenames = sum(data.train_files if args.use_train else data.test_files, [])
     predictions = load_precise_model(args.model).predict(inputs)
 
-    num_correct = 0
+    true_pos, true_neg = [], []
     false_pos, false_neg = [], []
-    for name, correct, prediction in zip(filenames, outputs, predictions):
-        if prediction < 0.5 < correct:
-            false_neg += [name]
-        elif prediction > 0.5 > correct:
-            false_pos += [name]
-        else:
-            num_correct += 1
+
+    for name, target, prediction in zip(filenames, targets, predictions):
+        {
+            (True, False): false_pos,
+            (True, True): true_pos,
+            (False, True): false_neg,
+            (False, False): true_neg
+        }[prediction[0] > 0.5, target[0] > 0.5].append(name)
+
+    num_correct = len(true_pos) + len(true_neg)
+    total = num_correct + len(false_pos) + len(false_neg)
 
     def prc(a: int, b: int):  # Rounded percent
-        return round(100.0 * a / b, 2)
+        return round(100.0 * (b and a / b), 2)
 
+    print('Data:', data)
     print('=== False Positives ===')
     for i in false_pos:
         print(i)
@@ -42,12 +59,11 @@ def main():
         print(i)
     print()
     print('=== Summary ===')
-    total = num_correct + len(false_pos) + len(false_neg)
     print(num_correct, "out of", total)
     print(prc(num_correct, total), "%")
     print()
-    print(prc(len(false_pos), total), "% false positives")
-    print(prc(len(false_neg), total), "% false negatives")
+    print(prc(len(false_pos), len(false_pos) + len(true_neg)), "% false positives")
+    print(prc(len(false_neg), len(false_neg) + len(true_pos)), "% false negatives")
 
 
 if __name__ == '__main__':

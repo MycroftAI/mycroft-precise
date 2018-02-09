@@ -1,52 +1,69 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-
 import sys
+
 sys.path += ['.']  # noqa
 
-from argparse import ArgumentParser
-import json
+from precise.train_data import TrainData
+from precise.common import inject_params, create_model, save_params, create_parser
 
-from precise.common import *
+usage = '''
+Train a new model on a dataset
+
+:model str
+    Keras model file (.net) to load from and save to
+
+:-e --epochs int 10
+    Number of epochs to train model for
+
+:-sb --save-best
+    Only save the model each epoch if its stats improve
+
+:-nv --no-validation
+    Disable accuracy and validation calculation
+    to improve speed during training
+
+:-mm --metric-monitor str loss
+    Metric used to determine when to save
+'''
 
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument('-m', '--model', default='keyword.net')
-    parser.add_argument('-d', '--data-dir', default='data')
-    parser.add_argument('-e', '--epochs', type=int, default=10)
-    parser.add_argument('-l', '--load', dest='load', action='store_true')
-    parser.add_argument('-nl', '--no-load', dest='load', action='store_false')
-    parser.add_argument('-b', '--save-best', dest='save_best', action='store_true')
-    parser.add_argument('-nb', '--no-save-best', dest='save_best', action='store_false')
-    parser.set_defaults(load=True, save_best=True)
-    args = parser.parse_args()
+    args = TrainData.parse_args(create_parser(usage))
 
-    inputs, outputs = load_data(args.data_dir)
-    val_in, val_out = load_data(args.data_dir + '/test')
+    inject_params(args.model)
+    save_params(args.model)
+
+    data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
+    print('Data:', data)
+    (inputs, outputs), test_data = data.load(args.no_validation)
 
     print('Inputs shape:', inputs.shape)
     print('Outputs shape:', outputs.shape)
-    print('Test inputs shape:', val_in.shape)
-    print('Test outputs shape:', val_out.shape)
 
-    if (0 in inputs.shape or 0 in outputs.shape or
-        0 in val_in.shape or 0 in val_out.shape):
+    if test_data:
+        print('Test inputs shape:', test_data[0].shape)
+        print('Test outputs shape:', test_data[1].shape)
+
+    if 0 in inputs.shape or 0 in outputs.shape:
         print('Not enough data to train')
         exit(1)
 
-    model = create_model(args.model, args.load)
-
-    with open(args.model + '.params', 'w') as f:
-        json.dump(pr._asdict(), f)
+    model = create_model(args.model, args.no_validation)
+    model.summary()
 
     from keras.callbacks import ModelCheckpoint
-    checkpoint = ModelCheckpoint(args.model, monitor='val_acc', save_best_only=args.save_best, mode='max')
+    checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
+                                 save_best_only=args.save_best)
 
     try:
-        model.fit(inputs, outputs, 5000, args.epochs, validation_data=(val_in, val_out), callbacks=[checkpoint])
+        model.fit(inputs, outputs, 5000, args.epochs, validation_data=test_data,
+                  callbacks=[checkpoint])
     except KeyboardInterrupt:
         print()
+    finally:
+        model.save(args.model)
+
 
 if __name__ == '__main__':
     main()
