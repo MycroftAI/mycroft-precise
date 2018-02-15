@@ -12,6 +12,8 @@ __pycache__/
 other/
 .venv/
 
+!requirements.txt
+
 # jenkins branch
 wake-words.txt
 all/
