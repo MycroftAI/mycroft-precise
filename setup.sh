@@ -26,7 +26,7 @@ python=.venv/bin/python
 pip=.venv/bin/pip
 
 if [ ! -f "$pip" ]; then
-    python3 -m venv .venv/
+    python3 -m venv .venv/ --without-pip
     curl https://bootstrap.pypa.io/get-pip.py | .venv/bin/python
 fi
 
