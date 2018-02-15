@@ -1,9 +1,10 @@
 # Python 3
 # Copyright (c) 2017 Mycroft AI Inc.
+
 import json
-from os.path import isfile
-from typing import Tuple, List, Any
 from argparse import ArgumentParser
+from os.path import isfile
+from typing import *
 
 import numpy as np
 
@@ -128,7 +129,7 @@ def vectorize_inhibit(audio: np.ndarray) -> np.ndarray:
     return np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size))
 
 
-def load_vector(name: str, vectorizer=vectorize) -> np.ndarray:
+def load_vector(name: str, vectorizer: Callable = vectorize) -> np.ndarray:
     """Loads and caches a vector input from a wav or npy file"""
     import os
 
@@ -170,13 +171,13 @@ def save_audio(filename: str, audio: np.ndarray):
     wavio.write(filename, save_audio, pr.sample_rate, sampwidth=pr.sample_depth, scale='none')
 
 
-def glob_all(folder: str, filter: str) -> List[str]:
+def glob_all(folder: str, filt: str) -> List[str]:
     """Recursive glob"""
     import os
     import fnmatch
     matches = []
     for root, dirnames, filenames in os.walk(folder):
-        for filename in fnmatch.filter(filenames, filter):
+        for filename in fnmatch.filter(filenames, filt):
             matches.append(os.path.join(root, filename))
     return matches
 
@@ -211,17 +212,17 @@ def weighted_mse_loss(yt, yp) -> Any:
     return weight * neg_loss + (1. - weight) * pos_loss
 
 
-def false_pos(yt, yp):
+def false_pos(yt, yp) -> Any:
     from keras import backend as K
     return K.sum(K.cast(yp * (1 - yt) > 0.5, 'float')) / K.sum(1 - yt)
 
 
-def false_neg(yt, yp):
+def false_neg(yt, yp) -> Any:
     from keras import backend as K
     return K.sum(K.cast((1 - yp) * (0 + yt) > 0.5, 'float')) / K.sum(0 + yt)
 
 
-def load_keras():
+def load_keras() -> Any:
     import keras
     keras.losses.weighted_log_loss = weighted_log_loss
     keras.metrics.false_pos = false_pos

@@ -7,7 +7,6 @@ sys.path += ['.', 'runner']  # noqa
 
 from threading import Event
 from random import randint
-from argparse import ArgumentParser
 from os.path import join
 from subprocess import call
 import numpy as np

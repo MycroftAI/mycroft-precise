@@ -2,7 +2,6 @@
 # Copyright (c) 2017 Mycroft AI Inc.
 
 import sys
-from time import sleep
 
 sys.path += ['.']  # noqa
 

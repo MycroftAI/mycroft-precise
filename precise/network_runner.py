@@ -1,13 +1,22 @@
+# Python 3
+# Copyright (c) 2017 Mycroft AI Inc.
+from abc import abstractmethod, ABCMeta
 from importlib import import_module
 from os.path import splitext
-from typing import BinaryIO, Union
+from typing import *
 
 import numpy as np
 
 from precise.common import buffer_to_audio, load_precise_model, inject_params
 
 
-class TensorflowRunner:
+class Runner(metaclass=ABCMeta):
+    @abstractmethod
+    def run(self, inp: np.ndarray) -> float:
+        pass
+
+
+class TensorflowRunner(Runner):
     def __init__(self, model_name: str):
         if model_name.endswith('.net'):
             print('Warning: ', model_name, 'looks like a Keras model.')
@@ -19,7 +28,7 @@ class TensorflowRunner:
 
         self.sess = self.tf.Session(graph=self.graph)
 
-    def load_graph(self, model_file: str):  # returns: tf.Graph
+    def load_graph(self, model_file: str) -> 'tf.Graph':
         graph = self.tf.Graph()
         graph_def = self.tf.GraphDef()
 
@@ -34,13 +43,13 @@ class TensorflowRunner:
         return self.sess.run(self.out_var, {self.inp_var: inp[np.newaxis]})[0][0]
 
 
-class KerasRunner:
+class KerasRunner(Runner):
     def __init__(self, model_name: str):
         import tensorflow as tf
         self.model = load_precise_model(model_name)
         self.graph = tf.get_default_graph()
 
-    def run(self, inp: np.ndarray):
+    def run(self, inp: np.ndarray) -> float:
         with self.graph.as_default():
             return self.model.predict(np.array([inp]))[0][0]
 
@@ -56,7 +65,7 @@ class Listener:
         self.mfcc = import_module('speechpy.feature').mfcc
 
     @staticmethod
-    def find_runner(model_name):
+    def find_runner(model_name: str) -> Type[Runner]:
         runners = {
             '.net': KerasRunner,
             '.pb': TensorflowRunner

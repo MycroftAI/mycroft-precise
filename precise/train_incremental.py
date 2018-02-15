@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-# This script trains the network, selectively choosing
-# segments from data/random that cause an activation. These
-# segments are moved into data/not-keyword and the network is retrained
 
 import sys
 
@@ -13,6 +10,7 @@ from os import makedirs
 from random import random
 from glob import glob
 from os.path import basename, splitext, isfile, join
+from typing import *
 
 from precise.train_data import TrainData
 from precise.network_runner import Listener, KerasRunner
@@ -53,12 +51,12 @@ marking false activations and retraining
 """
 
 
-def chunk_audio(audio: np.array, chunk_size: int):
+def chunk_audio(audio: np.ndarray, chunk_size: int) -> Generator[np.ndarray]:
     for i in range(chunk_size, len(audio), chunk_size):
         yield audio[i - chunk_size:i]
 
 
-def load_trained_fns(model_name):
+def load_trained_fns(model_name: str) -> list:
     progress_file = model_name.replace('.net', '') + '.trained.txt'
     if isfile(progress_file):
         print('Starting from saved position in', progress_file)
@@ -67,7 +65,7 @@ def load_trained_fns(model_name):
     return []
 
 
-def save_trained_fns(trained_fns, model_name):
+def save_trained_fns(trained_fns: list, model_name: str):
     with open(model_name.replace('.net', '') + '.trained.txt', 'wb') as f:
         f.write('\n'.join(trained_fns).encode('utf8', 'surrogatepass'))
 
