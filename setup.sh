@@ -19,7 +19,7 @@ set -e
 
 if found_exe apt-get; then
 	wait_for_apt
-	sudo apt-get install -y python3-pip libblas-dev python3-scipy cython python3-h5py portaudio19-dev
+	sudo apt-get install -y python3-pip libopenblas-dev python3-scipy cython python3-h5py portaudio19-dev
 fi
 
 python=.venv/bin/python
