@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import setup, find_packages
+
 from precise import __version__
 
 setup(
@@ -9,11 +10,14 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'precise-train=precise.scripts.train:main',
-            'precise-train-feedback=precise.scripts.train_feedback:main',
+            'precise-convert=precise.scripts.convert:main',
+            'precise-eval=precise.scripts.eval:main',
+            'precise-record=precise.scripts.record:main'
             'precise-stream=precise.scripts.stream:main',
             'precise-test=precise.scripts.test:main',
-            'precise-convert=precise.scripts.convert:main'
+            'precise-test-pocketsphinx=precise.scripts.test_pocketsphinx:main'
+            'precise-train=precise.scripts.train:main',
+            'precise-train-incremental=precise.scripts.train_incremental:main',
         ]
     },
     install_requires=[
@@ -35,7 +39,7 @@ setup(
     description='Mycroft Precise Wake Word Listener',
     keywords='wakeword keyword wake word listener sound',
     url='http://github.com/MycroftAI/mycroft-precise',
-    
+
     zip_safe=True,
     classifiers=[
         'Development Status :: 3 - Alpha',

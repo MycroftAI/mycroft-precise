@@ -15,6 +15,10 @@ from precise.params import inject_params
 
 class Runner(metaclass=ABCMeta):
     @abstractmethod
+    def predict(self, inputs: np.ndarray) -> np.ndarray:
+        pass
+
+    @abstractmethod
     def run(self, inp: np.ndarray) -> float:
         pass
 
@@ -42,8 +46,12 @@ class TensorflowRunner(Runner):
 
         return graph
 
+    def predict(self, inputs: np.ndarray) -> np.ndarray:
+        """Run on multiple inputs"""
+        return self.sess.run(self.out_var, {self.inp_var: inputs})
+
     def run(self, inp: np.ndarray) -> float:
-        return self.sess.run(self.out_var, {self.inp_var: inp[np.newaxis]})[0][0]
+        return self.predict(inp[np.newaxis])[0][0]
 
 
 class KerasRunner(Runner):
@@ -52,9 +60,12 @@ class KerasRunner(Runner):
         self.model = load_precise_model(model_name)
         self.graph = tf.get_default_graph()
 
-    def run(self, inp: np.ndarray) -> float:
+    def predict(self, inputs: np.ndarray):
         with self.graph.as_default():
-            return self.model.predict(np.array([inp]))[0][0]
+            return self.model.predict(inputs)
+
+    def run(self, inp: np.ndarray) -> float:
+        return self.predict(inp[np.newaxis])[0][0]
 
 
 class Listener:
