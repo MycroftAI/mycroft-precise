@@ -6,15 +6,21 @@ import sys
 sys.path += ['.']  # noqa
 
 import os
-from precise.common import create_parser
+from prettyparse import create_parser
+
 from precise.network_runner import Listener
 from precise import __version__
 
 usage = '''
-stdin should be a stream of raw int16 audio, written in
-groups of CHUNK_SIZE samples. If no CHUNK_SIZE is given
-it will read until EOF. For every chunk, an inference
-will be given via stdout as a float string, one per line
+    stdin should be a stream of raw int16 audio, written in
+    groups of CHUNK_SIZE samples. If no CHUNK_SIZE is given
+    it will read until EOF. For every chunk, an inference
+    will be given via stdout as a float string, one per line
+    
+    :model_name str
+        Keras or Tensorflow model to read from
+
+    ...
 '''
 
 
@@ -25,7 +31,6 @@ def main():
 
     parser = create_parser(usage)
     parser.add_argument('-v', '--version', action='version', version=__version__)
-    parser.add_argument('model_name')
     parser.add_argument('chunk_size', type=int, nargs='?', default=-1,
                         help='Number of samples to read before making a prediction.'
                              'Higher values are less computationally expensive')

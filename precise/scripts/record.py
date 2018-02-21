@@ -8,28 +8,29 @@ sys.path += ['.', 'runner']  # noqa
 from threading import Event
 from random import randint
 from os.path import join
-from subprocess import call
+from subprocess import Popen
+from prettyparse import create_parser
 import numpy as np
 
-from precise.common import buffer_to_audio, save_audio, create_parser
+from precise.util import save_audio, buffer_to_audio
 from precise.network_runner import Listener
 from precise_runner import PreciseRunner
 from precise_runner.runner import ListenerEngine
 
 usage = '''
-Run a model on microphone audio input
-
-:model str
-    Either Keras (.net) or Tensorflow (.pb) model to run
-
-:-c --chunk-size int 2048
-    Samples between inferences
-
-:-s --save-dir str -
-    Folder to save false positives
-
-:-p --save-prefix str -
-    Prefix for saved filenames
+    Run a model on microphone audio input
+    
+    :model str
+        Either Keras (.net) or Tensorflow (.pb) model to run
+    
+    :-c --chunk-size int 2048
+        Samples between inferences
+    
+    :-s --save-dir str -
+        Folder to save false positives
+    
+    :-p --save-prefix str -
+        Prefix for saved filenames
 '''
 
 session_id, chunk_num = '%03d' % randint(0, 999), 0
@@ -39,7 +40,7 @@ def main():
     args = create_parser(usage).parse_args()
 
     def on_activation():
-        call(['aplay', '-q', 'data/activate.wav'])
+        Popen(['aplay', '-q', 'data/activate.wav'])
         if args.save_dir:
             global chunk_num
             nm = join(args.save_dir, args.save_prefix + session_id + '.' + str(chunk_num) + '.wav')
@@ -62,7 +63,7 @@ def main():
 
     engine = ListenerEngine(listener)
     engine.get_prediction = get_prediction
-    runner = PreciseRunner(engine, 1024, on_activation=on_activation, on_prediction=on_prediction)
+    runner = PreciseRunner(engine, 3, on_activation=on_activation, on_prediction=on_prediction)
     runner.start()
     Event().wait()  # Wait forever
 

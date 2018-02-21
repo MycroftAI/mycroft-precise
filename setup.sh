@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-found_exe() {
+is_command() {
     hash "$1" 2>/dev/null
 }
 
@@ -17,7 +17,7 @@ wait_for_apt() {
 
 set -e
 
-if found_exe apt-get; then
+if is_command apt-get; then
 	wait_for_apt
 	sudo apt-get install -y python3-pip libopenblas-dev python3-scipy cython libhdf5-dev python3-h5py portaudio19-dev
 fi
@@ -40,5 +40,6 @@ if ! $python -c 'import tensorflow' 2>/dev/null && [ "$arch" = "armv7l" ]; then
     rm tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
 fi
 
+$pip install -e runner/
 $pip install -e .
 

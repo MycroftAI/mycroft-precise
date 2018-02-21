@@ -1,30 +1,66 @@
 # Python 3
 # Copyright (c) 2017 Mycroft AI Inc.
-
+import json
 from collections import namedtuple
 from math import floor
-from typing import *
+import numpy as np
 
 
-def _make_cls() -> type:
+def _create_listener_params():
     cls = namedtuple('ListenerParams',
                      'window_t hop_t buffer_t sample_rate sample_depth n_mfcc n_filt n_fft')
+    cls.buffer_samples = property(
+        lambda s: s.hop_samples * (int(np.round(s.sample_rate * s.buffer_t)) // s.hop_samples)
+    )
+    cls.n_features = property(
+        lambda s: 1 + int(floor((s.buffer_samples - s.window_samples) / s.hop_samples))
+    )
+    cls.window_samples = property(lambda s: int(s.sample_rate * s.window_t + 0.5))
+    cls.hop_samples = property(lambda s: int(s.sample_rate * s.hop_t + 0.5))
+    cls.max_samples = property(lambda s: int(s.buffer_t * s.sample_rate))
+    cls.feature_size = property(lambda s: s.n_mfcc)
 
-    def add_prop(name: str, fn: Callable):
-        setattr(cls, name, property(fn))
-
-    import numpy as np
-
-    add_prop('buffer_samples',
-             lambda s: s.hop_samples * (int(np.round(s.sample_rate * s.buffer_t)) // s.hop_samples))
-    add_prop('window_samples', lambda s: int(s.sample_rate * s.window_t + 0.5))
-    add_prop('hop_samples', lambda s: int(s.sample_rate * s.hop_t + 0.5))
-
-    add_prop('n_features',
-             lambda s: 1 + int(floor((s.buffer_samples - s.window_samples) / s.hop_samples)))
-    add_prop('feature_size', lambda s: s.n_mfcc)
-    add_prop('max_samples', lambda s: int(s.buffer_t * s.sample_rate))
     return cls
 
 
-ListenerParams = _make_cls()
+class Proxy:
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __getattr__(self, item):
+        return getattr(self.obj, item)
+
+    def __setattr__(self, key, value):
+        if key == 'obj':
+            object.__setattr__(self, key, value)
+        else:
+            raise AttributeError('Cannot set attributes to proxy')
+
+    def __hash__(self):
+        return self.obj.__hash__()
+
+
+ListenerParams = _create_listener_params()
+
+# Reference to global listener parameters
+pr = Proxy(ListenerParams(
+    window_t=0.1, hop_t=0.05, buffer_t=1.5, sample_rate=16000,
+    sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512
+))
+
+
+def inject_params(model_name: str) -> ListenerParams:
+    """Set the global listener params to a saved model"""
+    params_file = model_name + '.params'
+    try:
+        with open(params_file) as f:
+            pr.obj = ListenerParams(**json.load(f))
+    except (OSError, ValueError, TypeError):
+        print('Warning: Failed to load parameters from ' + params_file)
+    return pr
+
+
+def save_params(model_name: str):
+    """Save current global listener params to a file"""
+    with open(model_name + '.params', 'w') as f:
+        json.dump(pr._asdict(), f)

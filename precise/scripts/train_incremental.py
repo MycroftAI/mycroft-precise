@@ -11,47 +11,52 @@ from random import random
 from glob import glob
 from os.path import basename, splitext, isfile, join
 from typing import *
+from prettyparse import create_parser
 
 from precise.train_data import TrainData
 from precise.network_runner import Listener, KerasRunner
-from precise.common import create_model, load_audio, save_audio, inject_params, create_parser
+from precise.model import create_model
+from precise.params import inject_params
+from precise.util import load_audio, save_audio
 
-usage = """
-Train a model to inhibit activation by
-marking false activations and retraining
+usage = '''
+    Train a model to inhibit activation by
+    marking false activations and retraining
+    
+    :model str
+        Keras <NAME>.net file to train
+    
+    :-e --epochs int 1
+        Number of epochs to train before continuing evaluation
+    
+    :-ds --delay-samples int 10
+        Number of timesteps of false activations to save before re-training
+    
+    :-c --chunk-size int 2048
+        Number of samples between testing the neural network
+    
+    :-b --batch-size int 128
+        Batch size used for training
+    
+    :-sb --save-best
+        Only save the model each epoch if its stats improve
+    
+    :-mm --metric-monitor str loss
+        Metric used to determine when to save
+    
+    :-nv --no-validation
+        Disable accuracy and validation calculation
+        to improve speed during training
+    
+    :-r --random-data-dir str data/random
+        Directories with properly encoded wav files of
+        random audio that should not cause an activation
+    
+    ...
+'''
 
-:model str
-    Keras <NAME>.net file to train
 
-:-e --epochs int 1
-    Number of epochs to train before continuing evaluation
-
-:-ds --delay-samples int 10
-    Number of timesteps of false activations to save before re-training
-
-:-c --chunk-size int 2048
-    Number of samples between testing the neural network
-
-:-b --batch-size int 128
-    Batch size used for training
-
-:-sb --save-best
-    Only save the model each epoch if its stats improve
-
-:-mm --metric-monitor str loss
-    Metric used to determine when to save
-
-:-nv --no-validation
-    Disable accuracy and validation calculation
-    to improve speed during training
-
-:-r --random-data-dir str data/random
-    Directories with properly encoded wav files of
-    random audio that should not cause an activation
-"""
-
-
-def chunk_audio(audio: np.ndarray, chunk_size: int) -> Generator[np.ndarray]:
+def chunk_audio(audio: np.ndarray, chunk_size: int) -> Generator[np.ndarray, None, None]:
     for i in range(chunk_size, len(audio), chunk_size):
         yield audio[i - chunk_size:i]
 
@@ -102,7 +107,7 @@ class IncrementalTrainer:
 
     def train_on_audio(self, fn: str):
         """Run through a single audio file"""
-        save_test = False
+        save_test = random() > 0.8
         samples_since_train = 0
         audio = load_audio(fn)
         num_chunks = len(audio) // self.args.chunk_size
@@ -123,10 +128,8 @@ class IncrementalTrainer:
                 print('Saved to:', name)
             elif samples_since_train > 0:
                 samples_since_train = self.args.delay_samples
-            else:
-                save_test = random() > 0.8
 
-            if samples_since_train >= self.args.delay_samples and self.args.epochs > 0:
+            if not save_test and samples_since_train >= self.args.delay_samples and self.args.epochs > 0:
                 samples_since_train = 0
                 self.retrain()
 

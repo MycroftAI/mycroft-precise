@@ -9,17 +9,17 @@ sys.path += ['.']  # noqa
 import os
 from os.path import split, isfile
 from shutil import copyfile
-from precise.common import create_parser
+from prettyparse import create_parser
 
-usage = """
-Convert keyword model from Keras to TensorFlow
-
-:model str
-    Input Keras model (.net)
-
-:-o --out str {model}.pb
-    Custom output TensorFlow protobuf filename
-"""
+usage = '''
+    Convert keyword model from Keras to TensorFlow
+    
+    :model str
+        Input Keras model (.net)
+    
+    :-o --out str {model}.pb
+        Custom output TensorFlow protobuf filename
+'''
 
 
 def convert(model_path: str, out_file: str):
@@ -33,7 +33,7 @@ def convert(model_path: str, out_file: str):
     print('Converting', model_path, 'to', out_file, '...')
 
     import tensorflow as tf
-    from precise.common import load_precise_model
+    from precise.model import load_precise_model
     from keras import backend as K
 
     out_dir, filename = split(out_file)

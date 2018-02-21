@@ -5,27 +5,32 @@ import sys
 
 sys.path += ['.']  # noqa
 
+from prettyparse import create_parser
+
 from precise.train_data import TrainData
-from precise.common import inject_params, create_model, save_params, create_parser
+from precise.model import create_model
+from precise.params import inject_params, save_params
 
 usage = '''
-Train a new model on a dataset
-
-:model str
-    Keras model file (.net) to load from and save to
-
-:-e --epochs int 10
-    Number of epochs to train model for
-
-:-sb --save-best
-    Only save the model each epoch if its stats improve
-
-:-nv --no-validation
-    Disable accuracy and validation calculation
-    to improve speed during training
-
-:-mm --metric-monitor str loss
-    Metric used to determine when to save
+    Train a new model on a dataset
+    
+    :model str
+        Keras model file (.net) to load from and save to
+    
+    :-e --epochs int 10
+        Number of epochs to train model for
+    
+    :-sb --save-best
+        Only save the model each epoch if its stats improve
+    
+    :-nv --no-validation
+        Disable accuracy and validation calculation
+        to improve speed during training
+    
+    :-mm --metric-monitor str loss
+        Metric used to determine when to save
+    
+    ...
 '''
 
 

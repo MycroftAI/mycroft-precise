@@ -1,6 +1,6 @@
 dist/
 build/
-cache/
+.cache/
 .idea/
 __pycache__/
 *.egg-info/

@@ -6,15 +6,40 @@ from subprocess import PIPE, Popen
 from threading import Thread
 
 
-class PreciseEngine:
-    def __init__(self, exe_file, model_file, chunk_size=2048):
-        self.exe_file = exe_file
-        self.model_file = model_file
+class Engine:
+    def __init__(self, chunk_size=1024):
         self.chunk_size = chunk_size
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def get_prediction(self, chunk):
+        raise NotImplementedError
+
+
+class PreciseEngine(Engine):
+    """
+    Wraps a binary precise executable
+
+    Args:
+        exe_file (Union[str, list]): Either filename or list of arguments
+                                     (ie. ['python', 'precise_stream.py'])
+        model_file (str): Location to .pb model file to use (with .pb.params)
+        chunk_size (int): Number of samples per prediction. Higher numbers
+                          decrease CPU usage but increase latency
+    """
+
+    def __init__(self, exe_file, model_file, chunk_size=1024):
+        Engine.__init__(self, chunk_size)
+        self.exe_args = exe_file if isinstance(exe_file, list) else [exe_file]
+        self.model_file = model_file
         self.proc = None
 
     def start(self):
-        self.proc = Popen([self.exe_file, self.model_file, str(self.chunk_size)], stdin=PIPE,
+        self.proc = Popen([*self.exe_args, self.model_file, str(self.chunk_size)], stdin=PIPE,
                           stdout=PIPE)
 
     def stop(self):
@@ -28,39 +53,48 @@ class PreciseEngine:
         return float(self.proc.stdout.readline())
 
 
-class ListenerEngine:
-    def __init__(self, listener):
-        self.start = lambda: None
-        self.stop = lambda: None
+class ListenerEngine(Engine):
+    def __init__(self, listener, chunk_size=1024):
+        Engine.__init__(self, chunk_size)
         self.get_prediction = listener.update
 
 
 class PreciseRunner:
     """
-    Wrapper to use Precise
+    Wrapper to use Precise. Example:
+    >>> def on_act():
+    ...     print('Activation!')
+    ...
+    >>> p = PreciseRunner(PreciseEngine('./precise-stream'), on_activation=on_act)
+    >>> p.start()
+    >>> from time import sleep; sleep(10)
+    >>> p.stop()
 
     Args:
-        exe_file (str): Location to precise-stream executable
-        model (str): Location to .pb model file to use (with .pb.params)
-        chunk_size (int): Number of samples per prediction. Higher numbers
-                          decrease CPU usage but increase latency
+        engine (Engine): Object containing info on the binary engine
+        trigger_level (int): Number of chunk activations needed to trigger on_activation
+                       Higher values add latency but reduce false positives
+        sensitivity (float): From 0.0 to 1.0, relates to the network output level required
+                             to consider a chunk "active"
         stream (BinaryIO): Binary audio stream to read 16000 Hz 1 channel int16
                            audio from. If not given, the microphone is used
-        on_prediction: callback for every new prediction
-        on_activation: callback for when the wake word is heard
+        on_prediction (Callable): callback for every new prediction
+        on_activation (Callable): callback for when the wake word is heard
     """
-    def __init__(self, engine, chunk_size=1024, stream=None,
-                 on_prediction=lambda x: None, on_activation=lambda: None, trigger_level=3):
-        self.engine = engine
-        self.pa = None
-        self.chunk_size = chunk_size
-        self.thread = None
-        self.stream = stream
 
+    def __init__(self, engine, trigger_level=3, sensitivity=0.5, stream=None,
+                 on_prediction=lambda x: None, on_activation=lambda: None):
+        self.engine = engine
+        self.trigger_level = trigger_level
+        self.sensitivity = sensitivity
+        self.stream = stream
         self.on_prediction = on_prediction
         self.on_activation = on_activation
+        self.chunk_size = engine.chunk_size
+
+        self.pa = None
+        self.thread = None
         self.running = False
-        self.trigger_level = trigger_level
         atexit.register(self.stop)
 
     def start(self):
@@ -68,7 +102,9 @@ class PreciseRunner:
         if self.stream is None:
             from pyaudio import PyAudio, paInt16
             self.pa = PyAudio()
-            self.stream = self.pa.open(16000, 1, paInt16, True, frames_per_buffer=self.chunk_size)
+            self.stream = self.pa.open(
+                16000, 1, paInt16, True, frames_per_buffer=self.chunk_size // 2
+            )
 
         self.engine.start()
         self.running = True
@@ -98,7 +134,7 @@ class PreciseRunner:
             prob = self.engine.get_prediction(chunk)
             self.on_prediction(prob)
 
-            if prob > 0.5 or activation < 0:
+            if prob > 1 - self.sensitivity or activation < 0:
                 activation += 1
                 if activation > self.trigger_level:
                     activation = -self.chunk_size // 50

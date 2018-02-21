@@ -9,11 +9,11 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'precise-train=precise.train:main',
-            'precise-train-feedback=precise.train_feedback:main',
-            'precise-stream=precise.stream:main',
-            'precise-test=precise.test:main',
-            'precise-convert=precise.convert:main'
+            'precise-train=precise.scripts.train:main',
+            'precise-train-feedback=precise.scripts.train_feedback:main',
+            'precise-stream=precise.scripts.stream:main',
+            'precise-test=precise.scripts.test:main',
+            'precise-convert=precise.scripts.convert:main'
         ]
     },
     install_requires=[
@@ -26,7 +26,8 @@ setup(
         'wavio',
         'typing',
         'dataset',
-        # 'precise-runner'  # Needs to get uploaded to PyPi first
+        'prettyparse',
+        'precise-runner'
     ],
 
     author='Matthew Scholefield',

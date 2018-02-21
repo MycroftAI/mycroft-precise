@@ -9,7 +9,8 @@ from typing import *
 
 import numpy as np
 
-from precise.common import find_wavs, load_vector, vectorize_inhibit, vectorize
+from precise.util import find_wavs
+from precise.vectorization import load_vector, vectorize_inhibit, vectorize
 
 
 class TrainData:
@@ -72,7 +73,7 @@ class TrainData:
         """Generate data with inhibitory inputs created from keyword samples"""
 
         def loader(kws: list, nkws: list):
-            from precise.common import pr
+            from precise.params import pr
             inputs = np.empty((0, pr.n_features, pr.feature_size))
             outputs = np.zeros((len(kws), 1))
             for f in kws:
@@ -137,7 +138,7 @@ class TrainData:
         print('Loading not-keyword...')
         add(nkw_files, 0.0)
 
-        from precise.common import pr
+        from precise.params import pr
         return (
             np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size)),
             np.array(outputs) if outputs else np.empty((0, 1))

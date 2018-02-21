@@ -4,10 +4,13 @@ from abc import abstractmethod, ABCMeta
 from importlib import import_module
 from os.path import splitext
 from typing import *
+from typing import BinaryIO
 
 import numpy as np
 
-from precise.common import buffer_to_audio, load_precise_model, inject_params
+from precise.util import buffer_to_audio
+from precise.model import load_precise_model
+from precise.params import inject_params
 
 
 class Runner(metaclass=ABCMeta):
@@ -15,7 +18,7 @@ class Runner(metaclass=ABCMeta):
     def run(self, inp: np.ndarray) -> float:
         pass
 
-
+    
 class TensorflowRunner(Runner):
     def __init__(self, model_name: str):
         if model_name.endswith('.net'):
