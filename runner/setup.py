@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# Copyright (c) 2017 Mycroft AI Inc.
 from setuptools import setup, find_packages
 
 setup(
@@ -15,7 +15,7 @@ setup(
     description='Wrapper to use Mycroft Precise Wake Word Listener',
     keywords='wakeword keyword wake word listener sound',
     url='http://github.com/MycroftAI/mycroft-precise',
-    
+
     zip_safe=True,
     classifiers=[
         'Development Status :: 3 - Alpha',

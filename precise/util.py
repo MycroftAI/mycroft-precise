@@ -1,3 +1,4 @@
+# Copyright (c) 2017 Mycroft AI Inc.
 from typing import *
 
 import numpy as np

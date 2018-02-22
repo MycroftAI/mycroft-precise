@@ -1,10 +1,10 @@
+# Copyright (c) 2017 Mycroft AI Inc.
 from typing import *
 
 import numpy as np
 
-from precise.util import load_audio
 from precise.params import pr
-
+from precise.util import load_audio
 
 inhibit_t = 0.4
 inhibit_dist_t = 1.0

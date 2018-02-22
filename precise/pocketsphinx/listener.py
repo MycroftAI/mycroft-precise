@@ -1,13 +1,17 @@
+#!/usr/bin/env python3
+# Copyright (c) 2017 Mycroft AI Inc.
 from typing import *
 from typing import BinaryIO
+
 import numpy as np
 
-from precise.util import audio_to_buffer
 from precise.params import pr
+from precise.util import audio_to_buffer
 
 
 class PocketsphinxListener:
     """Pocketsphinx listener implementation used for comparison with Precise"""
+
     def __init__(self, key_phrase, dict_file, hmm_folder, threshold=1e-90, chunk_size=-1):
         from pocketsphinx import Decoder
         config = Decoder.default_config()

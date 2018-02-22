@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 # Attribution: This script was adapted from https://github.com/amir-abdi/keras_to_tensorflow
 # Copyright (c) 2017 Mycroft AI Inc.
-
-import sys
-
-sys.path += ['.']  # noqa
-
 import os
 from os.path import split, isfile
 from shutil import copyfile
+
 from prettyparse import create_parser
 
 usage = '''

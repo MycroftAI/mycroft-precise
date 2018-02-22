@@ -1,6 +1,5 @@
 # Python 2 + 3
 # Copyright (c) 2017 Mycroft AI Inc.
-
 import atexit
 from subprocess import PIPE, Popen
 from threading import Thread

@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-
-import sys
-
-sys.path += ['.', 'runner']  # noqa
-
-from threading import Event
 from random import randint
 from subprocess import Popen
+from threading import Event
+
 from prettyparse import create_parser
 
 from precise.pocketsphinx.listener import PocketsphinxListener

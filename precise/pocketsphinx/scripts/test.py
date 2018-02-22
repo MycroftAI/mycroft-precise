@@ -2,12 +2,12 @@
 # Copyright (c) 2017 Mycroft AI Inc.
 import wave
 from subprocess import check_output, PIPE
+
 from prettyparse import create_parser
 
 from precise.pocketsphinx.listener import PocketsphinxListener
 from precise.scripts.test import show_stats
 from precise.train_data import TrainData
-
 
 usage = '''
     Test a dataset using Pocketsphinx
@@ -35,7 +35,9 @@ usage = '''
 
 
 def eval_file(filename) -> float:
-    transcription = check_output(['pocketsphinx_continuous', '-kws_threshold', '1e-20', '-keyphrase', 'hey my craft', '-infile', filename], stderr=PIPE)
+    transcription = check_output(
+        ['pocketsphinx_continuous', '-kws_threshold', '1e-20', '-keyphrase', 'hey my craft',
+         '-infile', filename], stderr=PIPE)
     return float(bool(transcription) and not transcription.isspace())
 
 
@@ -44,7 +46,8 @@ def main():
     data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
     print('Data:', data)
 
-    listener = PocketsphinxListener(args.key_phrase, args.dict_file, args.hmm_folder, args.threshold)
+    listener = PocketsphinxListener(args.key_phrase, args.dict_file, args.hmm_folder,
+                                    args.threshold)
 
     def run_test(filenames, name):
         print()

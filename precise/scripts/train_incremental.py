@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-
-import sys
-
-sys.path += ['.']  # noqa
+from glob import glob
+from os import makedirs
+from os.path import basename, splitext, isfile, join
+from random import random
+from typing import *
 
 import numpy as np
-from os import makedirs
-from random import random
-from glob import glob
-from os.path import basename, splitext, isfile, join
-from typing import *
 from prettyparse import create_parser
 
-from precise.train_data import TrainData
-from precise.network_runner import Listener, KerasRunner
 from precise.model import create_model
+from precise.network_runner import Listener, KerasRunner
 from precise.params import inject_params
+from precise.train_data import TrainData
 from precise.util import load_audio, save_audio
 
 usage = '''

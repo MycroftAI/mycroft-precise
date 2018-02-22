@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-
-import sys
-
-sys.path += ['.', 'runner']  # noqa
-
 from argparse import ArgumentParser
 from subprocess import Popen
 from precise_runner import PreciseRunner, PreciseEngine
@@ -23,10 +18,10 @@ def main():
         Popen(['aplay', '-q', 'data/activate.wav'])
 
     engine = PreciseEngine('./precise/stream.py', args.model)
-    PreciseRunner(engine, on_prediction=on_prediction, on_activation=on_activation, trigger_level=0).start()
+    PreciseRunner(engine, on_prediction=on_prediction, on_activation=on_activation,
+                  trigger_level=0).start()
     Event().wait()  # Wait forever
 
 
 if __name__ == '__main__':
     main()
-

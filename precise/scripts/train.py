@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-
-import sys
-
-sys.path += ['.']  # noqa
-
 from prettyparse import create_parser
 
-from precise.train_data import TrainData
 from precise.model import create_model
 from precise.params import inject_params, save_params
+from precise.train_data import TrainData
 
 usage = '''
     Train a new model on a dataset

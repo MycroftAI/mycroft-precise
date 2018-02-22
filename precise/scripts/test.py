@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-
-import sys
-
-sys.path += ['.']  # noqa
-
 from prettyparse import create_parser
-from precise.params import inject_params
+
 from precise.model import load_precise_model
+from precise.params import inject_params
 from precise.train_data import TrainData
 
 usage = '''

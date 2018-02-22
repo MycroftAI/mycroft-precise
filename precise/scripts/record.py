@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-import sys
-
-sys.path += ['.', 'runner']  # noqa
-
-from threading import Event
-from random import randint
 from os.path import join
+from random import randint
 from subprocess import Popen
-from prettyparse import create_parser
-import numpy as np
+from threading import Event
 
-from precise.util import save_audio, buffer_to_audio
+import numpy as np
+from prettyparse import create_parser
+
 from precise.network_runner import Listener
+from precise.util import save_audio, buffer_to_audio
 from precise_runner import PreciseRunner
 from precise_runner.runner import ListenerEngine
 

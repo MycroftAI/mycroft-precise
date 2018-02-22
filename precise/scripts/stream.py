@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-
+import os
 import sys
 
-sys.path += ['.']  # noqa
-
-import os
 from prettyparse import create_parser
 
-from precise.network_runner import Listener
 from precise import __version__
+from precise.network_runner import Listener
 
 usage = '''
     stdin should be a stream of raw int16 audio, written in

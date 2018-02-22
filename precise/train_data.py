@@ -1,6 +1,4 @@
-# Python 3
 # Copyright (c) 2017 Mycroft AI Inc.
-
 import json
 from argparse import ArgumentParser
 from hashlib import md5

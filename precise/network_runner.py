@@ -1,4 +1,3 @@
-# Python 3
 # Copyright (c) 2017 Mycroft AI Inc.
 from abc import abstractmethod, ABCMeta
 from importlib import import_module
@@ -8,9 +7,9 @@ from typing import BinaryIO
 
 import numpy as np
 
-from precise.util import buffer_to_audio
 from precise.model import load_precise_model
 from precise.params import inject_params
+from precise.util import buffer_to_audio
 
 
 class Runner(metaclass=ABCMeta):
@@ -70,6 +69,7 @@ class KerasRunner(Runner):
 
 class Listener:
     """Listener that preprocesses audio into MFCC vectors and executes neural networks"""
+
     def __init__(self, model_name: str, chunk_size: int = -1, runner_cls: type = None):
         self.window_audio = np.array([])
         self.pr = inject_params(model_name)

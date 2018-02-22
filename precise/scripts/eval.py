@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-import sys
-
-sys.path += ['.']  # noqa
-
 import json
 
-from precise.network_runner import Listener
-from precise.scripts.test import show_stats
 from prettyparse import create_parser
+
+from precise.network_runner import Listener
 from precise.params import inject_params
+from precise.scripts.test import show_stats
 from precise.train_data import TrainData
 
 usage = '''
