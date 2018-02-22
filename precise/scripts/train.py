@@ -42,7 +42,7 @@ def main():
 
     data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
     print('Data:', data)
-    (inputs, outputs), test_data = data.load(args.no_validation)
+    (inputs, outputs), test_data = data.load(True, not args.no_validation)
 
     print('Inputs shape:', inputs.shape)
     print('Outputs shape:', outputs.shape)

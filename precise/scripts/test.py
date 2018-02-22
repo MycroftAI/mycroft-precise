@@ -62,7 +62,7 @@ def main():
     inject_params(args.model)
 
     data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
-    train, test = data.load()
+    train, test = data.load(args.use_train, not args.use_train)
     inputs, targets = train if args.use_train else test
 
     filenames = sum(data.train_files if args.use_train else data.test_files, [])

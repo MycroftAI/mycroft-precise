@@ -2,7 +2,7 @@ from os.path import isfile
 from typing import *
 
 from precise.functions import load_keras, false_pos, false_neg, weighted_log_loss
-from precise.params import inject_params
+from precise.params import inject_params, pr
 
 lstm_units = 20
 

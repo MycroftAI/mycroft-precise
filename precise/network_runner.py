@@ -22,7 +22,7 @@ class Runner(metaclass=ABCMeta):
     def run(self, inp: np.ndarray) -> float:
         pass
 
-    
+
 class TensorflowRunner(Runner):
     def __init__(self, model_name: str):
         if model_name.endswith('.net'):
@@ -69,6 +69,7 @@ class KerasRunner(Runner):
 
 
 class Listener:
+    """Listener that preprocesses audio into MFCC vectors and executes neural networks"""
     def __init__(self, model_name: str, chunk_size: int = -1, runner_cls: type = None):
         self.window_audio = np.array([])
         self.pr = inject_params(model_name)

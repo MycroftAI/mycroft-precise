@@ -12,10 +12,11 @@ setup(
         'console_scripts': [
             'precise-convert=precise.scripts.convert:main',
             'precise-eval=precise.scripts.eval:main',
-            'precise-record=precise.scripts.record:main'
+            'precise-record=precise.scripts.record:main',
+            'precise-record-pocketsphinx=precise.pocketsphinx.scripts.record:main',
             'precise-stream=precise.scripts.stream:main',
             'precise-test=precise.scripts.test:main',
-            'precise-test-pocketsphinx=precise.scripts.test_pocketsphinx:main'
+            'precise-test-pocketsphinx=precise.pocketsphinx.scripts.test:main',
             'precise-train=precise.scripts.train:main',
             'precise-train-incremental=precise.scripts.train_incremental:main',
         ]

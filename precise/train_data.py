@@ -14,16 +14,40 @@ from precise.vectorization import load_vector, vectorize_inhibit, vectorize
 
 
 class TrainData:
+    """Class to handle loading of wave data from categorized folders and SQLite dbs"""
+
     def __init__(self, train_files: Tuple[List[str], List[str]],
                  test_files: Tuple[List[str], List[str]]):
         self.train_files, self.test_files = train_files, test_files
 
     @classmethod
-    def from_folder(cls, prefix: str) -> 'TrainData':
-        return cls(find_wavs(prefix), find_wavs(join(prefix, 'test')))
+    def from_folder(cls, folder: str) -> 'TrainData':
+        """
+        Load a set of data from a structured folder in the following format:
+        {prefix}/
+            keyword/
+                *.wav
+            not-keyword/
+                *.wav
+            test/
+                keyword/
+                    *.wav
+                not-keyword/
+                    *.wav
+        """
+        return cls(find_wavs(folder), find_wavs(join(folder, 'test')))
 
     @classmethod
     def from_db(cls, db_file: str, db_folder: str) -> 'TrainData':
+        """
+        Load a set of data from an SQLite database in the following format:
+            Column: "final_tag"
+            Value: "wake-word" or "not-wake-word"
+
+            Column: "data_id"
+            Value: identifier of file such that the following
+                   file exists: {db_folder}/{data_id}.wav
+        """
         if not db_file:
             return cls(([], []), ([], []))
         if not isfile(db_file):
@@ -64,12 +88,19 @@ class TrainData:
 
     @classmethod
     def from_both(cls, db_file: str, db_folder: str, data_dir: str) -> 'TrainData':
+        """Load data from both a database and a structured folder"""
         return cls.from_db(db_file, db_folder) + cls.from_folder(data_dir)
 
-    def load(self, skip_test=False) -> tuple:
-        return self.__load(self.__load_files, skip_test)
+    def load(self, train=True, test=True) -> tuple:
+        """
+        Load the vectorized representations of the stored data files
+        Args:
+            train: Whether to load train data
+            test: Whether to load test data
+        """
+        return self.__load(self.__load_files, train, test)
 
-    def load_inhibit(self, skip_test=False) -> tuple:
+    def load_inhibit(self, train=True, test=True) -> tuple:
         """Generate data with inhibitory inputs created from keyword samples"""
 
         def loader(kws: list, nkws: list):
@@ -84,7 +115,7 @@ class TrainData:
 
             return self.merge((inputs, outputs), self.__load_files(kws, nkws))
 
-        return self.__load(loader, skip_test)
+        return self.__load(loader, train, test)
 
     @staticmethod
     def merge(data_a: tuple, data_b: tuple) -> tuple:
@@ -117,11 +148,12 @@ class TrainData:
                          (self.test_files[0] + other.test_files[0],
                           self.test_files[1] + other.test_files[1]))
 
-    def __load(self, loader: Callable, skip_test: bool) -> tuple:
+    def __load(self, loader: Callable, train: bool, test: bool) -> tuple:
         return tuple([
-                         loader(*files)
-                         for files in [self.train_files] + (not skip_test) * [self.test_files]
-                     ] + [None] * skip_test)
+            loader(*files) if files else None
+            for files in (train and self.train_files,
+                          test and self.test_files)
+        ])
 
     @staticmethod
     def __load_files(kw_files: list, nkw_files: list, vectorizer: Callable = vectorize) -> tuple:

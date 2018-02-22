@@ -4,7 +4,7 @@ import wave
 from subprocess import check_output, PIPE
 from prettyparse import create_parser
 
-from precise.pocketsphinx_listener import PocketsphinxListener
+from precise.pocketsphinx.listener import PocketsphinxListener
 from precise.scripts.test import show_stats
 from precise.train_data import TrainData
 

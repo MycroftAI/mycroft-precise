@@ -46,7 +46,7 @@ ListenerParams = _create_listener_params()
 pr = Proxy(ListenerParams(
     window_t=0.1, hop_t=0.05, buffer_t=1.5, sample_rate=16000,
     sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512
-))
+))  # type: ListenerParams
 
 
 def inject_params(model_name: str) -> ListenerParams:

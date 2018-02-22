@@ -10,6 +10,11 @@ def buffer_to_audio(buffer: bytes) -> np.ndarray:
     return np.fromstring(buffer, dtype='<i2').astype(np.float32, order='C') / 32768.0
 
 
+def audio_to_buffer(audio: np.ndarray) -> bytes:
+    """Convert a numpy array of floats to raw mono audio"""
+    return (audio * 32768).astype('<i2').tostring()
+
+
 def load_audio(file: Any) -> np.ndarray:
     """
     Args:

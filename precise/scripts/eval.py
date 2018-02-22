@@ -39,7 +39,7 @@ def main():
     for model_name in args.models:
         inject_params(model_name)
 
-        train, test = data.load()
+        train, test = data.load(args.use_train, not args.use_train)
         inputs, targets = train if args.use_train else test
         predictions = Listener.find_runner(model_name)(model_name).predict(inputs)
 

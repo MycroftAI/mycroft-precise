@@ -85,7 +85,8 @@ class IncrementalTrainer:
         from keras.callbacks import ModelCheckpoint
         self.checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
                                           save_best_only=args.save_best)
-        self.db_data = TrainData.from_db(args.db_file, args.db_folder).load(args.no_validation)
+        data = TrainData.from_db(args.db_file, args.db_folder)
+        self.db_data = data.load(True, not args.no_validation)
 
         if not isfile(args.model):
             create_model(args.model, args.no_validation).save(args.model)
@@ -94,7 +95,7 @@ class IncrementalTrainer:
     def retrain(self):
         """Train for a session, pulling in any new data from the filesystem"""
         folder = TrainData.from_folder(self.args.data_dir)
-        train_data, test_data = folder.load(self.args.no_validation)
+        train_data, test_data = folder.load(True, not self.args.no_validation)
 
         train_data = TrainData.merge(train_data, self.db_data[0])
         test_data = TrainData.merge(test_data, self.db_data[1])
