@@ -1,12 +1,11 @@
 # -*- mode: python -*-
 block_cipher = None
 
-
 a = Analysis(['precise/scripts/stream.py'],
              pathex=['.'],
              binaries=[],
              datas=[],
-             hiddenimports=[],
+             hiddenimports=['prettyparse'],
              hookspath=[],
              runtime_hooks=[],
              excludes=['PySide', 'PyQt4', 'PyQt5', 'matplotlib'],
@@ -15,16 +14,21 @@ a = Analysis(['precise/scripts/stream.py'],
              cipher=block_cipher)
 
 pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+          cipher=block_cipher)
 
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
+          exclude_binaries=True,
           name='precise-stream',
           debug=False,
           strip=True,
           upx=True,
-          runtime_tmpdir=None,
-          console=True )
+          console=True,)
+
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=True,
+               upx=True,
+               name='precise-stream')

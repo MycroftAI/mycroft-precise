@@ -69,15 +69,19 @@ version="$(find_version $build_type)"
 arch="$(find_arch)"
 
 sudo pip3 install pyinstaller
+rm -rf dist/
 pyinstaller -y precise.stream.spec
+
+out_file=dist/precise-stream.tar.gz
+tar -czvf "$out_file" data/precise-stream/
 
 echo $version > latest
 
 if [ "$upload_type" = "git" ]; then
-	upload_git dist/precise-stream $arch/
+	upload_git "$out_file" $arch/
 else
-	upload_s3 dist/precise-stream bootstrap.mycroft.ai/artifacts/static/$type/$arch/$version/
-	upload_s3 dist/precise-stream bootstrap.mycroft.ai/artifacts/static/$type/$arch/  # Replace latest version
+	upload_s3 "$out_file" bootstrap.mycroft.ai/artifacts/static/$type/$arch/$version/
+	upload_s3 "$out_file" bootstrap.mycroft.ai/artifacts/static/$type/$arch/  # Replace latest version
 	upload_s3 latest bootstrap.mycroft.ai/artifacts/static/$type/$arch/
 fi
 
