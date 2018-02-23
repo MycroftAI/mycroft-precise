@@ -19,7 +19,7 @@ usage = '''
     :-r --rate int 16000
         Sample rate of audio
     
-    :-c --channels int 2
+    :-c --channels int 1
         Number of audio channels
 '''
 
