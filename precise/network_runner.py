@@ -22,7 +22,7 @@ class Runner(metaclass=ABCMeta):
         pass
 
 
-class TensorflowRunner(Runner):
+class TensorFlowRunner(Runner):
     def __init__(self, model_name: str):
         if model_name.endswith('.net'):
             print('Warning: ', model_name, 'looks like a Keras model.')
@@ -83,7 +83,7 @@ class Listener:
     def find_runner(model_name: str) -> Type[Runner]:
         runners = {
             '.net': KerasRunner,
-            '.pb': TensorflowRunner
+            '.pb': TensorFlowRunner
         }
         ext = splitext(model_name)[-1]
         if ext not in runners:

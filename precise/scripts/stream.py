@@ -15,7 +15,7 @@ usage = '''
     will be given via stdout as a float string, one per line
     
     :model_name str
-        Keras or Tensorflow model to read from
+        Keras or TensorFlow model to read from
 
     ...
 '''

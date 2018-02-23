@@ -17,7 +17,7 @@ usage = '''
     Run a model on microphone audio input
     
     :model str
-        Either Keras (.net) or Tensorflow (.pb) model to run
+        Either Keras (.net) or TensorFlow (.pb) model to run
     
     :-c --chunk-size int 2048
         Samples between inferences
