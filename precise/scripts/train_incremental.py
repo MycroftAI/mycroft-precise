@@ -40,6 +40,9 @@ usage = '''
     :-mm --metric-monitor str loss
         Metric used to determine when to save
     
+    :-em --extra-metrics
+        Add extra metrics during training
+    
     :-nv --no-validation
         Disable accuracy and validation calculation
         to improve speed during training
@@ -85,7 +88,7 @@ class IncrementalTrainer:
         self.db_data = data.load(True, not args.no_validation)
 
         if not isfile(args.model):
-            create_model(args.model, args.no_validation).save(args.model)
+            create_model(args.model, args.no_validation, args.extra_metrics).save(args.model)
         self.listener = Listener(args.model, args.chunk_size, runner_cls=KerasRunner)
 
     def retrain(self):
@@ -118,7 +121,7 @@ class IncrementalTrainer:
             if conf > 0.5:
                 samples_since_train += 1
                 name = splitext(basename(fn))[0] + '-' + str(i) + '.wav'
-                name = join(self.args.data_dir, 'test' if save_test else '', 'not-keyword',
+                name = join(self.args.data_dir, 'test' if save_test else '', 'not-wake-word',
                             'generated', name)
                 save_audio(name, audio_buffer)
                 print()
@@ -152,8 +155,8 @@ def main():
     args = TrainData.parse_args(create_parser(usage))
 
     for i in (
-            join(args.data_dir, 'not-keyword', 'generated'),
-            join(args.data_dir, 'test', 'not-keyword', 'generated')
+            join(args.data_dir, 'not-wake-word', 'generated'),
+            join(args.data_dir, 'test', 'not-wake-word', 'generated')
     ):
         makedirs(i, exist_ok=True)
 

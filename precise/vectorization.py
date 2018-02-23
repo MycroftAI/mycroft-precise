@@ -40,7 +40,7 @@ def vectorize(audio: np.ndarray) -> np.ndarray:
 def vectorize_inhibit(audio: np.ndarray) -> np.ndarray:
     """
     Returns an array of inputs generated from the
-    keyword audio that shouldn't cause an activation
+    wake word audio that shouldn't cause an activation
     """
 
     def samp(x):

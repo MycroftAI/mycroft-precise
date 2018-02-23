@@ -8,7 +8,7 @@ from shutil import copyfile
 from prettyparse import create_parser
 
 usage = '''
-    Convert keyword model from Keras to TensorFlow
+    Convert wake word model from Keras to TensorFlow
     
     :model str
         Input Keras model (.net)
@@ -65,8 +65,12 @@ def convert(model_path: str, out_file: str):
     del sess
 
 
-if __name__ == '__main__':
+def main():
     args = create_parser(usage).parse_args()
 
     model_name = args.model.replace('.net', '')
     convert(args.model, args.out.format(model=model_name))
+
+
+if __name__ == '__main__':
+    main()

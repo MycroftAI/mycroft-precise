@@ -52,5 +52,5 @@ def glob_all(folder: str, filt: str) -> List[str]:
 
 
 def find_wavs(folder: str) -> Tuple[List[str], List[str]]:
-    """Finds keyword and not-keyword wavs in folder"""
-    return glob_all(folder + '/keyword', '*.wav'), glob_all(folder + '/not-keyword', '*.wav')
+    """Finds wake-word and not-wake-word wavs in folder"""
+    return glob_all(folder + '/wake-word', '*.wav'), glob_all(folder + '/not-wake-word', '*.wav')

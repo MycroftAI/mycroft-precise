@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 from precise import __version__
 
 setup(
     name='mycroft-precise',
     version=__version__,
-    packages=find_packages(),
+    packages=[
+        'precise',
+        'precise.scripts',
+        'precise.pocketsphinx',
+        'precise.pocketsphinx.scripts'
+    ],
     entry_points={
         'console_scripts': [
+            'precise-collect=precise.scripts.collect:main',
             'precise-convert=precise.scripts.convert:main',
             'precise-eval=precise.scripts.eval:main',
             'precise-record=precise.scripts.record:main',

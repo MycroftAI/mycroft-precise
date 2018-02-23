@@ -23,14 +23,14 @@ class TrainData:
         """
         Load a set of data from a structured folder in the following format:
         {prefix}/
-            keyword/
+            wake-word/
                 *.wav
-            not-keyword/
+            not-wake-word/
                 *.wav
             test/
-                keyword/
+                wake-word/
                     *.wav
-                not-keyword/
+                not-wake-word/
                     *.wav
         """
         return cls(find_wavs(folder), find_wavs(join(folder, 'test')))
@@ -99,7 +99,7 @@ class TrainData:
         return self.__load(self.__load_files, train, test)
 
     def load_inhibit(self, train=True, test=True) -> tuple:
-        """Generate data with inhibitory inputs created from keyword samples"""
+        """Generate data with inhibitory inputs created from wake word samples"""
 
         def loader(kws: list, nkws: list):
             from precise.params import pr
@@ -162,10 +162,10 @@ class TrainData:
             inputs.extend(load_vector(f, vectorizer) for f in filenames)
             outputs.extend(np.array([output]) for _ in filenames)
 
-        print('Loading keyword...')
+        print('Loading wake-word...')
         add(kw_files, 1.0)
 
-        print('Loading not-keyword...')
+        print('Loading not-wake-word...')
         add(nkw_files, 0.0)
 
         from precise.params import pr

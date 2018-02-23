@@ -25,6 +25,9 @@ usage = '''
     :-mm --metric-monitor str loss
         Metric used to determine when to save
     
+    :-em --extra-metrics
+        Add extra metrics during training
+    
     ...
 '''
 
@@ -50,7 +53,7 @@ def main():
         print('Not enough data to train')
         exit(1)
 
-    model = create_model(args.model, args.no_validation)
+    model = create_model(args.model, args.no_validation, args.extra_metrics)
     model.summary()
 
     from keras.callbacks import ModelCheckpoint

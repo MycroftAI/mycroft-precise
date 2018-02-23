@@ -2,7 +2,7 @@
 block_cipher = None
 
 
-a = Analysis(['precise/stream.py'],
+a = Analysis(['precise/scripts/stream.py'],
              pathex=['.'],
              binaries=[],
              datas=[],

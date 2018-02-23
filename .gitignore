@@ -1,23 +1,24 @@
-dist/
-build/
-.cache/
-.idea/
+/dist/
+/build/
+/.cache/
+/.idea/
 __pycache__/
-*.egg-info/
-*.pb
-*.params
-*.net
-*.pbtxt
-*.txt
-other/
-.venv/
-stats.json
+/*.egg-info/
+/*.pb
+/*.params
+/*.net
+/*.pbtxt
+/*.txt
+/*.wav
+/other/
+/.venv/
+/stats.json
 
 !requirements.txt
 
 # jenkins branch
-wake-words.txt
-all/
-mycroft-precise/
-models/
+/wake-words.txt
+/all/
+/mycroft-precise/
+/models/
 

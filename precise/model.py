@@ -17,7 +17,7 @@ def load_precise_model(model_name: str) -> Any:
     return load_keras().models.load_model(model_name)
 
 
-def create_model(model_name: str, skip_acc: bool = False) -> Any:
+def create_model(model_name: str, skip_acc=False, extra_metrics=False) -> Any:
     """
     Load or create a precise model
 
@@ -42,6 +42,6 @@ def create_model(model_name: str, skip_acc: bool = False) -> Any:
         model.add(Dense(1, activation='sigmoid'))
 
     load_keras()
-    metrics = ['accuracy', false_pos, false_neg]
+    metrics = ['accuracy'] + extra_metrics * [false_pos, false_neg]
     model.compile('rmsprop', weighted_log_loss, metrics=(not skip_acc) * metrics)
     return model
