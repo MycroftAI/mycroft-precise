@@ -3,7 +3,7 @@
 /.cache/
 /.idea/
 __pycache__/
-/*.egg-info/
+*.egg-info/
 /*.pb
 /*.params
 /*.net
@@ -21,4 +21,3 @@ __pycache__/
 /all/
 /mycroft-precise/
 /models/
-
