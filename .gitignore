@@ -14,6 +14,11 @@ __pycache__/
 /.venv/
 /stats.json
 
+# Data folders
+/*/wake-word/
+/*/not-wake-word/
+/*/test/
+
 !requirements.txt
 
 # jenkins branch
