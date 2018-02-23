@@ -73,7 +73,9 @@ rm -rf dist/
 pyinstaller -y precise.stream.spec
 
 out_file=dist/precise-stream.tar.gz
-tar -czvf "$out_file" data/precise-stream/
+cd dist
+tar -czvf "precise-stream.tar.gz" precise-stream
+cd -
 
 echo $version > latest
 
