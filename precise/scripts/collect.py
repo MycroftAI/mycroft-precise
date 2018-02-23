@@ -116,9 +116,12 @@ def record_until_key(p, args):
 
 
 def _main():
-    args = create_parser(usage).parse_args()
+    parser = create_parser(usage)
+    parser.add_argument('file_label', nargs='?', help='File label (Ex. recording-##)')
+    args = parser.parse_args()
     show_input()
-    audio_name = input("Audio name (Ex. recording-##): ")
+    args.file_label = args.file_label or input("File label (Ex. recording-##): ")
+    args.file_label = args.file_label + ('' if '#' in args.file_label else '-##')
     hide_input()
 
     p = pyaudio.PyAudio()
@@ -131,7 +134,7 @@ def _main():
 
         print('Recording...')
         d = record_until_key(p, args)
-        name = next_name(audio_name)
+        name = next_name(args.file_label)
         save_audio(name, d, args)
         print('Saved as ' + name)
 
