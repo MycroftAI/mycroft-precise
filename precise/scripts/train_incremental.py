@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 Mycroft AI Inc.
-from glob import glob
 from os import makedirs
 from os.path import basename, splitext, isfile, join
 from random import random
@@ -13,7 +12,7 @@ from precise.model import create_model
 from precise.network_runner import Listener, KerasRunner
 from precise.params import inject_params
 from precise.train_data import TrainData
-from precise.util import load_audio, save_audio
+from precise.util import load_audio, save_audio, glob_all
 
 usage = '''
     Train a model to inhibit activation by
@@ -138,7 +137,7 @@ class IncrementalTrainer:
         Begin reading through audio files, saving false
         activations and retraining when necessary
         """
-        for fn in glob(self.args.random_data_dir + '/*.wav'):
+        for fn in glob_all(self.args.random_data_dir, '*.wav'):
             if fn in self.trained_fns:
                 print('Skipping ' + fn + '...')
                 continue
