@@ -68,7 +68,8 @@ type="$(find_type $build_type)"
 version="$(find_version $build_type)"
 arch="$(find_arch)"
 
-sudo pip3 install pyinstaller
+source .venv/bin/activate
+pip3 install pyinstaller
 rm -rf dist/
 pyinstaller -y precise.stream.spec
 
