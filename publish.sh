@@ -70,6 +70,7 @@ arch="$(find_arch)"
 
 .venv/bin/pip3 install pyinstaller
 rm -rf dist/
+echo "Building executable..."
 .venv/bin/pyinstaller -y precise.stream.spec
 
 out_file=dist/precise-stream.tar.gz
