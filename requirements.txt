@@ -13,6 +13,7 @@ Markdown==2.6.11
 MarkupSafe==1.0
 normality==0.5.11
 numpy==1.14.0
+prettyparse==0.1.1
 protobuf==3.5.1
 PyAudio==0.2.11
 python-dateutil==2.6.1
