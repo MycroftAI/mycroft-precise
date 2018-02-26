@@ -27,7 +27,7 @@ pip=.venv/bin/pip
 
 if [ ! -f "$pip" ]; then
     python3 -m venv .venv/ --without-pip
-    curl https://bootstrap.pypa.io/get-pip.py | .venv/bin/python
+    curl https://bootstrap.pypa.io/get-pip.py | $python
 fi
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"

@@ -68,10 +68,9 @@ type="$(find_type $build_type)"
 version="$(find_version $build_type)"
 arch="$(find_arch)"
 
-source .venv/bin/activate
-pip3 install pyinstaller
+.venv/bin/pip3 install pyinstaller
 rm -rf dist/
-pyinstaller -y precise.stream.spec
+.venv/bin/pyinstaller -y precise.stream.spec
 
 out_file=dist/precise-stream.tar.gz
 cd dist
