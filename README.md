@@ -110,4 +110,4 @@ precise-record my_model_file.pb
 At it's core, Precise uses just a single recurrent network, specifically a GRU.
 Everything else is just a matter of getting data into the right form.
 
-![Architecture Diagram](https://images2.imgbox.com/f2/15/8gmHBXg3_o.png)
+![Architecture Diagram](https://images2.imgbox.com/f7/44/6N4xFU7D_o.png)
