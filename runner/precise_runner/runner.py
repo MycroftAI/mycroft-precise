@@ -25,7 +25,7 @@ class PreciseEngine(Engine):
 
     Args:
         exe_file (Union[str, list]): Either filename or list of arguments
-                                     (ie. ['python', 'precise_stream.py'])
+                                     (ie. ['python', 'precise/scripts/engine.py'])
         model_file (str): Location to .pb model file to use (with .pb.params)
         chunk_size (int): Number of samples per prediction. Higher numbers
                           decrease CPU usage but increase latency
@@ -64,7 +64,7 @@ class PreciseRunner:
     >>> def on_act():
     ...     print('Activation!')
     ...
-    >>> p = PreciseRunner(PreciseEngine('./precise-stream'), on_activation=on_act)
+    >>> p = PreciseRunner(PreciseEngine('./precise-engine'), on_activation=on_act)
     >>> p.start()
     >>> from time import sleep; sleep(10)
     >>> p.stop()

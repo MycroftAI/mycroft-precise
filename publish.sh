@@ -71,11 +71,11 @@ arch="$(find_arch)"
 .venv/bin/pip3 install pyinstaller
 rm -rf dist/
 echo "Building executable..."
-.venv/bin/pyinstaller -y precise.stream.spec
+.venv/bin/pyinstaller -y precise.engine.spec
 
-out_file=dist/precise-stream.tar.gz
+out_file=dist/precise-engine.tar.gz
 cd dist
-tar -czvf "precise-stream.tar.gz" precise-stream
+tar -czvf "precise-engine.tar.gz" precise-engine
 cd -
 
 echo $version > latest

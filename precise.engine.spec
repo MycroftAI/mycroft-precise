@@ -1,7 +1,7 @@
 # -*- mode: python -*-
 block_cipher = None
 
-a = Analysis(['precise/scripts/stream.py'],
+a = Analysis(['precise/scripts/engine.py'],
              pathex=['.'],
              binaries=[],
              datas=[],
@@ -19,7 +19,7 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='precise-stream',
+          name='precise-engine',
           debug=False,
           strip=True,
           upx=True,
@@ -31,4 +31,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=True,
                upx=True,
-               name='precise-stream')
+               name='precise-engine')

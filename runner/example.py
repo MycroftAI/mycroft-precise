@@ -7,7 +7,7 @@ from threading import Event
 
 
 def main():
-    parser = ArgumentParser('Implementation demo of precise-stream')
+    parser = ArgumentParser('Implementation demo of precise-engine')
     parser.add_argument('model')
     args = parser.parse_args()
 
@@ -17,7 +17,7 @@ def main():
     def on_activation():
         Popen(['aplay', '-q', 'data/activate.wav'])
 
-    engine = PreciseEngine('./precise/stream.py', args.model)
+    engine = PreciseEngine('./precise/engine.py', args.model)
     PreciseRunner(engine, on_prediction=on_prediction, on_activation=on_activation,
                   trigger_level=0).start()
     Event().wait()  # Wait forever
