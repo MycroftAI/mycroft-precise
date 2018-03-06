@@ -46,6 +46,7 @@ def main():
     stats = {}
 
     for model_name in args.models:
+        print('Calculating', model_name + '...')
         inject_params(model_name)
 
         train, test = data.load(args.use_train, not args.use_train)
