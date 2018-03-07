@@ -34,6 +34,9 @@ usage = '''
     :-c --chunk-size int 2048
         Samples between inferences
     
+    :-t --threshold int 3
+        Number of positives to cause an activation
+
     :-s --save-dir str -
         Folder to save false positives
     
@@ -71,7 +74,7 @@ def main():
 
     engine = ListenerEngine(listener)
     engine.get_prediction = get_prediction
-    runner = PreciseRunner(engine, 3, on_activation=on_activation, on_prediction=on_prediction)
+    runner = PreciseRunner(engine, args.threshold, on_activation=on_activation, on_prediction=on_prediction)
     runner.start()
     Event().wait()  # Wait forever
 

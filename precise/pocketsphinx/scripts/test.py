@@ -18,7 +18,7 @@ from subprocess import check_output, PIPE
 from prettyparse import create_parser
 
 from precise.pocketsphinx.listener import PocketsphinxListener
-from precise.scripts.test import show_stats
+from precise.scripts.test import show_stats, Stats
 from precise.train_data import TrainData
 
 usage = '''
@@ -53,14 +53,7 @@ def eval_file(filename) -> float:
     return float(bool(transcription) and not transcription.isspace())
 
 
-def main():
-    args = TrainData.parse_args(create_parser(usage))
-    data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
-    print('Data:', data)
-
-    listener = PocketsphinxListener(args.key_phrase, args.dict_file, args.hmm_folder,
-                                    args.threshold)
-
+def test_pocketsphinx(listener: PocketsphinxListener, data_files) -> Stats:
     def run_test(filenames, name):
         print()
         print('===', name, '===')
@@ -74,11 +67,22 @@ def main():
         print()
         return negatives, positives
 
-    data_files = data.train_files if args.use_train else data.test_files
-    false_neg, true_pos = run_test(data_files[0], 'Keyword')
-    true_neg, false_pos = run_test(data_files[1], 'Not Keyword')
+    false_neg, true_pos = run_test(data_files[0], 'Wake Word')
+    true_neg, false_pos = run_test(data_files[1], 'Not Wake Word')
+    return Stats(false_pos, false_neg, true_pos, true_neg)
 
-    show_stats(false_pos, false_neg, true_pos, true_neg, not args.no_filenames)
+
+def main():
+    args = TrainData.parse_args(create_parser(usage))
+    data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
+    data_files = data.train_files if args.use_train else data.test_files
+    listener = PocketsphinxListener(
+        args.key_phrase, args.dict_file, args.hmm_folder, args.threshold
+    )
+
+    print('Data:', data)
+    stats = test_pocketsphinx(listener, data_files)
+    show_stats(stats, not args.no_filenames)
 
 
 if __name__ == '__main__':

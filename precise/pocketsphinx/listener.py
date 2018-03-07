@@ -35,10 +35,16 @@ class PocketsphinxListener:
         config.set_int('-nfft', 2048)
         config.set_string('-logfn', '/dev/null')
         self.key_phrase = key_phrase
-        self.decoder = Decoder(config)
         self.buffer = b'\0' * pr.sample_depth * pr.buffer_samples
         self.pr = pr
         self.read_size = -1 if chunk_size == -1 else pr.sample_depth * chunk_size
+
+        try:
+            self.decoder = Decoder(config)
+        except RuntimeError:
+            options = dict(key_phrase=key_phrase, dict_file=dict_file,
+                           hmm_folder=hmm_folder, threshold=threshold)
+            raise RuntimeError('Invalid Pocketsphinx options: ' + str(options))
 
     def _transcribe(self, byte_data):
         self.decoder.start_utt()

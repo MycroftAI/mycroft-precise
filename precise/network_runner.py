@@ -86,7 +86,7 @@ class Listener:
         self.window_audio = np.array([])
         self.pr = inject_params(model_name)
         self.features = np.zeros((self.pr.n_features, self.pr.feature_size))
-        self.read_size = -1 if chunk_size == -1 else self.pr.sample_depth * chunk_size
+        self.chunk_size = chunk_size
         runner_cls = runner_cls or self.find_runner(model_name)
         self.runner = runner_cls(model_name)
         self.mfcc = import_module('speechpy.feature').mfcc
@@ -113,7 +113,7 @@ class Listener:
             if isinstance(stream, (bytes, bytearray)):
                 chunk = stream
             else:
-                chunk = stream.read(self.read_size)
+                chunk = stream.read(self.chunk_size)
             if len(chunk) == 0:
                 raise EOFError
             buffer_audio = buffer_to_audio(chunk)
