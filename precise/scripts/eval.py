@@ -14,6 +14,7 @@
 # limitations under the License.
 import json
 
+from os.path import isfile, isdir
 from prettyparse import create_parser
 
 from precise.network_runner import Listener
@@ -29,20 +30,20 @@ usage = '''
     :-t --use-train
         Evaluate training data instead of test data
     
-    :-pw --pocketsphinx-wake-word -
+    :-pw --pocketsphinx-wake-word str -
         Optional wake word used to
         generate a Pocketsphinx data point
     
-    :-pd --pocketsphinx-dict -
+    :-pd --pocketsphinx-dict str -
         Optional word dictionary used to
         generate a Pocketsphinx data point
     
-    :-pf --pocketsphinx-folder -
+    :-pf --pocketsphinx-folder str -
         Optional hmm folder used to
         generate a Pocketsphinx data point.
         Format: wake-word.yy-mm-dd.hmm/
     
-    :-pth --pocketsphinx-threshold str 1e-90
+    :-pth --pocketsphinx-threshold float 1e-90
         Optional threshold used to
         generate a Pocketsphinx data point
     
@@ -72,6 +73,10 @@ def main():
     metrics = {}
 
     if args.pocketsphinx_dict and args.pocketsphinx_folder and args.pocketsphinx_wake_word:
+        if not isfile(args.pocketsphinx_dict):
+            parser.error('No such file: ' + args.pocketsphinx_dict)
+        if not isdir(args.pocketsphinx_folder):
+            parser.error('No such folder: ' + args.pocketsphinx_folder)
         listener = PocketsphinxListener(
             args.pocketsphinx_wake_word, args.pocketsphinx_dict,
             args.pocketsphinx_folder, args.pocketsphinx_threshold
