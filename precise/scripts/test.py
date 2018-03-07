@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections import namedtuple
+
 from prettyparse import create_parser
 
 from precise.model import load_precise_model
@@ -33,8 +35,21 @@ usage = '''
     ...
 '''
 
+Stats = namedtuple('Stats', 'false_pos false_neg true_pos true_neg')
 
-def show_stats(false_pos, false_neg, true_pos, true_neg, show_filenames):
+
+def stats_to_dict(stats: Stats) -> dict:
+    return {
+        'true_pos': len(stats.true_pos),
+        'true_neg': len(stats.true_neg),
+        'false_pos': len(stats.false_pos),
+        'false_neg': len(stats.false_neg),
+    }
+
+
+def show_stats(stats: Stats, show_filenames):
+    false_pos, false_neg, true_pos, true_neg = stats
+
     num_correct = len(true_pos) + len(true_neg)
     total = num_correct + len(false_pos) + len(false_neg)
 
@@ -64,6 +79,18 @@ def show_stats(false_pos, false_neg, true_pos, true_neg, show_filenames):
     print(prc(len(false_neg), len(false_neg) + len(true_pos)), "% false negatives")
 
 
+def calc_stats(filenames, targets, predictions) -> Stats:
+    stats = Stats([], [], [], [])
+    for name, target, prediction in zip(filenames, targets, predictions):
+        {
+            (True, False): stats.false_pos,
+            (True, True): stats.true_pos,
+            (False, True): stats.false_neg,
+            (False, False): stats.true_neg
+        }[prediction[0] > 0.5, target[0] > 0.5].append(name)
+    return stats
+
+
 def main():
     args = TrainData.parse_args(create_parser(usage))
 
@@ -75,20 +102,10 @@ def main():
 
     filenames = sum(data.train_files if args.use_train else data.test_files, [])
     predictions = load_precise_model(args.model).predict(inputs)
-
-    true_pos, true_neg = [], []
-    false_pos, false_neg = [], []
-
-    for name, target, prediction in zip(filenames, targets, predictions):
-        {
-            (True, False): false_pos,
-            (True, True): true_pos,
-            (False, True): false_neg,
-            (False, False): true_neg
-        }[prediction[0] > 0.5, target[0] > 0.5].append(name)
+    stats = calc_stats(filenames, targets, predictions)
 
     print('Data:', data)
-    show_stats(false_pos, false_neg, true_pos, true_neg, not args.no_filenames)
+    show_stats(stats, not args.no_filenames)
 
 
 if __name__ == '__main__':

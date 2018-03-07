@@ -14,11 +14,11 @@
 # limitations under the License.
 import atexit
 from subprocess import PIPE, Popen
-from threading import Thread
+from threading import Thread, Event
 
 
-class Engine:
-    def __init__(self, chunk_size=1024):
+class Engine(object):
+    def __init__(self, chunk_size=2048):
         self.chunk_size = chunk_size
 
     def start(self):
@@ -39,19 +39,18 @@ class PreciseEngine(Engine):
         exe_file (Union[str, list]): Either filename or list of arguments
                                      (ie. ['python', 'precise/scripts/engine.py'])
         model_file (str): Location to .pb model file to use (with .pb.params)
-        chunk_size (int): Number of samples per prediction. Higher numbers
+        chunk_size (int): Number of *bytes* per prediction. Higher numbers
                           decrease CPU usage but increase latency
     """
 
-    def __init__(self, exe_file, model_file, chunk_size=1024):
+    def __init__(self, exe_file, model_file, chunk_size=2048):
         Engine.__init__(self, chunk_size)
         self.exe_args = exe_file if isinstance(exe_file, list) else [exe_file]
         self.model_file = model_file
         self.proc = None
 
     def start(self):
-        self.proc = Popen([*self.exe_args, self.model_file, str(self.chunk_size)], stdin=PIPE,
-                          stdout=PIPE)
+        self.proc = Popen(self.exe_args + [self.model_file, str(self.chunk_size)], stdin=PIPE, stdout=PIPE)
 
     def stop(self):
         if self.proc:
@@ -59,15 +58,38 @@ class PreciseEngine(Engine):
             self.proc = None
 
     def get_prediction(self, chunk):
+        if len(chunk) != self.chunk_size:
+            raise ValueError('Invalid chunk size: ' + str(len(chunk)))
         self.proc.stdin.write(chunk)
         self.proc.stdin.flush()
         return float(self.proc.stdout.readline())
 
 
 class ListenerEngine(Engine):
-    def __init__(self, listener, chunk_size=1024):
+    def __init__(self, listener, chunk_size=2048):
         Engine.__init__(self, chunk_size)
         self.get_prediction = listener.update
+
+
+class ReadWriteStream:
+    """Class used to support writing binary audio data at any pace"""
+    def __init__(self, s=b''):
+        self.buffer = s
+        self.write_event = Event()
+
+    def read(self, n=-1, timeout=None):
+        if n == -1:
+            n = len(self.buffer)
+        while len(self.buffer) < n:
+            self.write_event.clear()
+            self.write_event.wait(timeout)
+        chunk = self.buffer[:n]
+        self.buffer = self.buffer[n:]
+        return chunk
+
+    def write(self, s):
+        self.buffer += s
+        self.write_event.set()
 
 
 class PreciseRunner:
@@ -114,7 +136,7 @@ class PreciseRunner:
             from pyaudio import PyAudio, paInt16
             self.pa = PyAudio()
             self.stream = self.pa.open(
-                16000, 1, paInt16, True, frames_per_buffer=self.chunk_size // 2
+                16000, 1, paInt16, True, frames_per_buffer=self.chunk_size
             )
 
         self.engine.start()

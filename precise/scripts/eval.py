@@ -18,7 +18,9 @@ from prettyparse import create_parser
 
 from precise.network_runner import Listener
 from precise.params import inject_params
-from precise.scripts.test import show_stats
+from precise.pocketsphinx.listener import PocketsphinxListener
+from precise.pocketsphinx.scripts.test import test_pocketsphinx
+from precise.scripts.test import show_stats, calc_stats, stats_to_dict
 from precise.train_data import TrainData
 
 usage = '''
@@ -26,6 +28,23 @@ usage = '''
     
     :-t --use-train
         Evaluate training data instead of test data
+    
+    :-pw --pocketsphinx-wake-word -
+        Optional wake word used to
+        generate a Pocketsphinx data point
+    
+    :-pd --pocketsphinx-dict -
+        Optional word dictionary used to
+        generate a Pocketsphinx data point
+    
+    :-pf --pocketsphinx-folder -
+        Optional hmm folder used to
+        generate a Pocketsphinx data point.
+        Format: wake-word.yy-mm-dd.hmm/
+    
+    :-pth --pocketsphinx-threshold str 1e-90
+        Optional threshold used to
+        generate a Pocketsphinx data point
     
     :-o --output str stats.json
         Output json file
@@ -36,14 +55,29 @@ usage = '''
 
 def main():
     parser = create_parser(usage)
-    parser.add_argument('models', nargs='*', help='List of model filenames')
+    parser.add_argument('models', nargs='*',
+                        help='List of model filenames in format: wake-word.yy-mm-dd.net')
     args = TrainData.parse_args(parser)
+    if not (
+            bool(args.pocketsphinx_dict) ==
+            bool(args.pocketsphinx_folder) ==
+            bool(args.pocketsphinx_wake_word)
+    ):
+        parser.error('Must pass all or no Pocketsphinx arguments')
 
     data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
-    filenames = sum(data.train_files if args.use_train else data.test_files, [])
+    data_files = data.train_files if args.use_train else data.test_files
     print('Data:', data)
 
-    stats = {}
+    metrics = {}
+
+    if args.pocketsphinx_dict and args.pocketsphinx_folder and args.pocketsphinx_wake_word:
+        listener = PocketsphinxListener(
+            args.pocketsphinx_wake_word, args.pocketsphinx_dict,
+            args.pocketsphinx_folder, args.pocketsphinx_threshold
+        )
+        stats = test_pocketsphinx(listener, data_files)
+        metrics[args.pocketsphinx_folder] = stats_to_dict(stats)
 
     for model_name in args.models:
         print('Calculating', model_name + '...')
@@ -52,30 +86,15 @@ def main():
         train, test = data.load(args.use_train, not args.use_train)
         inputs, targets = train if args.use_train else test
         predictions = Listener.find_runner(model_name)(model_name).predict(inputs)
-
-        true_pos, true_neg = [], []
-        false_pos, false_neg = [], []
-
-        for name, target, prediction in zip(filenames, targets, predictions):
-            {
-                (True, False): false_pos,
-                (True, True): true_pos,
-                (False, True): false_neg,
-                (False, False): true_neg
-            }[prediction[0] > 0.5, target[0] > 0.5].append(name)
+        stats = calc_stats(sum(data_files, []), targets, predictions)
 
         print('----', model_name, '----')
-        show_stats(false_pos, false_neg, true_pos, true_neg, False)
-        stats[model_name] = {
-            'true_pos': len(true_pos),
-            'true_neg': len(true_neg),
-            'false_pos': len(false_pos),
-            'false_neg': len(false_neg),
-        }
+        show_stats(stats, False)
+        metrics[model_name] = stats_to_dict(stats)
 
     print('Writing to:', args.output)
     with open(args.output, 'w') as f:
-        json.dump(stats, f)
+        json.dump(metrics, f)
 
 
 if __name__ == '__main__':

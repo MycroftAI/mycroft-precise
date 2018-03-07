@@ -41,7 +41,7 @@ def main():
     parser = create_parser(usage)
     parser.add_argument('-v', '--version', action='version', version=__version__)
     parser.add_argument('chunk_size', type=int, nargs='?', default=-1,
-                        help='Number of samples to read before making a prediction.'
+                        help='Number of bytes to read before making a prediction.'
                              'Higher values are less computationally expensive')
     parser.usage = parser.format_usage().strip().replace('usage: ', '') + ' < audio.wav'
     args = parser.parse_args()

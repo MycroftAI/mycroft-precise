@@ -3,6 +3,7 @@
 /.cache/
 /.idea/
 __pycache__/
+*.pyc
 *.egg-info/
 /*.pb
 /*.params
