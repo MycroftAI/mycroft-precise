@@ -13,46 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-is_command() {
-    hash "$1" 2>/dev/null
-}
-
-apt_is_locked() {
-    fuser /var/lib/dpkg/lock >/dev/null 2>&1
-}
-
+is_command() { hash "$1" 2>/dev/null; }
+apt_is_locked() { fuser /var/lib/dpkg/lock >/dev/null 2>&1; }
 wait_for_apt() {
     if apt_is_locked; then
         echo "Waiting to obtain dpkg lock file..."
         while apt_is_locked; do echo .; sleep 0.5; done
     fi
 }
+vpython() { "$VENV/bin/python" $@; }
+vpip() { "$VENV/bin/pip" $@; }
 
-set -e
+#############################################
+set -e; cd "$(dirname "$0")" # Script Start #
+#############################################
+
+VENV=${VENV-$(pwd)/.venv}
 
 if is_command apt-get; then
 	wait_for_apt
 	sudo apt-get install -y python3-pip libopenblas-dev python3-scipy cython libhdf5-dev python3-h5py portaudio19-dev
 fi
 
-python=.venv/bin/python
-pip=.venv/bin/pip
-
-if [ ! -f "$pip" ]; then
-    python3 -m venv .venv/ --without-pip
-    curl https://bootstrap.pypa.io/get-pip.py | $python
+if [ ! -x "$VENV/bin/pip" ]; then
+    python3 -m venv "$VENV" --without-pip
+    curl https://bootstrap.pypa.io/get-pip.py | vpython
 fi
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"
 
-if ! $python -c 'import tensorflow' 2>/dev/null && [ "$arch" = "armv7l" ]; then
-    wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-	$pip install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-	$pip uninstall mock || true
-    $pip install mock
-    rm tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+if ! vpython -c 'import tensorflow' 2>/dev/null && [ "$arch" = "armv7l" ]; then
+    whl=tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+    wget "https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/$whl"
+	vpip install "$whl"
+	vpip uninstall mock || true; vpip install mock
+    rm "$whl"
 fi
 
-$pip install -e runner/
-$pip install -e .
-
+vpip install -e runner/
+vpip install -e .
+vpip install pocketsphinx  # Optional, for comparison
