@@ -37,11 +37,11 @@ usage = '''
     :-pd --pocketsphinx-dict str -
         Optional word dictionary used to
         generate a Pocketsphinx data point
+        Format: wake-word.yy-mm-dd.dict
     
     :-pf --pocketsphinx-folder str -
         Optional hmm folder used to
         generate a Pocketsphinx data point.
-        Format: wake-word.yy-mm-dd.hmm/
     
     :-pth --pocketsphinx-threshold float 1e-90
         Optional threshold used to
@@ -82,7 +82,7 @@ def main():
             args.pocketsphinx_folder, args.pocketsphinx_threshold
         )
         stats = test_pocketsphinx(listener, data_files)
-        metrics[args.pocketsphinx_folder] = stats_to_dict(stats)
+        metrics[args.pocketsphinx_dict] = stats_to_dict(stats)
 
     for model_name in args.models:
         print('Calculating', model_name + '...')
