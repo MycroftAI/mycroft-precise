@@ -59,8 +59,12 @@ def test_pocketsphinx(listener: PocketsphinxListener, data_files) -> Stats:
         print('===', name, '===')
         negatives, positives = [], []
         for filename in filenames:
-            with wave.open(filename) as wf:
-                frames = wf.readframes(wf.getnframes())
+            try:
+                with wave.open(filename) as wf:
+                    frames = wf.readframes(wf.getnframes())
+            except (OSError, EOFError):
+                print('?', end='', flush=True)
+                continue
             out = listener.found_wake_word(frames)
             {False: negatives, True: positives}[out].append(filename)
             print('!' if out else '.', end='', flush=True)

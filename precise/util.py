@@ -36,7 +36,10 @@ def load_audio(file: Any) -> np.ndarray:
         samples: Sample rate and audio samples from 0..1
     """
     import wavio
-    wav = wavio.read(file)
+    try:
+        wav = wavio.read(file)
+    except EOFError:
+        wav = wavio.Wav(np.array([[]], dtype=np.int16), 16000, 2)
     if wav.data.dtype != np.int16:
         raise ValueError('Unsupported data type: ' + str(wav.data.dtype))
     if wav.rate != pr.sample_rate:
