@@ -50,19 +50,18 @@ class TrainData:
     @classmethod
     def from_db(cls, db_file: str, db_folder: str) -> 'TrainData':
         """
-        Load a set of data from an SQLite database in the following format:
-            Column: "final_tag"
-            Value: "wake-word" or "not-wake-word"
+        Load a set of data from a text database in the following format:
+            <file_id>  (tab)  <tag>
+            <file_id>  (tab)  <tag>
 
-            Column: "data_id"
-            Value: identifier of file such that the following
-                   file exists: {db_folder}/{data_id}.wav
+            file_id: identifier of file such that the following
+                     file exists: {db_folder}/{data_id}.wav
+            tag: "wake-word" or "not-wake-word"
         """
         if not db_file:
             return cls(([], []), ([], []))
         if not isfile(db_file):
             raise RuntimeError('Database file does not exist: ' + db_file)
-        import dataset
 
         train_groups = {}
         train_group_file = db_file.replace('db', '') + 'groups.json'
@@ -70,14 +69,19 @@ class TrainData:
             with open(train_group_file) as f:
                 train_groups = json.load(f)
 
-        db = dataset.connect('sqlite:///' + db_file)
-        files = [
-            [join(db_folder, i['data_id'] + '.wav') for i in db['data'].find(final_tag=tag)]
-            for tag in ['wake-word', 'not-wake-word']
-        ]
+        db_files = {
+            'wake-word': [],
+            'not-wake-word': []
+        }
+        with open(db_file) as f:
+            for line in f.read().split('\n'):
+                if not line:
+                    continue
+                file, tag = line.split('\t')
+                db_files[tag.strip()].append(file.strip())
 
         train_files, test_files = ([], []), ([], [])
-        for label, rows in enumerate(files):
+        for label, rows in enumerate([db_files['wake-word'], db_files['not-wake-word']]):
             for fn in rows:
                 if not isfile(fn):
                     continue
@@ -135,7 +139,9 @@ class TrainData:
     def parse_args(parser: ArgumentParser) -> Any:
         """Return parsed args from parser, adding options for train data inputs"""
         parser.add_argument('db_folder', help='Folder to load database references from')
-        parser.add_argument('-db', '--db-file', default='', help='Database file to use')
+        parser.add_argument(
+            '-db', '--db-file', default='', help='Text database to load from where '
+                                                 'each line is <file_id>\t(wake-word|not-wake-word) and {db_folder}/<file_id>.wav exists..')
         parser.add_argument('-d', '--data-dir', default='{db_folder}',
                             help='Load files from a different directory')
         args = parser.parse_args()

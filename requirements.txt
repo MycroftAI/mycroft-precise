@@ -4,7 +4,6 @@ altgraph==0.15
 banal==0.3.3
 bleach==1.5.0
 chardet==3.0.4
-dataset==1.0.5
 enum-compat==0.0.2
 future==0.16.0
 h5py==2.7.1
@@ -27,7 +26,6 @@ PyYAML==3.12
 scipy==1.0.0
 six==1.11.0
 speechpy==2.1
-SQLAlchemy==1.2.2
 tensorflow==1.4.1
 tensorflow-tensorboard==0.4.0
 typing==3.6.4
