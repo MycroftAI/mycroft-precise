@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 from argparse import ArgumentParser
+from contextlib import suppress
 from hashlib import md5
 from os.path import join, isfile, dirname
 from typing import *
@@ -178,8 +179,12 @@ class TrainData:
         outputs = []
 
         def add(filenames, output):
-            inputs.extend(load_vector(f, vectorizer) for f in filenames)
-            outputs.extend(np.array([output]) for _ in filenames)
+            for f in filenames:
+                try:
+                    inputs.append(load_vector(f, vectorizer))
+                    outputs.append(np.array([output]))
+                except ValueError:
+                    print('Skipping invalid file:', f)
 
         print('Loading wake-word...')
         add(kw_files, 1.0)
