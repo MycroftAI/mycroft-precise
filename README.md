@@ -9,6 +9,15 @@ the sounds or speech match a wake word.
 
 ## Training Models
 
+### Communal models
+
+Training takes lots of data.  The Mycroft community is working together to jointly
+build datasets at https://precise.mycroft.ai.  These datasets are used to build the
+models used by the Mark 1 and other mycroft-core based voice assistants.  Please come
+and help make things better for everyone!
+
+### Train your own model
+
 You can find info on training your own models [here][train-guide]. It requires
 running through the [**Source Install** instructions][source-install] first.
 
