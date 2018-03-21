@@ -26,6 +26,8 @@ inhibit_hop_t = 0.1
 def vectorize_raw(audio: np.ndarray) -> np.ndarray:
     """Turns audio into feature vectors, without clipping for length"""
     from speechpy.feature import mfcc
+    if len(audio) == 0:
+        raise ValueError('Cannot vectorize empty audio!')
     return mfcc(audio, pr.sample_rate, pr.window_t, pr.hop_t, pr.n_mfcc, pr.n_filt, pr.n_fft)
 
 
