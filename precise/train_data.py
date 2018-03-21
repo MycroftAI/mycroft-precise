@@ -14,7 +14,7 @@
 import json
 from argparse import ArgumentParser
 from hashlib import md5
-from os.path import join, isfile
+from os.path import join, isfile, dirname
 from typing import *
 
 import numpy as np
@@ -64,7 +64,7 @@ class TrainData:
             raise RuntimeError('Database file does not exist: ' + db_file)
 
         train_groups = {}
-        train_group_file = db_file.replace('db', '') + 'groups.json'
+        train_group_file = join(dirname(db_folder), db_file.replace('.txt', '') + '.groups.json')
         if isfile(train_group_file):
             with open(train_group_file) as f:
                 train_groups = json.load(f)

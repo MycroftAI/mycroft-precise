@@ -163,7 +163,7 @@ class PreciseRunner:
         """Continuously check Precise process output"""
         activation = 0
         while self.running:
-            chunk = self.stream.read(self.chunk_size)
+            chunk = self.stream.read(self.chunk_size // 2)
             prob = self.engine.get_prediction(chunk)
             self.on_prediction(prob)
 
