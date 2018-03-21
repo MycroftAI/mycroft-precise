@@ -78,12 +78,13 @@ class TrainData:
                 if not line:
                     continue
                 file, tag = line.split('\t')
-                db_files[tag.strip()].append(file.strip())
+                db_files[tag.strip()].append(join(db_folder, file.strip() + '.wav'))
 
         train_files, test_files = ([], []), ([], [])
         for label, rows in enumerate([db_files['wake-word'], db_files['not-wake-word']]):
             for fn in rows:
                 if not isfile(fn):
+                    print('Missing file:', fn)
                     continue
                 if fn not in train_groups:
                     train_groups[fn] = (
