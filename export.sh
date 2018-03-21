@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if ! [[ "$1" =~ .*\.net$ ]]; then
-    echo "Usage: $0 <model>.net"
+if ! [[ "$1" =~ .*\.net$ ]] || ! [ -d "$2" ]; then
+    echo "Usage: $0 <model>.net <folder_name>"
     exit 1
 fi
 
 [ -d .cache/precise-data ] || git clone https://github.com/mycroftai/precise-data .cache/precise-data
 model_name=$(date +"${1%%net}%y-%m-%d")
-precise/scripts/convert.py $1 -o ".cache/precise-data/$model_name.pb"
-cp "$1" ".cache/precise-data/$model_name.net"
-cp "$1.params" ".cache/precise-data/$model_name.net.params"
-mv "$model_name.pb" "$model_name.pb.params" ".cache/precise-data/"
-echo "Converted to .cache/precise-data/$model_name.*"
+precise/scripts/convert.py $1 -o "$2/$model_name.pb"
+cp "$1" "$2/$model_name.net"
+cp "$1.params" "$2/$model_name.net.params"
+mv "$model_name.pb" "$model_name.pb.params" "$2"
+echo "Converted to $2/$model_name.*"
