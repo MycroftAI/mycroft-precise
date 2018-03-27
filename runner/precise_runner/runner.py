@@ -147,12 +147,12 @@ class PreciseRunner:
 
     def stop(self):
         """Stop listening and close stream"""
-        self.engine.stop()
-
         if self.thread:
             self.running = False
             self.thread.join()
             self.thread = None
+
+        self.engine.stop()
 
         if self.pa:
             self.pa.terminate()
