@@ -46,11 +46,11 @@ class PreciseEngine(Engine):
     def __init__(self, exe_file, model_file, chunk_size=2048):
         Engine.__init__(self, chunk_size)
         self.exe_args = exe_file if isinstance(exe_file, list) else [exe_file]
-        self.model_file = model_file
+        self.exe_args += [model_file, str(self.chunk_size)]
         self.proc = None
 
     def start(self):
-        self.proc = Popen(self.exe_args + [self.model_file, str(self.chunk_size)], stdin=PIPE, stdout=PIPE)
+        self.proc = Popen(self.exe_args, stdin=PIPE, stdout=PIPE)
 
     def stop(self):
         if self.proc:
