@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from setuptools import setup, find_packages
+from precise_runner import __version__
 
 setup(
     name='precise-runner',
-    version='0.1.0',
+    version=__version__,
     packages=find_packages(),
     install_requires=[
         'pyaudio'
