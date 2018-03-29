@@ -71,7 +71,7 @@ class ListenerEngine(Engine):
         self.get_prediction = listener.update
 
 
-class ReadWriteStream:
+class ReadWriteStream(object):
     """Class used to support writing binary audio data at any pace"""
     def __init__(self, s=b''):
         self.buffer = s
@@ -92,7 +92,7 @@ class ReadWriteStream:
         self.write_event.set()
 
 
-class PreciseRunner:
+class PreciseRunner(object):
     """
     Wrapper to use Precise. Example:
     >>> def on_act():
