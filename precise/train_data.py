@@ -65,7 +65,7 @@ class TrainData:
             raise RuntimeError('Database file does not exist: ' + db_file)
 
         train_groups = {}
-        train_group_file = join(dirname(db_folder), db_file.replace('.txt', '') + '.groups.json')
+        train_group_file = join(db_file.replace('.txt', '') + '.groups.json')
         if isfile(train_group_file):
             with open(train_group_file) as f:
                 train_groups = json.load(f)

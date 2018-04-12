@@ -43,8 +43,10 @@ def vectorize(audio: np.ndarray) -> np.ndarray:
         audio = audio[-pr.max_samples:]
     features = vectorize_raw(audio)
     if len(features) < pr.n_features:
-        features = np.concatenate(
-            [np.zeros((pr.n_features - len(features), len(features[0]))), features])
+        features = np.concatenate([
+            np.zeros((pr.n_features - len(features), len(features[0]))),
+            features
+        ])
     if len(features) > pr.n_features:
         features = features[-pr.n_features:]
 
