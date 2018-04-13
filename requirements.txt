@@ -26,8 +26,8 @@ PyYAML==3.12
 scipy==1.0.0
 six==1.11.0
 speechpy==2.1
-tensorflow==1.4.1
-tensorflow-tensorboard==0.4.0
+tensorflow==1.5.1
+tensorflow-tensorboard==1.5.1
 typing==3.6.4
 wavio==0.0.3
 Werkzeug==0.14.1
