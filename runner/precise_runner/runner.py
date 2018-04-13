@@ -128,6 +128,7 @@ class PreciseRunner(object):
         self.pa = None
         self.thread = None
         self.running = False
+        self.is_paused = False
         atexit.register(self.stop)
 
     def start(self):
@@ -141,6 +142,7 @@ class PreciseRunner(object):
 
         self.engine.start()
         self.running = True
+        self.is_paused = False
         self.thread = Thread(target=self._handle_predictions)
         self.thread.daemon = True
         self.thread.start()
@@ -159,11 +161,21 @@ class PreciseRunner(object):
             self.stream.stop_stream()
             self.stream = self.pa = None
 
+    def pause(self):
+        self.is_paused = True
+
+    def play(self):
+        self.is_paused = False
+
     def _handle_predictions(self):
         """Continuously check Precise process output"""
         activation = 0
         while self.running:
             chunk = self.stream.read(self.chunk_size // 2)
+
+            if self.is_paused:
+                continue
+
             prob = self.engine.get_prediction(chunk)
             self.on_prediction(prob)
 
