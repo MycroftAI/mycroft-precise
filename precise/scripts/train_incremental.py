@@ -37,7 +37,7 @@ usage = '''
         Number of epochs to train before continuing evaluation
     
     :-ds --delay-samples int 10
-        Number of timesteps of false activations to save before re-training
+        Number of false activations to save before re-training
     
     :-c --chunk-size int 2048
         Number of samples between testing the neural network
@@ -137,8 +137,6 @@ class IncrementalTrainer:
                 save_audio(name, audio_buffer)
                 print()
                 print('Saved to:', name)
-            elif samples_since_train > 0:
-                samples_since_train = self.args.delay_samples
 
             if not save_test and samples_since_train >= self.args.delay_samples and self.args.epochs > 0:
                 samples_since_train = 0
