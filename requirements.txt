@@ -25,7 +25,10 @@ python-editor==1.0.3
 PyYAML==3.12
 scipy==1.0.0
 six==1.11.0
-speechpy==2.1
+#speechpy==2.1
+
+git+https://github.com/MatthewScholefield/speechpy.git#egg=speechpy
+
 tensorflow==1.5.1
 tensorflow-tensorboard==1.5.1
 typing==3.6.4
