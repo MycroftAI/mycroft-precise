@@ -72,7 +72,7 @@ def main():
         audio_buffer = np.concatenate((audio_buffer[len(audio):], audio))
         return listener.update(chunk)
 
-    engine = ListenerEngine(listener)
+    engine = ListenerEngine(listener, args.chunk_size)
     engine.get_prediction = get_prediction
     runner = PreciseRunner(engine, args.threshold, on_activation=on_activation, on_prediction=on_prediction)
     runner.start()
