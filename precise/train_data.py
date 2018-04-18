@@ -14,6 +14,7 @@
 import json
 from argparse import ArgumentParser
 from contextlib import suppress
+from glob import glob
 from hashlib import md5
 from os.path import join, isfile, dirname
 from typing import *
@@ -61,6 +62,9 @@ class TrainData:
             tag: "wake-word" or "not-wake-word"
         """
         if not tags_file:
+            num_ignored_wavs = len(glob(join(tags_folder, '*.wav')))
+            if num_ignored_wavs > 10:
+                print('WARNING: Found {} wavs but no tags file specified!'.format(num_ignored_wavs))
             return cls(([], []), ([], []))
         if not isfile(tags_file):
             raise RuntimeError('Database file does not exist: ' + tags_file)
