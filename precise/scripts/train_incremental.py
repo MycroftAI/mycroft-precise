@@ -58,8 +58,8 @@ usage = '''
         Disable accuracy and validation calculation
         to improve speed during training
     
-    :-r --random-data-dir str data/random
-        Directories with properly encoded wav files of
+    :-r --random-data-folder str data/random
+        Folder with properly encoded wav files of
         random audio that should not cause an activation
     
     ...
@@ -95,8 +95,8 @@ class IncrementalTrainer:
         from keras.callbacks import ModelCheckpoint
         self.checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
                                           save_best_only=args.save_best)
-        data = TrainData.from_db(args.db_file, args.db_folder)
-        self.db_data = data.load(True, not args.no_validation)
+        data = TrainData.from_tags(args.tags_file, args.tags_folder)
+        self.tags_data = data.load(True, not args.no_validation)
 
         if not isfile(args.model):
             create_model(args.model, args.no_validation, args.extra_metrics).save(args.model)
@@ -104,11 +104,11 @@ class IncrementalTrainer:
 
     def retrain(self):
         """Train for a session, pulling in any new data from the filesystem"""
-        folder = TrainData.from_folder(self.args.data_dir)
+        folder = TrainData.from_folder(self.args.folder)
         train_data, test_data = folder.load(True, not self.args.no_validation)
 
-        train_data = TrainData.merge(train_data, self.db_data[0])
-        test_data = TrainData.merge(test_data, self.db_data[1])
+        train_data = TrainData.merge(train_data, self.tags_data[0])
+        test_data = TrainData.merge(test_data, self.tags_data[1])
         print()
         try:
             self.listener.runner.model.fit(*train_data, self.args.batch_size, self.args.epochs,
@@ -132,7 +132,7 @@ class IncrementalTrainer:
             if conf > 0.5:
                 samples_since_train += 1
                 name = splitext(basename(fn))[0] + '-' + str(i) + '.wav'
-                name = join(self.args.data_dir, 'test' if save_test else '', 'not-wake-word',
+                name = join(self.args.folder, 'test' if save_test else '', 'not-wake-word',
                             'generated', name)
                 save_audio(name, audio_buffer)
                 print()
@@ -147,7 +147,7 @@ class IncrementalTrainer:
         Begin reading through audio files, saving false
         activations and retraining when necessary
         """
-        for fn in glob_all(self.args.random_data_dir, '*.wav'):
+        for fn in glob_all(self.args.random_data_folder, '*.wav'):
             if fn in self.trained_fns:
                 print('Skipping ' + fn + '...')
                 continue
@@ -164,8 +164,8 @@ def main():
     args = TrainData.parse_args(create_parser(usage))
 
     for i in (
-            join(args.data_dir, 'not-wake-word', 'generated'),
-            join(args.data_dir, 'test', 'not-wake-word', 'generated')
+            join(args.folder, 'not-wake-word', 'generated'),
+            join(args.folder, 'test', 'not-wake-word', 'generated')
     ):
         makedirs(i, exist_ok=True)
 

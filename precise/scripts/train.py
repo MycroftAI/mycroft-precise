@@ -50,7 +50,7 @@ def main():
     inject_params(args.model)
     save_params(args.model)
 
-    data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
+    data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
     print('Data:', data)
     (inputs, outputs), test_data = data.load(True, not args.no_validation)
 

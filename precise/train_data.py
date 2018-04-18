@@ -19,13 +19,14 @@ from os.path import join, isfile, dirname
 from typing import *
 
 import numpy as np
+from prettyparse import add_to_parser
 
 from precise.util import find_wavs
 from precise.vectorization import load_vector, vectorize_inhibit, vectorize
 
 
 class TrainData:
-    """Class to handle loading of wave data from categorized folders and SQLite dbs"""
+    """Class to handle loading of wave data from categorized folders and tagged text files"""
 
     def __init__(self, train_files: Tuple[List[str], List[str]],
                  test_files: Tuple[List[str], List[str]]):
@@ -49,40 +50,40 @@ class TrainData:
         return cls(find_wavs(folder), find_wavs(join(folder, 'test')))
 
     @classmethod
-    def from_db(cls, db_file: str, db_folder: str) -> 'TrainData':
+    def from_tags(cls, tags_file: str, tags_folder: str) -> 'TrainData':
         """
-        Load a set of data from a text database in the following format:
+        Load a set of data from a text file with tags in the following format:
             <file_id>  (tab)  <tag>
             <file_id>  (tab)  <tag>
 
             file_id: identifier of file such that the following
-                     file exists: {db_folder}/{data_id}.wav
+                     file exists: {tags_folder}/{data_id}.wav
             tag: "wake-word" or "not-wake-word"
         """
-        if not db_file:
+        if not tags_file:
             return cls(([], []), ([], []))
-        if not isfile(db_file):
-            raise RuntimeError('Database file does not exist: ' + db_file)
+        if not isfile(tags_file):
+            raise RuntimeError('Database file does not exist: ' + tags_file)
 
         train_groups = {}
-        train_group_file = join(db_file.replace('.txt', '') + '.groups.json')
+        train_group_file = join(tags_file.replace('.txt', '') + '.groups.json')
         if isfile(train_group_file):
             with open(train_group_file) as f:
                 train_groups = json.load(f)
 
-        db_files = {
+        tags_files = {
             'wake-word': [],
             'not-wake-word': []
         }
-        with open(db_file) as f:
+        with open(tags_file) as f:
             for line in f.read().split('\n'):
                 if not line:
                     continue
                 file, tag = line.split('\t')
-                db_files[tag.strip()].append(join(db_folder, file.strip() + '.wav'))
+                tags_files[tag.strip()].append(join(tags_folder, file.strip() + '.wav'))
 
         train_files, test_files = ([], []), ([], [])
-        for label, rows in enumerate([db_files['wake-word'], db_files['not-wake-word']]):
+        for label, rows in enumerate([tags_files['wake-word'], tags_files['not-wake-word']]):
             for fn in rows:
                 if not isfile(fn):
                     print('Missing file:', fn)
@@ -103,9 +104,9 @@ class TrainData:
         return cls(train_files, test_files)
 
     @classmethod
-    def from_both(cls, db_file: str, db_folder: str, data_dir: str) -> 'TrainData':
+    def from_both(cls, tags_file: str, tags_folder: str, folder: str) -> 'TrainData':
         """Load data from both a database and a structured folder"""
-        return cls.from_db(db_file, db_folder) + cls.from_folder(data_dir)
+        return cls.from_tags(tags_file, tags_folder) + cls.from_folder(folder)
 
     def load(self, train=True, test=True) -> tuple:
         """
@@ -140,14 +141,23 @@ class TrainData:
     @staticmethod
     def parse_args(parser: ArgumentParser) -> Any:
         """Return parsed args from parser, adding options for train data inputs"""
-        parser.add_argument('db_folder', help='Folder to load database references from')
-        parser.add_argument(
-            '-db', '--db-file', default='', help='Text database to load from where '
-                                                 'each line is <file_id>\t(wake-word|not-wake-word) and {db_folder}/<file_id>.wav exists..')
-        parser.add_argument('-d', '--data-dir', default='{db_folder}',
-                            help='Load files from a different directory')
+        extra_usage = '''
+            :folder str
+                Folder to wav files from
+            
+            :-tf --tags-folder str {folder}
+                Specify a different folder to load file ids
+                in tags file from
+            
+            :-tg --tags-file str -
+                Text file to load tags from where each line is
+                <file_id> TAB (wake-word|not-wake-word) and
+                {folder}/<file_id>.wav exists
+            
+        '''
+        add_to_parser(parser, extra_usage)
         args = parser.parse_args()
-        args.data_dir = args.data_dir.format(db_folder=args.db_folder)
+        args.tags_folder = args.tags_folder.format(folder=args.folder)
         return args
 
     def __repr__(self) -> str:

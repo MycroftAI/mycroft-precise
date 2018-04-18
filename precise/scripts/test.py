@@ -96,7 +96,7 @@ def main():
 
     inject_params(args.model)
 
-    data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
+    data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
     train, test = data.load(args.use_train, not args.use_train)
     inputs, targets = train if args.use_train else test
 

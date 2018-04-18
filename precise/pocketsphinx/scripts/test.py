@@ -78,7 +78,7 @@ def test_pocketsphinx(listener: PocketsphinxListener, data_files) -> Stats:
 
 def main():
     args = TrainData.parse_args(create_parser(usage))
-    data = TrainData.from_both(args.db_file, args.db_folder, args.data_dir)
+    data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
     data_files = data.train_files if args.use_train else data.test_files
     listener = PocketsphinxListener(
         args.key_phrase, args.dict_file, args.hmm_folder, args.threshold
