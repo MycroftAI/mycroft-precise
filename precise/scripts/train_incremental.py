@@ -127,14 +127,14 @@ class IncrementalTrainer:
 
         for i, chunk in enumerate(chunk_audio(audio, self.args.chunk_size)):
             print('\r' + str(i * 100. / num_chunks) + '%', end='', flush=True)
-            audio_buffer = np.concatenate((self.audio_buffer[len(chunk):], chunk))
+            self.audio_buffer = np.concatenate((self.audio_buffer[len(chunk):], chunk))
             conf = self.listener.update(chunk)
             if conf > 0.5:
                 samples_since_train += 1
                 name = splitext(basename(fn))[0] + '-' + str(i) + '.wav'
                 name = join(self.args.folder, 'test' if save_test else '', 'not-wake-word',
                             'generated', name)
-                save_audio(name, audio_buffer)
+                save_audio(name, self.audio_buffer)
                 print()
                 print('Saved to:', name)
 
