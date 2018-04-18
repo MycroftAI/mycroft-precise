@@ -14,6 +14,7 @@
 from typing import *
 
 import numpy as np
+from os.path import join
 
 from precise.params import pr
 
@@ -68,4 +69,5 @@ def glob_all(folder: str, filt: str) -> List[str]:
 
 def find_wavs(folder: str) -> Tuple[List[str], List[str]]:
     """Finds wake-word and not-wake-word wavs in folder"""
-    return glob_all(folder + '/wake-word', '*.wav'), glob_all(folder + '/not-wake-word', '*.wav')
+    return (glob_all(join(folder, 'wake-word'), '*.wav'),
+            glob_all(join(folder, 'not-wake-word'), '*.wav'))
