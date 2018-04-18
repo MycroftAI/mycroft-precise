@@ -178,11 +178,15 @@ class PreciseRunner(object):
 
             prob = self.engine.get_prediction(chunk)
             self.on_prediction(prob)
+            chunk_activated = prob > 1 - self.sensitivity
 
-            if prob > 1 - self.sensitivity or activation < 0:
+            if chunk_activated or activation < 0:
                 activation += 1
-                if activation > self.trigger_level:
-                    activation = -self.chunk_size // 50
+                has_activated = activation > self.trigger_level
+                if has_activated:
                     self.on_activation()
+
+                if has_activated or chunk_activated and activation < 0:
+                    activation = -(8 * 2048) // self.chunk_size
             elif activation > 0:
                 activation -= 1
