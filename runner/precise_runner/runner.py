@@ -151,6 +151,8 @@ class PreciseRunner(object):
         """Stop listening and close stream"""
         if self.thread:
             self.running = False
+            if isinstance(self.stream, ReadWriteStream):
+                self.stream.write(b'\0' * self.chunk_size)
             self.thread.join()
             self.thread = None
 
