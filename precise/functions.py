@@ -21,7 +21,7 @@ def weighted_log_loss(yt, yp) -> Any:
     yp: Prediction
     """
     from keras import backend as K
-    weight = 0.5  # [0..1] where 1 is inf bias
+    weight = 0.7  # [0..1] where 1 is inf bias
 
     pos_loss = -(0 + yt) * K.log(0 + yp + K.epsilon())
     neg_loss = -(1 - yt) * K.log(1 - yp + K.epsilon())
