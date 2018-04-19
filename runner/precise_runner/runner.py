@@ -124,12 +124,26 @@ class PreciseRunner(object):
         self.on_prediction = on_prediction
         self.on_activation = on_activation
         self.chunk_size = engine.chunk_size
+        self.read_divisor = 1
 
         self.pa = None
         self.thread = None
         self.running = False
         self.is_paused = False
         atexit.register(self.stop)
+
+    def _calc_read_divisor(self):
+        """
+        pyaudio.Stream.read takes samples as n, not bytes
+        so read(n) should be read(n // sample_depth
+        """
+        try:
+            import pyaudio
+            if isinstance(self.stream, pyaudio.Stream):
+                return 2
+        except ImportError:
+            pass
+        return 1
 
     def start(self):
         """Start listening from stream"""
@@ -139,6 +153,8 @@ class PreciseRunner(object):
             self.stream = self.pa.open(
                 16000, 1, paInt16, True, frames_per_buffer=self.chunk_size
             )
+
+        self.read_divisor = self._calc_read_divisor()
 
         self.engine.start()
         self.running = True
@@ -173,7 +189,7 @@ class PreciseRunner(object):
         """Continuously check Precise process output"""
         activation = 0
         while self.running:
-            chunk = self.stream.read(self.chunk_size // 2)
+            chunk = self.stream.read(self.chunk_size // self.read_divisor)
 
             if self.is_paused:
                 continue
