@@ -42,7 +42,7 @@ setup(
     install_requires=[
         'numpy',
         'tensorflow',
-        'speechpy-fast',
+        'speechpy-fast>=2.4',
         'pyaudio',
         'keras',
         'h5py',
