@@ -55,6 +55,8 @@ setup(
     author='Matthew Scholefield',
     author_email='matthew.scholefield@mycroft.ai',
     description='Mycroft Precise Wake Word Listener',
+    long_description='View more info at `the GitHub page '
+                     '<https://github.com/mycroftai/mycroft-precise#mycroft-precise>`_',
     keywords='wakeword keyword wake word listener sound',
     url='http://github.com/MycroftAI/mycroft-precise',
 
