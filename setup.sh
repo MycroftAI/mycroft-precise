@@ -16,25 +16,25 @@
 is_command() { hash "$1" 2>/dev/null; }
 apt_is_locked() { fuser /var/lib/dpkg/lock >/dev/null 2>&1; }
 wait_for_apt() {
-    if apt_is_locked; then
-        echo "Waiting to obtain dpkg lock file..."
-        while apt_is_locked; do echo .; sleep 0.5; done
-    fi
+	if apt_is_locked; then
+		echo "Waiting to obtain dpkg lock file..."
+		while apt_is_locked; do echo .; sleep 0.5; done
+	fi
 }
 vpython() { "$VENV/bin/python" $@; }
 vpip() { "$VENV/bin/pip" $@; }
 
 install_tensorflow_armv7l() {
-    maj_min=$(python3 -c "import sys; i = sys.version_info; print(str(i[0]) + str(i[1]))")
-    whl=tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-    ver_whl=${whl//34/$maj_min}
+	maj_min=$(python3 -c "import sys; i = sys.version_info; print(str(i[0]) + str(i[1]))")
+	whl=tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+	ver_whl=${whl//34/$maj_min}
 
-    url=https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/$whl
-    wget "$url" -O $ver_whl
+	url=https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/$whl
+	wget "$url" -O $ver_whl
 
 	vpip install "$ver_whl"
 	vpip uninstall mock || true; vpip install mock
-    rm "$ver_whl"
+	rm "$ver_whl"
 }
 
 #############################################
@@ -49,14 +49,14 @@ if is_command apt-get; then
 fi
 
 if [ ! -x "$VENV/bin/pip" ]; then
-    python3 -m venv "$VENV" --without-pip
-    curl https://bootstrap.pypa.io/get-pip.py | vpython
+	python3 -m venv "$VENV" --without-pip
+	curl https://bootstrap.pypa.io/get-pip.py | vpython
 fi
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"
 
 if [ "$arch" = "armv7l" ] && ! vpython -c 'import tensorflow' 2>/dev/null; then
-    install_tensorflow_armv7l
+	install_tensorflow_armv7l
 fi
 
 vpip install -e runner/

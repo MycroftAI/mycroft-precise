@@ -14,8 +14,8 @@
 # limitations under the License.
 
 if ! [[ "$1" =~ .*\.net$ ]] || ! [ -d "$2" ]; then
-    echo "Usage: $0 <model>.net <folder_name>"
-    exit 1
+	echo "Usage: $0 <model>.net <folder_name>"
+	exit 1
 fi
 
 [ -d .cache/precise-data ] || git clone https://github.com/mycroftai/precise-data .cache/precise-data
