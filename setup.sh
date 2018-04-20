@@ -24,6 +24,19 @@ wait_for_apt() {
 vpython() { "$VENV/bin/python" $@; }
 vpip() { "$VENV/bin/pip" $@; }
 
+install_tensorflow_armv7l() {
+    maj_min=$(python3 -c "import sys; i = sys.version_info; print(str(i[0]) + str(i[1]))")
+    whl=tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+    ver_whl=${whl//34/$maj_min}
+
+    url=https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/$whl
+    wget "$url" -O $ver_whl
+
+	vpip install "$ver_whl"
+	vpip uninstall mock || true; vpip install mock
+    rm "$ver_whl"
+}
+
 #############################################
 set -e; cd "$(dirname "$0")" # Script Start #
 #############################################
@@ -42,12 +55,8 @@ fi
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"
 
-if ! vpython -c 'import tensorflow' 2>/dev/null && [ "$arch" = "armv7l" ]; then
-    whl=tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-    wget "https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/$whl"
-	vpip install "$whl"
-	vpip uninstall mock || true; vpip install mock
-    rm "$whl"
+if [ "$arch" = "armv7l" ] && ! vpython -c 'import tensorflow' 2>/dev/null; then
+    install_tensorflow_armv7l
 fi
 
 vpip install -e runner/
