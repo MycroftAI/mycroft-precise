@@ -17,6 +17,7 @@ from collections import namedtuple
 from prettyparse import create_parser
 
 from precise.model import load_precise_model
+from precise.network_runner import Listener
 from precise.params import inject_params
 from precise.train_data import TrainData
 
@@ -24,7 +25,7 @@ usage = '''
     Test a model against a dataset
     
     :model str
-        Keras model file (.net) to test
+        Either Keras (.net) or TensorFlow (.pb) model to test
     
     :-t --use-train
         Evaluate training data instead of test data
@@ -101,7 +102,7 @@ def main():
     inputs, targets = train if args.use_train else test
 
     filenames = sum(data.train_files if args.use_train else data.test_files, [])
-    predictions = load_precise_model(args.model).predict(inputs)
+    predictions = Listener.find_runner(args.model)(args.model).predict(inputs)
     stats = calc_stats(filenames, targets, predictions)
 
     print('Data:', data)
