@@ -46,6 +46,8 @@ VENV=${VENV-$(pwd)/.venv}
 if is_command apt-get; then
 	wait_for_apt
 	sudo apt-get install -y python3-pip libopenblas-dev python3-scipy cython libhdf5-dev python3-h5py portaudio19-dev swig libpulse-dev
+elif is_command brew; then
+    brew install portaudio
 fi
 
 if [ ! -x "$VENV/bin/pip" ]; then
