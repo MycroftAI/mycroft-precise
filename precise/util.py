@@ -55,6 +55,16 @@ def save_audio(filename: str, audio: np.ndarray):
     save_audio = (audio * np.iinfo(np.int16).max).astype(np.int16)
     wavio.write(filename, save_audio, pr.sample_rate, sampwidth=pr.sample_depth, scale='none')
 
+def play_audio(filename: str):
+    """
+    Args:
+        filename: Audio filename
+    """
+    import platform
+    from subprocess import Popen
+
+    player = 'play' if platform.system() == 'Darwin' else 'aplay'
+    Popen([player, '-q', filename])
 
 def glob_all(folder: str, filt: str) -> List[str]:
     """Recursive glob"""
