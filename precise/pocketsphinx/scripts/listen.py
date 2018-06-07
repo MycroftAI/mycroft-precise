@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from random import randint
-from subprocess import Popen
 from threading import Event
 
 from prettyparse import create_parser
@@ -21,6 +20,7 @@ from prettyparse import create_parser
 from precise.pocketsphinx.listener import PocketsphinxListener
 from precise_runner import PreciseRunner
 from precise_runner.runner import ListenerEngine
+from precise.util import play_audio
 
 usage = '''
     Run Pocketsphinx on microphone audio input
@@ -48,7 +48,7 @@ def main():
     args = create_parser(usage).parse_args()
 
     def on_activation():
-        Popen(['aplay', '-q', 'data/activate.wav'])
+        play_audio('data/activate.wav')
 
     def on_prediction(conf):
         print('!' if conf > 0.5 else '.', end='', flush=True)
