@@ -108,14 +108,14 @@ runner = PreciseRunner(engine, on_activation=lambda: print('hello'))
 
 In addition to the `precise-engine` executable, doing a **Source Install** gives you
 access to some other scripts. You can read more about them [here][executables].
-One of these executables, `precise-record`, can be used to test a model using
+One of these executables, `precise-listen`, can be used to test a model using
 your microphone:
 
 [executables]:https://github.com/MycroftAI/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word
 
 ```bash
 source .venv/bin/activate  # Gain access to precise-* executables
-precise-record my_model_file.pb
+precise-listen my_model_file.pb
 ```
 
 ## How it Works
