@@ -20,7 +20,7 @@ import numpy as np
 from prettyparse import create_parser
 
 from precise.network_runner import Listener
-from precise.util import save_audio, buffer_to_audio, play_audio
+from precise.util import save_audio, buffer_to_audio, activate_notify
 from precise_runner import PreciseRunner
 from precise_runner.runner import ListenerEngine
 
@@ -50,7 +50,7 @@ def main():
     args = create_parser(usage).parse_args()
 
     def on_activation():
-        play_audio('data/activate.wav')
+        activate_notify()
 
         if args.save_dir:
             global chunk_num

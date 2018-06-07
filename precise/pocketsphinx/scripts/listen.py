@@ -20,7 +20,7 @@ from prettyparse import create_parser
 from precise.pocketsphinx.listener import PocketsphinxListener
 from precise_runner import PreciseRunner
 from precise_runner.runner import ListenerEngine
-from precise.util import play_audio
+from precise.util import activate_notify
 
 usage = '''
     Run Pocketsphinx on microphone audio input
@@ -48,7 +48,7 @@ def main():
     args = create_parser(usage).parse_args()
 
     def on_activation():
-        play_audio('data/activate.wav')
+        activate_notify()
 
     def on_prediction(conf):
         print('!' if conf > 0.5 else '.', end='', flush=True)

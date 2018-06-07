@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from argparse import ArgumentParser
-from precise.util import play_audio
+from precise.util import activate_notify
 from precise_runner import PreciseRunner, PreciseEngine
 from threading import Event
 
@@ -28,7 +28,7 @@ def main():
         print('!' if prob > 0.5 else '.', end='', flush=True)
 
     def on_activation():
-        play_audio('data/activate.wav')
+        activate_notify()
 
     engine = PreciseEngine(args.engine, args.model)
     PreciseRunner(engine, on_prediction=on_prediction, on_activation=on_activation,
