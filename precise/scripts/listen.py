@@ -43,7 +43,7 @@ usage = '''
         Prefix for saved filenames
 '''
 
-session_id, chunk_num = '%03d' % randint(0, 999), 0
+session_id, chunk_num = '%09d' % randint(0, 999999999), 0
 
 
 def main():
