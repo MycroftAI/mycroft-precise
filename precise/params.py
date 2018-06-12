@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from os.path import isfile
+
 import json
 from collections import namedtuple
 from math import floor
@@ -68,7 +70,8 @@ def inject_params(model_name: str) -> ListenerParams:
         with open(params_file) as f:
             pr.obj = ListenerParams(**json.load(f))
     except (OSError, ValueError, TypeError):
-        print('Warning: Failed to load parameters from ' + params_file)
+        if isfile(model_name):
+            print('Warning: Failed to load parameters from ' + params_file)
     return pr
 
 
