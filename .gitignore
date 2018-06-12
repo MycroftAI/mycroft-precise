@@ -1,6 +1,6 @@
 /dist/
 /build/
-/.cache/
+.cache/
 /.idea/
 __pycache__/
 *.pyc
@@ -14,6 +14,8 @@ __pycache__/
 /other/
 /.venv/
 /stats.json
+/data/*/
+/wakewords/
 
 # Data folders
 /*/wake-word/
