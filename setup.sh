@@ -50,10 +50,8 @@ elif is_command brew; then
     brew install portaudio
 fi
 
-if [ ! -x "$VENV/bin/pip" ]; then
-	python3 -m venv "$VENV" --without-pip
-	curl https://bootstrap.pypa.io/get-pip.py | vpython
-fi
+if [ ! -x "$VENV/bin/python" ]; then python3 -m venv "$VENV" --without-pip; fi
+if [ ! -x "$VENV/bin/pip" ]; then curl https://bootstrap.pypa.io/get-pip.py | vpython; fi
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"
 
