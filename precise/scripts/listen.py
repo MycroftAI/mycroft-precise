@@ -14,14 +14,13 @@
 # limitations under the License.
 from os.path import join
 from random import randint
-from subprocess import Popen
 from threading import Event
 
 import numpy as np
 from prettyparse import create_parser
 
 from precise.network_runner import Listener
-from precise.util import save_audio, buffer_to_audio
+from precise.util import save_audio, buffer_to_audio, activate_notify
 from precise_runner import PreciseRunner
 from precise_runner.runner import ListenerEngine
 
@@ -44,14 +43,15 @@ usage = '''
         Prefix for saved filenames
 '''
 
-session_id, chunk_num = '%03d' % randint(0, 999), 0
+session_id, chunk_num = '%09d' % randint(0, 999999999), 0
 
 
 def main():
     args = create_parser(usage).parse_args()
 
     def on_activation():
-        Popen(['aplay', '-q', 'data/activate.wav'])
+        activate_notify()
+
         if args.save_dir:
             global chunk_num
             nm = join(args.save_dir, args.save_prefix + session_id + '.' + str(chunk_num) + '.wav')
