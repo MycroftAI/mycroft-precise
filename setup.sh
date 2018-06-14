@@ -21,8 +21,7 @@ wait_for_apt() {
 		while apt_is_locked; do echo .; sleep 0.5; done
 	fi
 }
-vpython() { "$VENV/bin/python" $@; }
-has_piwheels() { cat /etc/pip.conf 2>/dev/null | grep -qF 'piwheels' }
+has_piwheels() { cat /etc/pip.conf 2>/dev/null | grep -qF 'piwheels'; }
 install_piwheels() {
     echo "Installing piwheels..."
     echo "
@@ -37,22 +36,28 @@ set -e; cd "$(dirname "$0")" # Script Start #
 
 VENV=${VENV-$(pwd)/.venv}
 
-if is_command apt-get; then
-	wait_for_apt
-	sudo apt-get install -y python3-pip libopenblas-dev python3-scipy cython libhdf5-dev python3-h5py portaudio19-dev swig libpulse-dev
-elif is_command brew; then
-    brew install portaudio
+os=$(uname -s)
+if [ "$os" = "Linux" ]; then
+    if is_command apt-get; then
+        wait_for_apt
+        sudo apt-get install -y python3-pip libopenblas-dev python3-scipy cython libhdf5-dev python3-h5py portaudio19-dev swig libpulse-dev
+    fi
+elif [ "$os" = "Darwin" ]; then
+    if is_command brew; then
+        brew install portaudio
+    fi
 fi
 
 if [ ! -x "$VENV/bin/python" ]; then python3 -m venv "$VENV" --without-pip; fi
-if [ ! -x "$VENV/bin/pip" ]; then curl https://bootstrap.pypa.io/get-pip.py | vpython; fi
+source "$VENV/bin/activate"
+if [ ! -x "$VENV/bin/pip" ]; then curl https://bootstrap.pypa.io/get-pip.py | python; fi
 
-arch="$(python3 -c 'import platform; print(platform.machine())')"
+arch="$(python -c 'import platform; print(platform.machine())')"
 
 if [ "$arch" = "armv7l" ] && ! has_piwheels; then
     install_piwheels
 fi
 
-vpip install -e runner/
-vpip install -e .
-vpip install pocketsphinx  # Optional, for comparison
+pip install -e runner/
+pip install -e .
+pip install pocketsphinx  # Optional, for comparison
