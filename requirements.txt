@@ -18,8 +18,8 @@ PyYAML==3.12
 scipy==1.0.1
 six==1.11.0
 speechpy-fast==2.3
-tensorboard==1.7.0
-tensorflow==1.7.0
+tensorboard==1.8.0
+tensorflow==1.8.0
 termcolor==1.1.0
 typing==3.6.4
 wavio==0.0.3

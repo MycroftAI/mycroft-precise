@@ -22,19 +22,13 @@ wait_for_apt() {
 	fi
 }
 vpython() { "$VENV/bin/python" $@; }
-vpip() { "$VENV/bin/pip" $@; }
-
-install_tensorflow_armv7l() {
-	maj_min=$(python3 -c "import sys; i = sys.version_info; print(str(i[0]) + str(i[1]))")
-	whl=tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-	ver_whl=${whl//34/$maj_min}
-
-	url=https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/$whl
-	wget "$url" -O $ver_whl
-
-	vpip install "$ver_whl"
-	vpip uninstall mock || true; vpip install mock
-	rm "$ver_whl"
+has_piwheels() { cat /etc/pip.conf 2>/dev/null | grep -qF 'piwheels' }
+install_piwheels() {
+    echo "Installing piwheels..."
+    echo "
+[global]
+extra-index-url=https://www.piwheels.org/simple
+" | sudo tee -a /etc/pip.conf
 }
 
 #############################################
@@ -55,8 +49,8 @@ if [ ! -x "$VENV/bin/pip" ]; then curl https://bootstrap.pypa.io/get-pip.py | vp
 
 arch="$(python3 -c 'import platform; print(platform.machine())')"
 
-if [ "$arch" = "armv7l" ] && ! vpython -c 'import tensorflow' 2>/dev/null; then
-	install_tensorflow_armv7l
+if [ "$arch" = "armv7l" ] && ! has_piwheels; then
+    install_piwheels
 fi
 
 vpip install -e runner/

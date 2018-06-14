@@ -41,7 +41,7 @@ setup(
     },
     install_requires=[
         'numpy',
-        'tensorflow',
+        'tensorflow==1.8.0',  # Must be on piwheels
         'speechpy-fast>=2.4',
         'pyaudio',
         'keras',
