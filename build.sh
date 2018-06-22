@@ -7,7 +7,8 @@ source .venv/bin/activate
 pip install pyinstaller
 pyinstaller -y precise.engine.spec
 
-out_name="dist/precise-engine_$(precise-engine --version 2>&1)_$(uname -m).tar.gz"
-tar czvf "$out_name" "dist/precise-engine"
-echo "Wrote to $out_name"
+out_name="precise-engine_$(precise-engine --version 2>&1)_$(uname -m).tar.gz"
+cd dist
+tar czvf "$out_name" "precise-engine"
+echo "Wrote to dist/$out_name"
 
