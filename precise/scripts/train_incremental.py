@@ -42,7 +42,7 @@ usage = '''
     :-c --chunk-size int 2048
         Number of samples between testing the neural network
     
-    :-b --batch-size int 128
+    :-b --batch-size int 2048
         Batch size used for training
     
     :-sb --save-best
