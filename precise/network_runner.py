@@ -22,6 +22,7 @@ import numpy as np
 from precise.model import load_precise_model
 from precise.params import inject_params
 from precise.util import buffer_to_audio
+from precise.vectorization import add_deltas
 
 
 class Runner(metaclass=ABCMeta):
@@ -85,7 +86,7 @@ class Listener:
     def __init__(self, model_name: str, chunk_size: int = -1, runner_cls: type = None):
         self.window_audio = np.array([])
         self.pr = inject_params(model_name)
-        self.features = np.zeros((self.pr.n_features, self.pr.feature_size))
+        self.mfccs = np.zeros((self.pr.n_features, self.pr.n_mfcc))
         self.chunk_size = chunk_size
         runner_cls = runner_cls or self.find_runner(model_name)
         self.runner = runner_cls(model_name)
@@ -104,7 +105,7 @@ class Listener:
 
     def clear(self):
         self.window_audio = np.array([])
-        self.features = np.zeros((self.pr.n_features, self.pr.feature_size))
+        self.mfccs = np.zeros((self.pr.n_features, self.pr.n_mfcc))
 
     def update(self, stream: Union[BinaryIO, np.ndarray, bytes]) -> float:
         if isinstance(stream, np.ndarray):
@@ -124,8 +125,8 @@ class Listener:
             new_features = self.mfcc(self.window_audio, self.pr.sample_rate, self.pr.window_t,
                                      self.pr.hop_t, self.pr.n_mfcc, self.pr.n_filt, self.pr.n_fft)
             self.window_audio = self.window_audio[len(new_features) * self.pr.hop_samples:]
-            if len(new_features) > len(self.features):
-                new_features = new_features[-len(self.features):]
-            self.features = np.concatenate((self.features[len(new_features):], new_features))
+            if len(new_features) > len(self.mfccs):
+                new_features = new_features[-len(self.mfccs):]
+            self.mfccs = np.concatenate((self.mfccs[len(new_features):], new_features))
 
-        return self.runner.run(self.features)
+        return self.runner.run(add_deltas(self.mfccs))
