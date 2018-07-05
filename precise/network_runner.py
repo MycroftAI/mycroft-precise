@@ -22,7 +22,7 @@ import numpy as np
 from precise.model import load_precise_model
 from precise.params import inject_params
 from precise.util import buffer_to_audio
-from precise.vectorization import add_deltas
+from precise.vectorization import vectorize_raw
 
 
 class Runner(metaclass=ABCMeta):
@@ -90,7 +90,6 @@ class Listener:
         self.chunk_size = chunk_size
         runner_cls = runner_cls or self.find_runner(model_name)
         self.runner = runner_cls(model_name)
-        self.mfcc = import_module('speechpy.feature').mfcc
 
     @staticmethod
     def find_runner(model_name: str) -> Type[Runner]:
@@ -122,11 +121,10 @@ class Listener:
         self.window_audio = np.concatenate((self.window_audio, buffer_audio))
 
         if len(self.window_audio) >= self.pr.window_samples:
-            new_features = self.mfcc(self.window_audio, self.pr.sample_rate, self.pr.window_t,
-                                     self.pr.hop_t, self.pr.n_mfcc, self.pr.n_filt, self.pr.n_fft)
+            new_features = vectorize_raw(self.window_audio)
             self.window_audio = self.window_audio[len(new_features) * self.pr.hop_samples:]
             if len(new_features) > len(self.mfccs):
                 new_features = new_features[-len(self.mfccs):]
             self.mfccs = np.concatenate((self.mfccs[len(new_features):], new_features))
 
-        return self.runner.run(add_deltas(self.mfccs))
+        return self.runner.run(self.mfccs)
