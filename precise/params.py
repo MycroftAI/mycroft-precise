@@ -14,53 +14,51 @@
 from os.path import isfile
 
 import json
-from collections import namedtuple
 from math import floor
+import attr
 
-import numpy as np
+@attr.s
+class ListenerParams:
+    window_t = attr.ib()  # type: float
+    hop_t = attr.ib()  # type: float
+    buffer_t = attr.ib()  # type: float
+    sample_rate = attr.ib()  # type: int
+    sample_depth = attr.ib()  # type: int
+    n_mfcc = attr.ib()  # type: int
+    n_filt = attr.ib()  # type: int
+    n_fft = attr.ib()  # type: int
+
+    @property
+    def buffer_samples(self):
+        samples = int(self.sample_rate * self.buffer_t + 0.5)
+        return self.hop_samples * (samples // self.hop_samples)
+
+    @property
+    def n_features(self):
+        return 1 + int(floor((self.buffer_samples - self.window_samples) / self.hop_samples))
+
+    @property
+    def window_samples(self):
+        return int(self.sample_rate * self.window_t + 0.5)
+
+    @property
+    def hop_samples(self):
+        return int(self.sample_rate * self.hop_t + 0.5)
+
+    @property
+    def max_samples(self):
+        return int(self.buffer_t * self.sample_rate)
+
+    @property
+    def feature_size(self):
+        return self.n_mfcc
 
 
-def _create_listener_params():
-    cls = namedtuple('ListenerParams',
-                     'window_t hop_t buffer_t sample_rate sample_depth n_mfcc n_filt n_fft')
-    cls.buffer_samples = property(
-        lambda s: s.hop_samples * (int(np.round(s.sample_rate * s.buffer_t)) // s.hop_samples)
-    )
-    cls.n_features = property(
-        lambda s: 1 + int(floor((s.buffer_samples - s.window_samples) / s.hop_samples))
-    )
-    cls.window_samples = property(lambda s: int(s.sample_rate * s.window_t + 0.5))
-    cls.hop_samples = property(lambda s: int(s.sample_rate * s.hop_t + 0.5))
-    cls.max_samples = property(lambda s: int(s.buffer_t * s.sample_rate))
-    cls.feature_size = property(lambda s: s.n_mfcc)
-
-    return cls
-
-
-class Proxy:
-    def __init__(self, obj):
-        self.obj = obj
-
-    def __getattr__(self, item):
-        return getattr(self.obj, item)
-
-    def __setattr__(self, key, value):
-        if key == 'obj':
-            object.__setattr__(self, key, value)
-        else:
-            raise AttributeError('Cannot set attributes to proxy')
-
-    def __hash__(self):
-        return self.obj.__hash__()
-
-
-ListenerParams = _create_listener_params()
-
-# Reference to global listener parameters
-pr = Proxy(ListenerParams(
+# Global listener parameters
+pr = ListenerParams(
     window_t=0.1, hop_t=0.05, buffer_t=1.5, sample_rate=16000,
     sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512
-))  # type: ListenerParams
+)
 
 
 def inject_params(model_name: str) -> ListenerParams:
@@ -68,7 +66,7 @@ def inject_params(model_name: str) -> ListenerParams:
     params_file = model_name + '.params'
     try:
         with open(params_file) as f:
-            pr.obj = ListenerParams(**json.load(f))
+            pr.__dict__.update(json.load(f))
     except (OSError, ValueError, TypeError):
         if isfile(model_name):
             print('Warning: Failed to load parameters from ' + params_file)
@@ -78,4 +76,4 @@ def inject_params(model_name: str) -> ListenerParams:
 def save_params(model_name: str):
     """Save current global listener params to a file"""
     with open(model_name + '.params', 'w') as f:
-        json.dump(pr._asdict(), f)
+        json.dump(pr.__dict__, f)

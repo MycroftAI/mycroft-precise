@@ -49,7 +49,8 @@ setup(
         'wavio',
         'typing',
         'prettyparse',
-        'precise-runner'
+        'precise-runner',
+        'attrs'
     ],
 
     author='Matthew Scholefield',
