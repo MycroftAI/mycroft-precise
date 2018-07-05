@@ -17,6 +17,9 @@ from typing import *
 from precise.functions import load_keras, false_pos, false_neg, weighted_log_loss
 from precise.params import inject_params, pr
 
+if TYPE_CHECKING:
+    from keras.models import Sequential
+
 lstm_units = 20
 
 
@@ -29,13 +32,14 @@ def load_precise_model(model_name: str) -> Any:
     return load_keras().models.load_model(model_name)
 
 
-def create_model(model_name: str, skip_acc=False, extra_metrics=False) -> Any:
+def create_model(model_name: str, skip_acc=False, extra_metrics=False) -> 'Sequential':
     """
     Load or create a precise model
 
     Args:
         model_name: Name of model
         skip_acc: Whether to skip accuracy calculation while training
+        extra_metrics: Whether to include false positive and false negative metrics
 
     Returns:
         model: Loaded Keras model
