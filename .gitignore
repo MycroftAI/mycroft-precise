@@ -16,6 +16,7 @@ __pycache__/
 /stats.json
 /data/*/
 /wakewords/
+/logs
 
 # Data folders
 /*/wake-word/
