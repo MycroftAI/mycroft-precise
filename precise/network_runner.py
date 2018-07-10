@@ -68,6 +68,8 @@ class TensorFlowRunner(Runner):
 
 class KerasRunner(Runner):
     def __init__(self, model_name: str):
+        import os
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         import tensorflow as tf
         self.model = load_precise_model(model_name)
         self.graph = tf.get_default_graph()
