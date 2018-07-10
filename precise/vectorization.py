@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import hashlib
 from typing import *
+import json
 
 import numpy as np
 
@@ -29,6 +31,14 @@ def vectorize_raw(audio: np.ndarray) -> np.ndarray:
     if len(audio) == 0:
         raise ValueError('Cannot vectorize empty audio!')
     return mfcc(audio, pr.sample_rate, pr.window_t, pr.hop_t, pr.n_mfcc, pr.n_filt, pr.n_fft)
+
+
+def add_deltas(features: np.ndarray) -> np.ndarray:
+    deltas = np.zeros_like(features)
+    for i in range(1, len(features)):
+        deltas[i] = features[i] - features[i - 1]
+
+    return np.concatenate([features, deltas], -1)
 
 
 def vectorize(audio: np.ndarray) -> np.ndarray:
@@ -53,6 +63,10 @@ def vectorize(audio: np.ndarray) -> np.ndarray:
     return features
 
 
+def vectorize_delta(audio: np.ndarray) -> np.ndarray:
+    return add_deltas(vectorize(audio))
+
+
 def vectorize_inhibit(audio: np.ndarray) -> np.ndarray:
     """
     Returns an array of inputs generated from the
@@ -70,12 +84,15 @@ def vectorize_inhibit(audio: np.ndarray) -> np.ndarray:
     return np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size))
 
 
-def load_vector(name: str, vectorizer: Callable = vectorize) -> np.ndarray:
+def load_vector(name: str, vectorizer: Callable = None) -> np.ndarray:
     """Loads and caches a vector input from a wav or npy file"""
     import os
+    vectorizer = vectorizer or (vectorize_delta if pr.use_delta else vectorize)
 
-    save_name = name if name.endswith('.npy') else os.path.join('.cache', str(abs(hash(pr))),
-                                                                vectorizer.__name__ + '.' + name + '.npy')
+    save_name = name if name.endswith('.npy') else os.path.join(
+        '.cache', hashlib.md5(
+            str(sorted(pr.__dict__.values())).encode()
+        ).hexdigest(), vectorizer.__name__ + '.' + name + '.npy')
 
     if os.path.isfile(save_name):
         return np.load(save_name)

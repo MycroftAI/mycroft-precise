@@ -188,7 +188,7 @@ class TrainData:
         ])
 
     @staticmethod
-    def __load_files(kw_files: list, nkw_files: list, vectorizer: Callable = vectorize) -> tuple:
+    def __load_files(kw_files: list, nkw_files: list, vectorizer: Callable = None) -> tuple:
         inputs = []
         outputs = []
 

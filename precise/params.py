@@ -17,7 +17,7 @@ import json
 from math import floor
 import attr
 
-@attr.s
+@attr.s(frozen=True)
 class ListenerParams:
     window_t = attr.ib()  # type: float
     hop_t = attr.ib()  # type: float
@@ -27,6 +27,7 @@ class ListenerParams:
     n_mfcc = attr.ib()  # type: int
     n_filt = attr.ib()  # type: int
     n_fft = attr.ib()  # type: int
+    use_delta = attr.ib()  # type: bool
 
     @property
     def buffer_samples(self):
@@ -51,13 +52,13 @@ class ListenerParams:
 
     @property
     def feature_size(self):
-        return self.n_mfcc
+        return self.n_mfcc + self.use_delta * self.n_mfcc
 
 
 # Global listener parameters
 pr = ListenerParams(
     window_t=0.1, hop_t=0.05, buffer_t=1.5, sample_rate=16000,
-    sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512
+    sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512, use_delta=False
 )
 
 

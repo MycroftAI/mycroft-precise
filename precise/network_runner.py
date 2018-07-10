@@ -22,7 +22,7 @@ import numpy as np
 from precise.model import load_precise_model
 from precise.params import inject_params
 from precise.util import buffer_to_audio
-from precise.vectorization import vectorize_raw
+from precise.vectorization import vectorize_raw, add_deltas
 
 
 class Runner(metaclass=ABCMeta):
@@ -129,4 +129,7 @@ class Listener:
                 new_features = new_features[-len(self.mfccs):]
             self.mfccs = np.concatenate((self.mfccs[len(new_features):], new_features))
 
-        return self.runner.run(self.mfccs)
+        mfccs = self.mfccs
+        if self.pr.use_delta:
+            mfccs = add_deltas(self.mfccs)
+        return self.runner.run(mfccs)
