@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import numpy as np
 from abc import abstractmethod, ABCMeta
 from importlib import import_module
 from os.path import splitext
 from typing import *
 from typing import BinaryIO
-
-import numpy as np
 
 from precise.model import load_precise_model
 from precise.params import inject_params

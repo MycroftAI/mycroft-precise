@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import *
-
 import numpy as np
 from os.path import join, dirname, abspath
+from typing import *
 
 from precise.params import pr
 
@@ -55,6 +54,7 @@ def save_audio(filename: str, audio: np.ndarray):
     save_audio = (audio * np.iinfo(np.int16).max).astype(np.int16)
     wavio.write(filename, save_audio, pr.sample_rate, sampwidth=pr.sample_depth, scale='none')
 
+
 def play_audio(filename: str):
     """
     Args:
@@ -66,11 +66,13 @@ def play_audio(filename: str):
     player = 'play' if platform.system() == 'Darwin' else 'aplay'
     Popen([player, '-q', filename])
 
+
 def activate_notify():
     audio = 'data/activate.wav'
     audio = abspath(dirname(abspath(__file__)) + '/../' + audio)
 
     play_audio(audio)
+
 
 def glob_all(folder: str, filt: str) -> List[str]:
     """Recursive glob"""

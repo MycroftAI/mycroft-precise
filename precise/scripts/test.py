@@ -16,7 +16,6 @@ from collections import namedtuple
 
 from prettyparse import create_parser
 
-from precise.model import load_precise_model
 from precise.network_runner import Listener
 from precise.params import inject_params
 from precise.train_data import TrainData

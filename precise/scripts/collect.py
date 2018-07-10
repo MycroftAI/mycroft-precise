@@ -12,15 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import tty
-import wave
-from os.path import isfile
 from select import select
 from sys import stdin
 from termios import tcsetattr, tcgetattr, TCSADRAIN
-from prettyparse import create_parser
 
 import pyaudio
+import tty
+import wave
+from os.path import isfile
+from prettyparse import create_parser
 
 usage = '''
     Record audio samples for use with precise
@@ -66,8 +66,8 @@ EXIT_KEY_CODE = 27
 
 def record_until(p, should_return, args):
     chunk_size = 1024
-    stream = p.open(format=p.get_format_from_width(args.width), channels=args.channels, rate=args.rate,
-                    input=True, frames_per_buffer=chunk_size)
+    stream = p.open(format=p.get_format_from_width(args.width), channels=args.channels,
+                    rate=args.rate, input=True, frames_per_buffer=chunk_size)
 
     frames = []
     while not should_return():

@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import wave
-from subprocess import check_output, PIPE
-
 from prettyparse import create_parser
+from subprocess import check_output, PIPE
 
 from precise.pocketsphinx.listener import PocketsphinxListener
 from precise.scripts.test import show_stats, Stats

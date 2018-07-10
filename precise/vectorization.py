@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import hashlib
-from typing import *
-import json
-
 import numpy as np
+from typing import *
 
 from precise.params import pr
 from precise.util import load_audio

@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+import numpy as np
 from argparse import ArgumentParser
-from contextlib import suppress
 from glob import glob
 from hashlib import md5
-from os.path import join, isfile, dirname
+from os.path import join, isfile
+from prettyparse import add_to_parser
 from typing import *
 
-import numpy as np
-from prettyparse import add_to_parser
-
 from precise.util import find_wavs
-from precise.vectorization import load_vector, vectorize_inhibit, vectorize
+from precise.vectorization import load_vector, vectorize_inhibit
 
 
 class TrainData:

@@ -15,9 +15,8 @@
 # limitations under the License.
 import os
 from os.path import split, isfile
-from shutil import copyfile
-
 from prettyparse import create_parser
+from shutil import copyfile
 
 usage = '''
     Convert wake word model from Keras to TensorFlow

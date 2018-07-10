@@ -12,12 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import numpy as np
 from os.path import join
+from prettyparse import create_parser
 from random import randint
 from threading import Event
-
-import numpy as np
-from prettyparse import create_parser
 
 from precise.network_runner import Listener
 from precise.util import save_audio, buffer_to_audio, activate_notify
@@ -74,7 +73,8 @@ def main():
 
     engine = ListenerEngine(listener, args.chunk_size)
     engine.get_prediction = get_prediction
-    runner = PreciseRunner(engine, args.threshold, on_activation=on_activation, on_prediction=on_prediction)
+    runner = PreciseRunner(engine, args.threshold, on_activation=on_activation,
+                           on_prediction=on_prediction)
     runner.start()
     Event().wait()  # Wait forever
 

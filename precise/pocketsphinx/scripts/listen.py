@@ -12,15 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from prettyparse import create_parser
 from random import randint
 from threading import Event
 
-from prettyparse import create_parser
-
 from precise.pocketsphinx.listener import PocketsphinxListener
+from precise.util import activate_notify
 from precise_runner import PreciseRunner
 from precise_runner.runner import ListenerEngine
-from precise.util import activate_notify
 
 usage = '''
     Run Pocketsphinx on microphone audio input
