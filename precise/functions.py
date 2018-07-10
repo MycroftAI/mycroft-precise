@@ -16,6 +16,15 @@ from typing import *
 LOSS_BIAS = 0.9  # [0..1] where 1 is inf bias
 
 
+def set_loss_bias(bias: float):
+    """
+    Near 1.0 reduces false positives
+    Near 0.0 reduces false negatives
+    """
+    global LOSS_BIAS
+    LOSS_BIAS = bias
+
+
 def weighted_log_loss(yt, yp) -> Any:
     """
     Binary crossentropy with a bias towards false negatives

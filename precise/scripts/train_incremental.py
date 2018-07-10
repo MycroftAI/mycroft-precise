@@ -12,26 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import numpy as np
 from os import makedirs
 from os.path import basename, splitext, isfile, join
+from prettyparse import create_parser
 from random import random
 from typing import *
 
-import numpy as np
-from prettyparse import create_parser
-
 from precise.model import create_model
 from precise.network_runner import Listener, KerasRunner
-from precise.params import inject_params
+from precise.params import pr
 from precise.train_data import TrainData
+from precise.trainer import Trainer
 from precise.util import load_audio, save_audio, glob_all
 
 usage = '''
     Train a model to inhibit activation by
     marking false activations and retraining
-    
-    :model str
-        Keras <NAME>.net file to train
     
     :-e --epochs int 1
         Number of epochs to train before continuing evaluation
@@ -41,18 +38,6 @@ usage = '''
     
     :-c --chunk-size int 2048
         Number of samples between testing the neural network
-    
-    :-b --batch-size int 2048
-        Batch size used for training
-    
-    :-sb --save-best
-        Only save the model each epoch if its stats improve
-    
-    :-mm --metric-monitor str loss
-        Metric used to determine when to save
-    
-    :-em --extra-metrics
-        Add extra metrics during training
     
     :-nv --no-validation
         Disable accuracy and validation calculation
@@ -85,34 +70,41 @@ def save_trained_fns(trained_fns: list, model_name: str):
         f.write('\n'.join(trained_fns).encode('utf8', 'surrogatepass'))
 
 
-class IncrementalTrainer:
-    def __init__(self, args):
-        self.args = args
-        self.trained_fns = load_trained_fns(args.model)
-        pr = inject_params(args.model)
+class IncrementalTrainer(Trainer):
+    def __init__(self):
+        super().__init__(create_parser(usage))
+
+        for i in (
+                join(self.args.folder, 'not-wake-word', 'generated'),
+                join(self.args.folder, 'test', 'not-wake-word', 'generated')
+        ):
+            makedirs(i, exist_ok=True)
+
+        self.trained_fns = load_trained_fns(self.args.model)
         self.audio_buffer = np.zeros(pr.buffer_samples, dtype=float)
 
-        from keras.callbacks import ModelCheckpoint
-        self.checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
-                                          save_best_only=args.save_best)
-        data = TrainData.from_tags(args.tags_file, args.tags_folder)
-        self.tags_data = data.load(True, not args.no_validation)
+        if not isfile(self.args.model):
+            create_model(self.args.model, self.args.no_validation, self.args.extra_metrics).save(
+                self.args.model
+            )
+        self.listener = Listener(self.args.model, self.args.chunk_size, runner_cls=KerasRunner)
 
-        if not isfile(args.model):
-            create_model(args.model, args.no_validation, args.extra_metrics).save(args.model)
-        self.listener = Listener(args.model, args.chunk_size, runner_cls=KerasRunner)
+    @staticmethod
+    def load_data(args: Any):
+        data = TrainData.from_tags(args.tags_file, args.tags_folder)
+        return data.load(True, not args.no_validation)
 
     def retrain(self):
         """Train for a session, pulling in any new data from the filesystem"""
         folder = TrainData.from_folder(self.args.folder)
         train_data, test_data = folder.load(True, not self.args.no_validation)
 
-        train_data = TrainData.merge(train_data, self.tags_data[0])
-        test_data = TrainData.merge(test_data, self.tags_data[1])
+        train_data = TrainData.merge(train_data, self.train)
+        test_data = TrainData.merge(test_data, self.test)
         print()
         try:
             self.listener.runner.model.fit(*train_data, self.args.batch_size, self.args.epochs,
-                                           validation_data=test_data, callbacks=[self.checkpoint])
+                                           validation_data=test_data, callbacks=self.callbacks)
         finally:
             self.listener.runner.model.save(self.args.model)
 
@@ -142,7 +134,7 @@ class IncrementalTrainer:
                 samples_since_train = 0
                 self.retrain()
 
-    def train_incremental(self):
+    def run(self):
         """
         Begin reading through audio files, saving false
         activations and retraining when necessary
@@ -161,17 +153,8 @@ class IncrementalTrainer:
 
 
 def main():
-    args = TrainData.parse_args(create_parser(usage))
-
-    for i in (
-            join(args.folder, 'not-wake-word', 'generated'),
-            join(args.folder, 'test', 'not-wake-word', 'generated')
-    ):
-        makedirs(i, exist_ok=True)
-
-    trainer = IncrementalTrainer(args)
     try:
-        trainer.train_incremental()
+        IncrementalTrainer().run()
     except KeyboardInterrupt:
         print()
 

@@ -11,7 +11,7 @@ Markdown==2.6.11
 numpy==1.14.2
 pocketsphinx==0.1.3
 -e git+https://github.com/mycroftai/mycroft-precise#egg=precise_runner&subdirectory=runner
-prettyparse==0.1.2
+prettyparse==0.1.4
 protobuf==3.5.2.post1
 PyAudio==0.2.11
 PyYAML==3.12
@@ -24,3 +24,4 @@ termcolor==1.1.0
 typing==3.6.4
 wavio==0.0.3
 Werkzeug==0.14.1
+fitipy==0.1.1

@@ -48,9 +48,10 @@ setup(
         'h5py',
         'wavio',
         'typing',
-        'prettyparse',
+        'prettyparse>=0.1.4',
         'precise-runner',
-        'attrs'
+        'attrs',
+        'fitipy'
     ],
 
     author='Matthew Scholefield',
