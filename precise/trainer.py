@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from fitipy import Fitipy
 from keras.callbacks import LambdaCallback
-from os.path import splitext
+from os.path import splitext, isfile
 from prettyparse import add_to_parser
 from typing import Any, Tuple
 
@@ -9,6 +9,7 @@ from precise.functions import set_loss_bias
 from precise.model import create_model
 from precise.params import inject_params, save_params
 from precise.train_data import TrainData
+from precise.util import calc_sample_hash
 
 
 class Trainer:
@@ -17,6 +18,13 @@ class Trainer:
         
         :model str
             Keras model file (.net) to load from and save to
+        
+        :-sf --samples-file str -
+            Loads subset of data from the provided json file
+            generated with precise-train-sampled
+        
+        :-is --invert-samples
+            Loads subset of data not inside --samples-file
         
         :-e --epochs int 10
             Number of epochs to train model for
@@ -47,6 +55,11 @@ class Trainer:
         parser = parser or ArgumentParser()
         add_to_parser(parser, self.usage, True)
         self.args = args = TrainData.parse_args(parser)
+
+        if args.invert_samples and not args.samples_file:
+            parser.error('You must specify --samples-file when using --invert-samples')
+        if args.samples_file and not isfile(args.samples_file):
+            parser.error('No such file: ' + (args.invert_samples or args.samples_file))
         if not 0.0 <= args.sensitivity <= 1.0:
             parser.error('sensitivity must be between 0.0 and 1.0')
 
@@ -68,10 +81,32 @@ class Trainer:
             self.epoch += 1
             epoch_fiti.write().write(self.epoch, str)
 
+        self.model_base = splitext(self.args.model)[0]
+
+        if args.samples_file:
+            self.samples, self.hash_to_ind = self.load_sample_data(args.samples_file, self.train)
+        else:
+            self.samples = set()
+            self.hash_to_ind = {}
+
         self.callbacks = [
-            checkpoint, TensorBoard(),
-            LambdaCallback(on_epoch_end=on_epoch_end)
+            checkpoint, TensorBoard(
+                log_dir=self.model_base + '.logs', histogram_freq=10 if self.test else 0
+            ), LambdaCallback(on_epoch_end=on_epoch_end)
         ]
+
+    @staticmethod
+    def load_sample_data(filename, train_data) -> Tuple[set, dict]:
+        samples = Fitipy(filename).read().set()
+        hash_to_ind = {
+            calc_sample_hash(inp, outp): ind
+            for ind, (inp, outp) in enumerate(zip(*train_data))
+        }
+        for hsh in list(samples):
+            if hsh not in hash_to_ind:
+                print('Missing hash:', hsh)
+                samples.remove(hsh)
+        return samples, hash_to_ind
 
     @staticmethod
     def load_data(args: Any) -> Tuple[tuple, tuple]:
@@ -92,12 +127,24 @@ class Trainer:
 
         return train, test
 
+    @property
+    def sampled_data(self):
+        """Returns (train_inputs, train_outputs)"""
+        if self.args.samples_file:
+            if self.args.invert_samples:
+                chosen_samples = set(self.hash_to_ind) - self.samples
+            else:
+                chosen_samples = self.samples
+            selected_indices = [self.hash_to_ind[h] for h in chosen_samples]
+            return self.train[0][selected_indices], self.train[1][selected_indices]
+        else:
+            return self.train[0], self.train[1]
+
     def run(self):
         try:
             self.model.fit(
-                self.train[0], self.train[1], self.args.batch_size, self.epoch + self.args.epochs,
-                validation_data=self.test, initial_epoch=self.epoch,
-                callbacks=self.callbacks
+                *self.sampled_data, self.args.batch_size,
+                self.epoch + self.args.epochs, validation_data=self.test, initial_epoch=self.epoch, callbacks=self.callbacks
             )
         except KeyboardInterrupt:
             print()

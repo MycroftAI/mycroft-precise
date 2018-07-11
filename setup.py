@@ -36,6 +36,7 @@ setup(
             'precise-test=precise.scripts.test:main',
             'precise-test-pocketsphinx=precise.pocketsphinx.scripts.test:main',
             'precise-train=precise.scripts.train:main',
+            'precise-train-sampled=precise.scripts.train_sampled:main',
             'precise-train-incremental=precise.scripts.train_incremental:main',
         ]
     },

@@ -39,10 +39,6 @@ usage = '''
     :-c --chunk-size int 2048
         Number of samples between testing the neural network
     
-    :-nv --no-validation
-        Disable accuracy and validation calculation
-        to improve speed during training
-    
     :-r --random-data-folder str data/random
         Folder with properly encoded wav files of
         random audio that should not cause an activation
@@ -99,12 +95,15 @@ class IncrementalTrainer(Trainer):
         folder = TrainData.from_folder(self.args.folder)
         train_data, test_data = folder.load(True, not self.args.no_validation)
 
-        train_data = TrainData.merge(train_data, self.train)
+        train_data = TrainData.merge(train_data, self.sampled_data)
         test_data = TrainData.merge(test_data, self.test)
         print()
         try:
-            self.listener.runner.model.fit(*train_data, self.args.batch_size, self.args.epochs,
-                                           validation_data=test_data, callbacks=self.callbacks)
+            self.listener.runner.model.fit(
+                *train_data, self.args.batch_size, self.epoch + self.args.epochs,
+                validation_data=test_data, callbacks=self.callbacks,
+                initial_epoch=self.epoch
+            )
         finally:
             self.listener.runner.model.save(self.args.model)
 

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import hashlib
 import numpy as np
 from os.path import join, dirname, abspath
 from typing import *
@@ -89,3 +90,10 @@ def find_wavs(folder: str) -> Tuple[List[str], List[str]]:
     """Finds wake-word and not-wake-word wavs in folder"""
     return (glob_all(join(folder, 'wake-word'), '*.wav'),
             glob_all(join(folder, 'not-wake-word'), '*.wav'))
+
+
+def calc_sample_hash(inp: np.ndarray, outp: np.ndarray) -> str:
+    md5 = hashlib.md5()
+    md5.update(inp.tostring())
+    md5.update(outp.tostring())
+    return md5.hexdigest()
