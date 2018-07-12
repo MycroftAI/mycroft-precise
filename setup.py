@@ -33,6 +33,7 @@ setup(
             'precise-listen=precise.scripts.listen:main',
             'precise-listen-pocketsphinx=precise.pocketsphinx.scripts.listen:main',
             'precise-engine=precise.scripts.engine:main',
+            'precise-simulate=precise.scripts.simulate:main',
             'precise-test=precise.scripts.test:main',
             'precise-test-pocketsphinx=precise.pocketsphinx.scripts.test:main',
             'precise-train=precise.scripts.train:main',
