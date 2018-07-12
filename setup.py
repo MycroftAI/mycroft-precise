@@ -53,7 +53,8 @@ setup(
         'prettyparse>=0.1.4',
         'precise-runner',
         'attrs',
-        'fitipy'
+        'fitipy',
+        'bbopt'
     ],
 
     author='Matthew Scholefield',
