@@ -92,6 +92,36 @@ class ReadWriteStream(object):
         self.write_event.set()
 
 
+class TriggerDetector:
+    """
+    Reads predictions and detects activations
+    This prevents multiple close activations from occurring when
+    the predictions look like ...!!!..!!...
+    """
+    def __init__(self, chunk_size, sensitivity=0.5, trigger_level=3):
+        self.chunk_size = chunk_size
+        self.sensitivity = sensitivity
+        self.trigger_level = trigger_level
+        self.activation = 0
+
+    def update(self, prob):
+        # type: (float) -> bool
+        """Returns whether the new prediction caused an activation"""
+        chunk_activated = prob > 1 - self.sensitivity
+
+        if chunk_activated or self.activation < 0:
+            self.activation += 1
+            has_activated = self.activation > self.trigger_level
+            if has_activated or chunk_activated and self.activation < 0:
+                self.activation = -(8 * 2048) // self.chunk_size
+
+            if has_activated:
+                return True
+        elif self.activation > 0:
+            self.activation -= 1
+        return False
+
+
 class PreciseRunner(object):
     """
     Wrapper to use Precise. Example:
@@ -130,6 +160,7 @@ class PreciseRunner(object):
         self.thread = None
         self.running = False
         self.is_paused = False
+        self.detector = TriggerDetector(self.chunk_size, sensitivity, trigger_level)
         atexit.register(self.stop)
 
     def _calc_read_divisor(self):
@@ -187,7 +218,6 @@ class PreciseRunner(object):
 
     def _handle_predictions(self):
         """Continuously check Precise process output"""
-        activation = 0
         while self.running:
             chunk = self.stream.read(self.chunk_size // self.read_divisor)
 
@@ -196,15 +226,5 @@ class PreciseRunner(object):
 
             prob = self.engine.get_prediction(chunk)
             self.on_prediction(prob)
-            chunk_activated = prob > 1 - self.sensitivity
-
-            if chunk_activated or activation < 0:
-                activation += 1
-                has_activated = activation > self.trigger_level
-                if has_activated:
-                    self.on_activation()
-
-                if has_activated or chunk_activated and activation < 0:
-                    activation = -(8 * 2048) // self.chunk_size
-            elif activation > 0:
-                activation -= 1
+            if self.detector.update(prob):
+                self.on_activation()
