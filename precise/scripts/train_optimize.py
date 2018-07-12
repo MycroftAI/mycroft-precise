@@ -17,7 +17,6 @@ import h5py
 import numpy
 # Optimizer blackhat
 from bbopt import BlackBoxOptimizer
-from decimal import *
 from keras.layers.core import Dense
 from keras.layers.recurrent import GRU
 from keras.models import Sequential
@@ -74,25 +73,14 @@ def main():
 
         model.compile('rmsprop', weighted_log_loss, metrics=['accuracy'])
 
-        # goodness metric for optimization
-        def goodness(y_true, y_pred) -> Any:
-            from math import exp
-            try:
-                param_score = 1.0 / (1.0 + exp((model.count_params() - 11000) / 2000))
-            except OverflowError:
-                param_score = 1.0 / (1.0 + Decimal(exp((model.count_params() - 11000)) / 2000))
-            fitness = param_score * (
-                ((1.0 - (0.05 * false_neg(y_true, y_pred))) - (0.95 * false_pos(y_true, y_pred))))
-            return fitness
-
         from keras.callbacks import ModelCheckpoint
 
         checkpoint = ModelCheckpoint('tested_models.hdf5', monitor='val_loss',
                                      save_best_only=True)
 
-        train_history = model.fit(train_inputs, train_outputs, batch_size=batch_size, epochs=100,
-                                  validation_data=(test_inputs, test_outputs),
-                                  callbacks=[checkpoint])
+        model.fit(train_inputs, train_outputs, batch_size=batch_size, epochs=100,
+                  validation_data=(test_inputs, test_outputs),
+                  callbacks=[checkpoint])
         test_loss, test_acc = model.evaluate(test_inputs, test_outputs)
 
         predictions = model.predict(test_inputs)
