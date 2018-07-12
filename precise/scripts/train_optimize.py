@@ -5,9 +5,9 @@ from keras.layers.core import Dense
 from keras.layers.recurrent import GRU
 from keras.models import Sequential
 from typing import *
-from functions import load_keras, weighted_log_loss
-from train_data import TrainData
-from params import pr
+from precise.functions import load_keras, weighted_log_loss
+from precise.train_data import TrainData
+from precise.params import pr
 from pprint import pprint
 import h5py
 import numpy
