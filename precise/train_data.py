@@ -205,7 +205,8 @@ class TrainData:
         add(nkw_files, 0.0)
 
         from precise.params import pr
-        return (
-            np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size)),
-            np.array(outputs) if outputs else np.empty((0, 1))
-        )
+        inputs = np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size)),
+        outputs = np.array(outputs) if outputs else np.empty((0, 1))
+        shuffle_ids = np.arange(len(inputs))
+        np.random.shuffle(shuffle_ids)
+        return inputs[shuffle_ids], outputs[shuffle_ids]

@@ -47,17 +47,11 @@ class SampledTrainer(Trainer):
         super().__init__(parser)
         if self.args.invert_samples:
             parser.error('--invert-samples should be left blank')
-        self.shuffle_data()
         self.args.samples_file = (self.args.samples_file or '{model_base}.samples.json').format(
             model_base=self.model_base
         )
         self.samples, self.hash_to_ind = self.load_sample_data(self.args.samples_file, self.train)
         self.metrics_fiti = Fitipy(self.model_base + '.logs', 'sampling-metrics.txt')
-
-    def shuffle_data(self):
-        shuffle_ids = np.arange(len(self.train[0]))
-        np.random.shuffle(shuffle_ids)
-        self.train = (self.train[0][shuffle_ids], self.train[1][shuffle_ids])
 
     def write_sampling_metrics(self, predicted):
         correct = float(sum((predicted > 0.5) == (self.train[1] > 0.5)) / len(self.train[1]))
