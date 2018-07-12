@@ -37,6 +37,7 @@ setup(
             'precise-test=precise.scripts.test:main',
             'precise-test-pocketsphinx=precise.pocketsphinx.scripts.test:main',
             'precise-train=precise.scripts.train:main',
+            'precise-train-optimize=precise.scripts.train_optimize:main',
             'precise-train-sampled=precise.scripts.train_sampled:main',
             'precise-train-incremental=precise.scripts.train_incremental:main',
         ]
@@ -53,7 +54,8 @@ setup(
         'prettyparse>=0.1.4',
         'precise-runner',
         'attrs',
-        'fitipy'
+        'fitipy',
+        'bbopt'
     ],
 
     author='Matthew Scholefield',
