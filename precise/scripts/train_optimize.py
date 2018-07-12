@@ -15,7 +15,8 @@
 
 import h5py
 import numpy
-import os
+# Optimizer blackhat
+from bbopt import BlackBoxOptimizer
 from decimal import *
 from keras.layers.core import Dense
 from keras.layers.recurrent import GRU
@@ -26,11 +27,6 @@ from typing import *
 from precise.functions import weighted_log_loss
 from precise.params import pr
 from precise.train_data import TrainData
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
-
-# Optimizer blackhat
-from bbopt import BlackBoxOptimizer
 
 bb = BlackBoxOptimizer(file=__file__)
 
@@ -61,7 +57,7 @@ def goodness(y_true, y_pred) -> Any:
     except OverflowError:
         param_score = 1.0 / (1.0 + Decimal(exp((model.count_params() - 11000)) / 2000))
     fitness = param_score * (
-    ((1.0 - (0.05 * false_neg(y_true, y_pred))) - (0.95 * false_pos(y_true, y_pred))))
+        ((1.0 - (0.05 * false_neg(y_true, y_pred))) - (0.95 * false_pos(y_true, y_pred))))
     return fitness
 
 
