@@ -51,12 +51,12 @@ def weighted_mse_loss(yt, yp) -> Any:
 
 def false_pos(yt, yp) -> Any:
     from keras import backend as K
-    return K.sum(K.cast(yp * (1 - yt) > 0.5, 'float')) / K.sum(1 - yt)
+    return K.sum(K.cast(yp * (1 - yt) > 0.5, 'float')) / K.maximum(1.0, K.sum(1 - yt))
 
 
 def false_neg(yt, yp) -> Any:
     from keras import backend as K
-    return K.sum(K.cast((1 - yp) * (0 + yt) > 0.5, 'float')) / K.sum(0 + yt)
+    return K.sum(K.cast((1 - yp) * (0 + yt) > 0.5, 'float')) / K.maximum(1.0, K.sum(0 + yt))
 
 
 def load_keras() -> Any:
