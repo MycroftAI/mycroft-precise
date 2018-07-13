@@ -6,7 +6,7 @@ from prettyparse import add_to_parser
 from typing import Any, Tuple
 
 from precise.functions import set_loss_bias
-from precise.model import create_model
+from precise.model import create_model, ModelParams
 from precise.params import inject_params, save_params
 from precise.train_data import TrainData
 from precise.util import calc_sample_hash
@@ -54,7 +54,8 @@ class Trainer:
     def __init__(self, parser=None):
         parser = parser or ArgumentParser()
         add_to_parser(parser, self.usage, True)
-        self.args = args = TrainData.parse_args(parser)
+        args = TrainData.parse_args(parser)
+        self.args = args = self.process_args(args) or args
 
         if args.invert_samples and not args.samples_file:
             parser.error('You must specify --samples-file when using --invert-samples')
@@ -68,7 +69,8 @@ class Trainer:
         self.train, self.test = self.load_data(self.args)
 
         set_loss_bias(1.0 - args.sensitivity)
-        self.model = create_model(args.model, args.no_validation, args.extra_metrics)
+        params = ModelParams(skip_acc=args.no_validation, extra_metrics=args.extra_metrics)
+        self.model = create_model(args.model, params)
         self.model.summary()
 
         from keras.callbacks import ModelCheckpoint, TensorBoard
@@ -91,9 +93,13 @@ class Trainer:
 
         self.callbacks = [
             checkpoint, TensorBoard(
-                log_dir=self.model_base + '.logs', histogram_freq=10 if self.test else 0
+                log_dir=self.model_base + '.logs',
             ), LambdaCallback(on_epoch_end=on_epoch_end)
         ]
+
+    def process_args(self, args: Any) -> Any:
+        """Override to modify args"""
+        pass
 
     @staticmethod
     def load_sample_data(filename, train_data) -> Tuple[set, dict]:
