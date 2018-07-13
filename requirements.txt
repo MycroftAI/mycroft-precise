@@ -1,28 +1,31 @@
-absl-py==0.2.0
-astor==0.6.2
+absl-py==0.2.2
+astor==0.7.1
+attrs==18.1.0
+bbopt==0.2.5
 bleach==1.5.0
+fitipy==0.1.1
 gast==0.2.0
-grpcio==1.11.0
-h5py==2.7.1
+grpcio==1.13.0
+h5py==2.8.0
 html5lib==0.9999999
-Keras==2.1.5
+Keras==2.2.0
+Keras-Applications==1.0.2
+Keras-Preprocessing==1.0.1
 Markdown==2.6.11
--e git+https://github.com/mycroftai/mycroft-precise#egg=mycroft_precise
-numpy==1.14.2
-pocketsphinx==0.1.3
--e git+https://github.com/mycroftai/mycroft-precise#egg=precise_runner&subdirectory=runner
+-e git+git@github.com:MycroftAI/mycroft-precise.git@d6db6c8ec22c9d40a8630f7064a0b2c0c34f108d#egg=mycroft_precise
+numpy==1.14.5
+pocketsphinx==0.1.15
+-e git+git@github.com:MycroftAI/mycroft-precise.git@d6db6c8ec22c9d40a8630f7064a0b2c0c34f108d#egg=precise_runner&subdirectory=runner
 prettyparse==0.1.4
-protobuf==3.5.2.post1
+protobuf==3.6.0
 PyAudio==0.2.11
-PyYAML==3.12
-scipy==1.0.1
+PyYAML==3.13
+scipy==1.1.0
 six==1.11.0
-speechpy-fast==2.3
+speechpy-fast==2.4
 tensorboard==1.8.0
 tensorflow==1.8.0
 termcolor==1.1.0
 typing==3.6.4
 wavio==0.0.3
 Werkzeug==0.14.1
-fitipy==0.1.1
-bbopt==0.2.5
