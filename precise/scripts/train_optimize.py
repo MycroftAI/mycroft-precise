@@ -82,7 +82,7 @@ class OptimizeTrainer(Trainer):
             print("\n= %d = (example #%d)" % (i + 1, len(self.bb.get_data()["examples"]) + 1))
 
             params = ModelParams(
-                recurrent_units=self.bb.randint("units", 1, 100, guess=50),
+                recurrent_units=self.bb.randint("units", 1, 70, guess=50),
                 dropout=self.bb.uniform("dropout", 0.1, 0.9, guess=0.6),
                 extra_metrics=self.args.extra_metrics,
                 skip_acc=self.args.no_validation,
