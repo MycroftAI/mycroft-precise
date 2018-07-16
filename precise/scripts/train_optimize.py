@@ -119,7 +119,6 @@ class OptimizeTrainer(Trainer):
                 "fitness": fitness
             })
 
-            print(false_positives)
             print("False positive: ", false_positives * 100, "%")
 
             self.bb.maximize(fitness)
