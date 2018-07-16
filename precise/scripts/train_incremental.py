@@ -19,7 +19,7 @@ from prettyparse import create_parser
 from random import random
 from typing import *
 
-from precise.model import create_model
+from precise.model import create_model, ModelParams
 from precise.network_runner import Listener, KerasRunner
 from precise.params import pr
 from precise.train_data import TrainData
@@ -80,9 +80,10 @@ class IncrementalTrainer(Trainer):
         self.audio_buffer = np.zeros(pr.buffer_samples, dtype=float)
 
         if not isfile(self.args.model):
-            create_model(self.args.model, self.args.no_validation, self.args.extra_metrics).save(
-                self.args.model
+            params = ModelParams(
+                skip_acc=self.args.no_validation, extra_metrics=self.args.extra_metrics
             )
+            create_model(self.args.model, params).save(self.args.model)
         self.listener = Listener(self.args.model, self.args.chunk_size, runner_cls=KerasRunner)
 
     @staticmethod

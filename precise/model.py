@@ -11,16 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import attr
 from os.path import isfile
 from typing import *
 
-from precise.functions import load_keras, false_pos, false_neg, weighted_log_loss
+from precise.functions import load_keras, false_pos, false_neg, weighted_log_loss, set_loss_bias
 from precise.params import inject_params, pr
 
 if TYPE_CHECKING:
     from keras.models import Sequential
 
-lstm_units = 20
+
+@attr.s()
+class ModelParams:
+    """
+    Attributes:
+        recurrent_units:
+        dropout:
+        extra_metrics: Whether to include false positive and false negative metrics
+        skip_acc: Whether to skip accuracy calculation while training
+    """
+    recurrent_units = attr.ib(20)  # type: int
+    dropout = attr.ib(0.2)  # type: float
+    extra_metrics = attr.ib(False)  # type: bool
+    skip_acc = attr.ib(False)  # type: bool
+    loss_bias = attr.ib(0.7)  # type: float
 
 
 def load_precise_model(model_name: str) -> Any:
@@ -32,19 +47,18 @@ def load_precise_model(model_name: str) -> Any:
     return load_keras().models.load_model(model_name)
 
 
-def create_model(model_name: str, skip_acc=False, extra_metrics=False) -> 'Sequential':
+def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential':
     """
     Load or create a precise model
 
     Args:
         model_name: Name of model
-        skip_acc: Whether to skip accuracy calculation while training
-        extra_metrics: Whether to include false positive and false negative metrics
+        params: Parameters used to create the model
 
     Returns:
         model: Loaded Keras model
     """
-    if isfile(model_name):
+    if model_name and isfile(model_name):
         print('Loading from ' + model_name + '...')
         model = load_precise_model(model_name)
     else:
@@ -53,11 +67,14 @@ def create_model(model_name: str, skip_acc=False, extra_metrics=False) -> 'Seque
         from keras.models import Sequential
 
         model = Sequential()
-        model.add(GRU(lstm_units, activation='linear', input_shape=(pr.n_features, pr.feature_size),
-                      dropout=0.3, name='net'))
+        model.add(GRU(
+            params.recurrent_units, activation='linear',
+            input_shape=(pr.n_features, pr.feature_size), dropout=params.dropout, name='net'
+        ))
         model.add(Dense(1, activation='sigmoid'))
 
     load_keras()
-    metrics = ['accuracy'] + extra_metrics * [false_pos, false_neg]
-    model.compile('rmsprop', weighted_log_loss, metrics=(not skip_acc) * metrics)
+    metrics = ['accuracy'] + params.extra_metrics * [false_pos, false_neg]
+    set_loss_bias(params.loss_bias)
+    model.compile('rmsprop', weighted_log_loss, metrics=(not params.skip_acc) * metrics)
     return model

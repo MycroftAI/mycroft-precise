@@ -3,20 +3,21 @@
 .cache/
 /.idea/
 __pycache__/
-*.pyc
-*.egg-info/
-/*.pb
-/*.params
-/*.net
-/*.pbtxt
-/*.txt
-/*.wav
 /other/
 /.venv/
-/stats.json
 /data/*/
 /wakewords/
 /logs
+*.egg-info/
+
+*.pyc
+*.pb
+*.params
+*.net
+*.json
+*.pbtxt
+*.txt
+*.wav
 
 # Data folders
 /*/wake-word/

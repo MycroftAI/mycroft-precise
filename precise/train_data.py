@@ -20,7 +20,7 @@ from os.path import join, isfile
 from prettyparse import add_to_parser
 from typing import *
 
-from precise.util import find_wavs
+from precise.util import find_wavs, InvalidAudio
 from precise.vectorization import load_vector, vectorize_inhibit
 
 
@@ -145,7 +145,7 @@ class TrainData:
         """Return parsed args from parser, adding options for train data inputs"""
         extra_usage = '''
             :folder str
-                Folder to wav files from
+                Folder to load wav files from
             
             :-tf --tags-folder str {folder}
                 Specify a different folder to load file ids
@@ -195,8 +195,8 @@ class TrainData:
                 try:
                     inputs.append(load_vector(f, vectorizer))
                     outputs.append(np.array([output]))
-                except ValueError:
-                    print('Skipping invalid file:', f)
+                except InvalidAudio as e:
+                    print('Skipping invalid file:', f, e)
 
         print('Loading wake-word...')
         add(kw_files, 1.0)

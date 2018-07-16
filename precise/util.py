@@ -19,6 +19,11 @@ from typing import *
 from precise.params import pr
 
 
+
+class InvalidAudio(ValueError):
+    pass
+
+
 def buffer_to_audio(buffer: bytes) -> np.ndarray:
     """Convert a raw mono audio byte string to numpy array of floats"""
     return np.fromstring(buffer, dtype='<i2').astype(np.float32, order='C') / 32768.0
@@ -42,9 +47,9 @@ def load_audio(file: Any) -> np.ndarray:
     except EOFError:
         wav = wavio.Wav(np.array([[]], dtype=np.int16), 16000, 2)
     if wav.data.dtype != np.int16:
-        raise ValueError('Unsupported data type: ' + str(wav.data.dtype))
+        raise InvalidAudio('Unsupported data type: ' + str(wav.data.dtype))
     if wav.rate != pr.sample_rate:
-        raise ValueError('Unsupported sample rate: ' + str(wav.rate))
+        raise InvalidAudio('Unsupported sample rate: ' + str(wav.rate))
 
     data = np.squeeze(wav.data)
     return data.astype(np.float32) / float(np.iinfo(data.dtype).max)
