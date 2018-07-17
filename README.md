@@ -16,7 +16,7 @@ source. Take a look at a [comparison here][comparison].
 ### Communal models
 
 Training takes lots of data.  The Mycroft community is working together to jointly
-build datasets at https://precise.mycroft.ai.  These datasets are used to build the
+build datasets at https://home.mycroft.ai/#/precise.  These datasets are used to build the
 models used by the Mark 1 and other mycroft-core based voice assistants.  Please come
 and help make things better for everyone!
 
