@@ -40,6 +40,7 @@ setup(
             'precise-train-optimize=precise.scripts.train_optimize:main',
             'precise-train-sampled=precise.scripts.train_sampled:main',
             'precise-train-incremental=precise.scripts.train_incremental:main',
+            'precise-choose=precise.scripts.choose:main',
         ]
     },
     install_requires=[
