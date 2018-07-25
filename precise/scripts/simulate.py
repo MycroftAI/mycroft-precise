@@ -19,7 +19,7 @@ from os.path import join, basename
 from prettyparse import create_parser
 
 from precise.network_runner import Listener
-from precise.params import pr
+from precise.params import pr, inject_params
 from precise.util import load_audio
 from precise.vectorization import vectorize_raw
 from precise_runner.runner import TriggerDetector
@@ -80,6 +80,7 @@ class Metric:
 class Simulator:
     def __init__(self):
         self.args = create_parser(usage).parse_args()
+        inject_params(self.args.model)
         self.runner = Listener.find_runner(self.args.model)(self.args.model)
         self.audio_buffer = np.zeros(pr.buffer_samples, dtype=float)
 
