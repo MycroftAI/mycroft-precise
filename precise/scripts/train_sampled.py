@@ -14,12 +14,10 @@
 # limitations under the License.
 from itertools import islice
 
-import hashlib
-import numpy as np
 from fitipy import Fitipy
 from prettyparse import create_parser
 
-from precise.trainer import Trainer
+from precise.scripts.train import Trainer
 from precise.util import calc_sample_hash
 
 usage = '''

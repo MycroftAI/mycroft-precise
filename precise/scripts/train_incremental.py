@@ -23,7 +23,7 @@ from precise.model import create_model, ModelParams
 from precise.network_runner import Listener, KerasRunner
 from precise.params import pr
 from precise.train_data import TrainData
-from precise.trainer import Trainer
+from precise.scripts.train import Trainer
 from precise.util import load_audio, save_audio, glob_all
 
 usage = '''

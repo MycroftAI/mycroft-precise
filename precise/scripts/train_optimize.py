@@ -28,7 +28,7 @@ from typing import Any
 
 from precise.model import ModelParams, create_model
 from precise.train_data import TrainData
-from precise.trainer import Trainer
+from precise.scripts.train import Trainer
 
 usage = '''
     Use black box optimization to tune model hyperparameters
