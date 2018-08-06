@@ -162,8 +162,9 @@ class Trainer:
 
     def run(self):
         try:
+            train_inputs, train_outputs = self.sampled_data
             self.model.fit(
-                *self.sampled_data, self.args.batch_size,
+                train_inputs, train_outputs, self.args.batch_size,
                 self.epoch + self.args.epochs, validation_data=self.test, initial_epoch=self.epoch,
                 callbacks=self.callbacks
             )
