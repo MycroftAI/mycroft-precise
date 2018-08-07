@@ -101,9 +101,8 @@ class IncrementalTrainer(Trainer):
         print()
         try:
             self.listener.runner.model.fit(
-                *train_data, self.args.batch_size, self.epoch + self.args.epochs,
-                validation_data=test_data, callbacks=self.callbacks,
-                initial_epoch=self.epoch
+                train_data[0], train_data[1], self.args.batch_size, self.epoch + self.args.epochs,
+                validation_data=test_data, callbacks=self.callbacks, initial_epoch=self.epoch
             )
         finally:
             self.listener.runner.model.save(self.args.model)
