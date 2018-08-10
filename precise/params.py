@@ -29,6 +29,7 @@ class ListenerParams:
     n_filt = attr.ib()  # type: int
     n_fft = attr.ib()  # type: int
     use_delta = attr.ib()  # type: bool
+    vectorizer = attr.ib()  # type: int
 
     @property
     def buffer_samples(self):
@@ -53,14 +54,31 @@ class ListenerParams:
 
     @property
     def feature_size(self):
-        return self.n_mfcc + self.use_delta * self.n_mfcc
+        num_features = {
+            Vectorizer.mfccs: self.n_mfcc,
+            Vectorizer.mels: self.n_filt,
+            Vectorizer.speechpy_mfccs: self.n_mfcc
+        }[self.vectorizer]
+        if self.use_delta:
+            num_features *= 2
+        return num_features
+
+
+class Vectorizer:
+    mels = 1
+    mfccs = 2
+    speechpy_mfccs = 3
 
 
 # Global listener parameters
 pr = ListenerParams(
     window_t=0.1, hop_t=0.05, buffer_t=1.5, sample_rate=16000,
-    sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512, use_delta=False
+    sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512, use_delta=False,
+    vectorizer=Vectorizer.mfccs
 )
+
+# Used to fill in old param files without new attributes
+compatibility_params = dict(vectorizer=Vectorizer.speechpy_mfccs)
 
 
 def inject_params(model_name: str) -> ListenerParams:
@@ -68,7 +86,7 @@ def inject_params(model_name: str) -> ListenerParams:
     params_file = model_name + '.params'
     try:
         with open(params_file) as f:
-            pr.__dict__.update(json.load(f))
+            pr.__dict__.update(**compatibility_params, **json.load(f))
     except (OSError, ValueError, TypeError):
         if isfile(model_name):
             print('Warning: Failed to load parameters from ' + params_file)

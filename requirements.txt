@@ -22,7 +22,7 @@ PyAudio==0.2.11
 PyYAML==3.13
 scipy==1.1.0
 six==1.11.0
-speechpy-fast==2.4
+sonopy==0.1.2
 tensorboard==1.8.0
 tensorflow==1.8.0
 termcolor==1.1.0

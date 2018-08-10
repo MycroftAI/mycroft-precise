@@ -68,7 +68,7 @@ setup(
     install_requires=[
         'numpy',
         'tensorflow==1.8.0',  # Must be on piwheels + match URL in setup.sh
-        'speechpy-fast>=2.4',
+        'sonopy',
         'pyaudio',
         'keras',
         'h5py',
