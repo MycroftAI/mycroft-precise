@@ -58,13 +58,6 @@ if [ "$arch" = "armv7l" ] && ! has_piwheels; then
     install_piwheels
 fi
 
-# piwheels doesn't provide new tensorflow versions for python 3.4
-if python --version | grep -qF "Python 3.4"; then
-    # Version must match version in setup.py
-    # Find new versions here: http://ci.tensorflow.org/view/Nightly/job/nightly-pi-python3/
-    pip install https://ci.tensorflow.org/view/Nightly/job/nightly-pi-python3/214/artifact/output-artifacts/tensorflow-1.8.0-cp34-none-any.whl#egg=tensorflow==1.8.0
-fi
-
 pip install -e runner/
 pip install -e .
 pip install pocketsphinx  # Optional, for comparison
