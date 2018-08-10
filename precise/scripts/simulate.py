@@ -70,7 +70,7 @@ class Metric:
             'Average Activation (*100): {average_activation:.2f}'.format(
                 title=title,
                 hours=self.days * 24,
-                activations_per_day=self.activated_chunks / self.days,
+                activations_per_day=self.activations / self.days,
                 chunks_per_day=self.activated_chunks / self.days,
                 average_activation=100.0 * self.activation_sum / self.chunks
             )
