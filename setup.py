@@ -19,6 +19,29 @@ from precise import __version__
 setup(
     name='mycroft-precise',
     version=__version__,
+    license='Apache-2.0',
+    author='Matthew Scholefield',
+    author_email='matthew.scholefield@mycroft.ai',
+    description='Mycroft Precise Wake Word Listener',
+    long_description='View more info at `the GitHub page '
+                     '<https://github.com/mycroftai/mycroft-precise#mycroft-precise>`_',
+    url='http://github.com/MycroftAI/mycroft-precise',
+    keywords='wakeword keyword wake word listener sound',
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Topic :: Text Processing :: Linguistic',
+        'License :: OSI Approved :: Apache Software License',
+
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.0',
+        'Programming Language :: Python :: 3.1',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+    ],
     packages=[
         'precise',
         'precise.scripts',
@@ -56,30 +79,5 @@ setup(
         'attrs',
         'fitipy',
         'bbopt'
-    ],
-
-    author='Matthew Scholefield',
-    author_email='matthew.scholefield@mycroft.ai',
-    description='Mycroft Precise Wake Word Listener',
-    long_description='View more info at `the GitHub page '
-                     '<https://github.com/mycroftai/mycroft-precise#mycroft-precise>`_',
-    keywords='wakeword keyword wake word listener sound',
-    url='http://github.com/MycroftAI/mycroft-precise',
-
-    zip_safe=True,
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Topic :: Text Processing :: Linguistic',
-        'License :: OSI Approved :: Apache Software License',
-
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.0',
-        'Programming Language :: Python :: 3.1',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-    ],
+    ]
 )
