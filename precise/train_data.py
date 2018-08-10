@@ -191,12 +191,14 @@ class TrainData:
         outputs = []
 
         def add(filenames, output):
-            for f in filenames:
+            for i, f in enumerate(filenames):
                 try:
                     inputs.append(load_vector(f, vectorizer))
                     outputs.append(np.array([output]))
                 except InvalidAudio as e:
                     print('Skipping invalid file:', f, e)
+                print('\r{0:.2%}  '.format(i/len(filenames)), end='', flush=True)
+            print('\r       \r', end='', flush=True)
 
         print('Loading wake-word...')
         add(kw_files, 1.0)
@@ -207,6 +209,7 @@ class TrainData:
         from precise.params import pr
         inputs = np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size))
         outputs = np.array(outputs) if outputs else np.empty((0, 1))
+
         shuffle_ids = np.arange(len(inputs))
         np.random.shuffle(shuffle_ids)
         return inputs[shuffle_ids], outputs[shuffle_ids]
