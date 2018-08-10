@@ -92,8 +92,10 @@ class Simulator:
         inputs = np.array([
             mfccs[i - pr.n_features:i] for i in range(pr.n_features, len(mfccs), mfcc_hops)
         ])
+        del mfccs
         print('Predicting...')
         predictions = self.runner.predict(inputs)
+        del inputs
         return predictions
 
     def run(self):
@@ -105,7 +107,6 @@ class Simulator:
 
             predictions = self.evaluate(audio)
             detector = TriggerDetector(self.args.chunk_size, trigger_level=0)
-            print(predictions.shape, predictions.sum())
 
             metric = Metric(
                 chunk_size=self.args.chunk_size,
@@ -117,6 +118,7 @@ class Simulator:
             total.add(metric)
             print()
             print(metric.info_string(basename(i)))
+            del audio
         print()
         print()
         print(total.info_string('Total'))
