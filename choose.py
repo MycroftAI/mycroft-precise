@@ -70,11 +70,11 @@ def main():
         false_negatives_array[i] = false_negatives_array[i].lstrip('/Users/madmitrienko/wakewords/files/')
         false_negatives_array[i] = false_negatives_array[i].rstrip('.wav')
         if(user_input == 'y'):
-            write_to_tags = '\n' + false_negatives_array[i] + '    wake-word'
+            write_to_tags = '\n' + false_negatives_array[i] + '	wake-word'
             new_tags.write(write_to_tags)
 
         elif(user_input == 'n'):
-            write_to_tags = '\n' + false_negatives_array[i] + '    not-wake-word'          
+            write_to_tags = '\n' + false_negatives_array[i] + '	not-wake-word'          
             new_tags.write(write_to_tags)
     new_tags.close()
     tags.close()
