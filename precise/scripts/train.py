@@ -164,8 +164,8 @@ class Trainer:
             train_inputs, train_outputs = self.sampled_data
             self.model.fit(
                 train_inputs, train_outputs, self.args.batch_size,
-                self.epoch + self.args.epochs, validation_data=self.test, initial_epoch=self.epoch,
-                callbacks=self.callbacks
+                self.epoch + self.args.epochs, validation_data=self.test,
+                initial_epoch=self.epoch, callbacks=self.callbacks
             )
         except KeyboardInterrupt:
             print()

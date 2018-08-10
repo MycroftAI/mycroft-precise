@@ -98,10 +98,11 @@ class IncrementalTrainer(Trainer):
 
         train_data = TrainData.merge(train_data, self.sampled_data)
         test_data = TrainData.merge(test_data, self.test)
+        train_inputs, train_outputs = train_data
         print()
         try:
             self.listener.runner.model.fit(
-                train_data[0], train_data[1], self.args.batch_size, self.epoch + self.args.epochs,
+                train_inputs, train_outputs, self.args.batch_size, self.epoch + self.args.epochs,
                 validation_data=test_data, callbacks=self.callbacks, initial_epoch=self.epoch
             )
         finally:
