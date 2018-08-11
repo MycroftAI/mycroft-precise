@@ -86,7 +86,7 @@ def inject_params(model_name: str) -> ListenerParams:
     params_file = model_name + '.params'
     try:
         with open(params_file) as f:
-            pr.__dict__.update(**compatibility_params, **json.load(f))
+            pr.__dict__.update(compatibility_params, **json.load(f))
     except (OSError, ValueError, TypeError):
         if isfile(model_name):
             print('Warning: Failed to load parameters from ' + params_file)
