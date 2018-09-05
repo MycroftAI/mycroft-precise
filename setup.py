@@ -50,6 +50,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
+            'precise-add-noise=precise.scripts.add_noise:main',
             'precise-collect=precise.scripts.collect:main',
             'precise-convert=precise.scripts.convert:main',
             'precise-eval=precise.scripts.eval:main',
