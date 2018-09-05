@@ -16,6 +16,7 @@ import numpy as np
 from argparse import ArgumentParser
 from glob import glob
 from hashlib import md5
+from json import JSONDecodeError
 from os.path import join, isfile
 from prettyparse import add_to_parser
 from typing import *
@@ -70,8 +71,11 @@ class TrainData:
         train_groups = {}
         train_group_file = join(tags_file.replace('.txt', '') + '.groups.json')
         if isfile(train_group_file):
-            with open(train_group_file) as f:
-                train_groups = json.load(f)
+            try:
+                with open(train_group_file) as f:
+                    train_groups = json.load(f)
+            except JSONDecodeError:
+                pass
 
         tags_files = {
             'wake-word': [],
