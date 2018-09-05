@@ -79,12 +79,15 @@ class IncrementalTrainer(Trainer):
         self.trained_fns = load_trained_fns(self.args.model)
         self.audio_buffer = np.zeros(pr.buffer_samples, dtype=float)
 
-        if not isfile(self.args.model):
-            params = ModelParams(
-                skip_acc=self.args.no_validation, extra_metrics=self.args.extra_metrics
-            )
-            create_model(self.args.model, params).save(self.args.model)
+        params = ModelParams(
+            skip_acc=self.args.no_validation, extra_metrics=self.args.extra_metrics,
+            loss_bias=1.0 - self.args.sensitivity
+        )
+        model = create_model(self.args.model, params)
         self.listener = Listener(self.args.model, self.args.chunk_size, runner_cls=KerasRunner)
+        self.listener.runner = KerasRunner(self.args.model)
+        self.listener.runner.model = model
+        self.samples_since_train = 0
 
     @staticmethod
     def load_data(args: Any):
@@ -111,7 +114,6 @@ class IncrementalTrainer(Trainer):
     def train_on_audio(self, fn: str):
         """Run through a single audio file"""
         save_test = random() > 0.8
-        samples_since_train = 0
         audio = load_audio(fn)
         num_chunks = len(audio) // self.args.chunk_size
 
@@ -122,7 +124,7 @@ class IncrementalTrainer(Trainer):
             self.audio_buffer = np.concatenate((self.audio_buffer[len(chunk):], chunk))
             conf = self.listener.update(chunk)
             if conf > 0.5:
-                samples_since_train += 1
+                self.samples_since_train += 1
                 name = splitext(basename(fn))[0] + '-' + str(i) + '.wav'
                 name = join(self.args.folder, 'test' if save_test else '', 'not-wake-word',
                             'generated', name)
@@ -130,8 +132,9 @@ class IncrementalTrainer(Trainer):
                 print()
                 print('Saved to:', name)
 
-            if not save_test and samples_since_train >= self.args.delay_samples and self.args.epochs > 0:
-                samples_since_train = 0
+            if not save_test and self.samples_since_train >= self.args.delay_samples and \
+                    self.args.epochs > 0:
+                self.samples_since_train = 0
                 self.retrain()
 
     def run(self):
