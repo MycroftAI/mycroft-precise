@@ -19,7 +19,7 @@ import numpy as np
 import os
 from glob import glob
 from os import makedirs
-from os.path import join, dirname, abspath
+from os.path import join, dirname, abspath, splitext
 from pip._vendor.distlib._backport import shutil
 from prettyparse import create_parser
 from random import random
@@ -42,6 +42,15 @@ usage = '''
 
     :output_folder str
         Folder to write the duplicate generated dataset
+    
+    :-if --inflation-factor int 1
+        The number of noisy samples generated per single source sample
+    
+    :-nl --noise-ratio-low float 0.0
+        Minimum random ratio of noise to sample. 1.0 is all noise, no sample sound
+    
+    :-nh --noise-ratio-high float 0.4
+        Maximum random ratio of noise to sample. 1.0 is all noise, no sample sound
     ...
 '''
 
@@ -75,28 +84,31 @@ class NoiseData:
             noise_audio = np.concatenate([noise_audio, noise_chunk])
         return noise_audio
 
-    def noised_audio(self, audio: np.ndarray) -> np.ndarray:
+    def noised_audio(self, audio: np.ndarray, noise_ratio: float) -> np.ndarray:
         noise_data = self.get_fresh_noise(len(audio))
         audio_volume = sqrt(sum(audio ** 2))
         noise_volume = sqrt(sum(noise_data ** 2))
         adjusted_noise = audio_volume * noise_data / noise_volume
-        ratio = 0.0 + 0.4 * random()
-        return ratio * adjusted_noise + (1.0 - ratio) * audio
+        return noise_ratio * adjusted_noise + (1.0 - noise_ratio) * audio
 
 
 def main():
     args = create_parser(usage).parse_args()
-    args.tags_file = abspath(args.tags_file)
+    args.tags_file = abspath(args.tags_file) if args.tags_file else None
     args.folder = abspath(args.folder)
     args.output_folder = abspath(args.output_folder)
+    noise_min, noise_max = args.noise_ratio_low, args.noise_ratio_high
 
     data = TrainData.from_both(args.tags_file, args.folder, args.folder)
     noise_data = NoiseData(args.noise_folder)
     print('Data:', data)
 
-    def translate_filename(source: str) -> str:
+    def translate_filename(source: str, n=0) -> str:
         assert source.startswith(args.folder)
         relative_file = source[len(args.folder):].strip(os.path.sep)
+        if n > 0:
+            base, ext = splitext(relative_file)
+            relative_file = base + '.' + str(n) + ext
         return join(args.output_folder, relative_file)
 
     all_filenames = sum(data.train_files + data.test_files, [])
@@ -104,11 +116,12 @@ def main():
         print('{0:.2%}  \r'.format(i / (len(all_filenames) - 1)), end='', flush=True)
 
         audio = load_audio(filename)
-        altered = noise_data.noised_audio(audio)
-        output_filename = translate_filename(filename)
+        for n in range(args.inflation_factor):
+            altered = noise_data.noised_audio(audio, noise_min + (noise_max - noise_min) * random())
+            output_filename = translate_filename(filename, n)
 
-        makedirs(dirname(output_filename), exist_ok=True)
-        save_audio(output_filename, altered)
+            makedirs(dirname(output_filename), exist_ok=True)
+            save_audio(output_filename, altered)
 
     print('Done!')
 
