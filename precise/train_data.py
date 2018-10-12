@@ -16,7 +16,6 @@ import numpy as np
 from argparse import ArgumentParser
 from glob import glob
 from hashlib import md5
-from json import JSONDecodeError
 from os.path import join, isfile
 from prettyparse import add_to_parser
 from typing import *
@@ -74,7 +73,7 @@ class TrainData:
             try:
                 with open(train_group_file) as f:
                     train_groups = json.load(f)
-            except JSONDecodeError:
+            except ValueError:
                 pass
 
         tags_files = {
