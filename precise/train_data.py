@@ -113,14 +113,14 @@ class TrainData:
         """Load data from both a database and a structured folder"""
         return cls.from_tags(tags_file, tags_folder) + cls.from_folder(folder)
 
-    def load(self, train=True, test=True) -> tuple:
+    def load(self, train=True, test=True, shuffle=True) -> tuple:
         """
         Load the vectorized representations of the stored data files
         Args:
             train: Whether to load train data
             test: Whether to load test data
         """
-        return self.__load(self.__load_files, train, test)
+        return self.__load(self.__load_files, train, test, shuffle=shuffle)
 
     def load_inhibit(self, train=True, test=True) -> tuple:
         """Generate data with inhibitory inputs created from wake word samples"""
@@ -181,15 +181,15 @@ class TrainData:
                          (self.test_files[0] + other.test_files[0],
                           self.test_files[1] + other.test_files[1]))
 
-    def __load(self, loader: Callable, train: bool, test: bool) -> tuple:
+    def __load(self, loader: Callable, train: bool, test: bool, **kwargs) -> tuple:
         return tuple([
-            loader(*files) if files else None
+            loader(*files, **kwargs) if files else None
             for files in (train and self.train_files,
                           test and self.test_files)
         ])
 
     @staticmethod
-    def __load_files(kw_files: list, nkw_files: list, vectorizer: Callable = None) -> tuple:
+    def __load_files(kw_files: list, nkw_files: list, vectorizer: Callable = None, shuffle=True) -> tuple:
         inputs = []
         outputs = []
 
@@ -214,5 +214,6 @@ class TrainData:
         outputs = np.array(outputs) if outputs else np.empty((0, 1))
 
         shuffle_ids = np.arange(len(inputs))
-        np.random.shuffle(shuffle_ids)
+        if shuffle:
+            np.random.shuffle(shuffle_ids)
         return inputs[shuffle_ids], outputs[shuffle_ids]
