@@ -31,15 +31,16 @@ running through the [**Source Install** instructions][source-install] first.
 ## Installation
 
 If you just want to use Mycroft Precise for running models in your own application,
-you can use the binary install option. If you want to train your own models or mess
-with the source code, you'll need to follow the **Source Install** instructions below.
+you can use the binary install option. Note: This is only updated to the latest release,
+indicated by the latest commit on the master branch. If you want to train your own models
+or mess with the source code, you'll need to follow the **Source Install** instructions below.
 
 ### Binary Install
 
 First download `precise-engine.tar.gz` from the [precise-data][precise-data] GitHub
-repo. Currently, we support both 64 bit desktops (x86_64) and the Raspberry Pi (armv7l).
+repo. This will get the latest stable version (the master branch). Note that this requires the models to be built the the same latest version in the master branch. Currently, we support both 64 bit desktops (x86_64) and the Raspberry Pi (armv7l).
 
-[precise-data]:https://github.com/mycroftai/precise-data/tree/dist
+[precise-data]: https://github.com/mycroftai/precise-data/tree/dist
 
 Next, extract the tar to the folder of your choice. The following commands will work for the pi:
 
@@ -76,6 +77,9 @@ Start out by cloning the repository:
 git clone https://github.com/mycroftai/mycroft-precise
 cd mycroft-precise
 ```
+
+If you would like your models to run on an older version of precise, like the
+stable version the binary install uses, check out the master branch.
 
 Next, install the necessary system dependencies. If you are on Ubuntu, this
 will be done automatically in the next step. Otherwise, feel free to submit
