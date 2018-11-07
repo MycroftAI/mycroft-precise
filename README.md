@@ -99,8 +99,11 @@ After this, run the setup script:
 ./setup.sh
 ```
 
-Finally, you can write your program as follows:
-
+Finally, you can write your program and run it as follows:
+```bash
+source .venv/bin/activate  # Change the python environment to include precise library
+```
+Sample Python program:
 ```python
 #!/usr/bin/env python3
 
