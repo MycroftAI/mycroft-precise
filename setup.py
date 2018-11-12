@@ -79,6 +79,7 @@ setup(
         'precise-runner',
         'attrs',
         'fitipy',
-        'bbopt'
+        'bbopt',
+        'speechpy-fast'
     ]
 )
