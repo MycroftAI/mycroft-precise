@@ -38,7 +38,7 @@ or mess with the source code, you'll need to follow the **Source Install** instr
 ### Binary Install
 
 First download `precise-engine.tar.gz` from the [precise-data][precise-data] GitHub
-repo. This will get the latest stable version (the master branch). Note that this requires the models to be built the the same latest version in the master branch. Currently, we support both 64 bit desktops (x86_64) and the Raspberry Pi (armv7l).
+repo. This will get the latest stable version (the master branch). Note that this requires the models to be built the the same latest version in the master branch. Currently, we support both 64 bit Linux desktops (x86_64) and the Raspberry Pi (armv7l).
 
 [precise-data]: https://github.com/mycroftai/precise-data/tree/dist
 
@@ -67,6 +67,7 @@ from precise_runner import PreciseEngine, PreciseRunner
 
 engine = PreciseEngine('precise-engine/precise-engine', 'my_model_file.pb')
 runner = PreciseRunner(engine, on_activation=lambda: print('hello'))
+runner.start()
 ```
 
 ### Source Install
@@ -111,6 +112,7 @@ from precise_runner import PreciseEngine, PreciseRunner
 
 engine = PreciseEngine('.venv/bin/precise-engine', 'my_model_file.pb')
 runner = PreciseRunner(engine, on_activation=lambda: print('hello'))
+runner.start()
 ```
 
 In addition to the `precise-engine` executable, doing a **Source Install** gives you
