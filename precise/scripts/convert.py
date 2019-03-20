@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Attribution: This script was adapted from https://github.com/amir-abdi/keras_to_tensorflow
-# Copyright 2018 Mycroft AI Inc.
+# Copyright 2019 Mycroft AI Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
