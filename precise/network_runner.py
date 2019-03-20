@@ -107,7 +107,7 @@ class Listener:
         self.window_audio = np.array([])
         self.mfccs = np.zeros((self.pr.n_features, self.pr.n_mfcc))
 
-    def update(self, stream: Union[BinaryIO, np.ndarray, bytes]) -> float:
+    def update_vectors(self, stream: Union[BinaryIO, np.ndarray, bytes]) -> np.ndarray:
         if isinstance(stream, np.ndarray):
             buffer_audio = stream
         else:
@@ -128,7 +128,10 @@ class Listener:
                 new_features = new_features[-len(self.mfccs):]
             self.mfccs = np.concatenate((self.mfccs[len(new_features):], new_features))
 
-        mfccs = self.mfccs
+        return self.mfccs
+
+    def update(self, stream: Union[BinaryIO, np.ndarray, bytes]) -> float:
+        mfccs = self.update_vectors(stream)
         if self.pr.use_delta:
-            mfccs = add_deltas(self.mfccs)
+            mfccs = add_deltas(mfccs)
         return self.runner.run(mfccs)
