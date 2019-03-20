@@ -41,7 +41,6 @@ class Stats:
         self.num_negatives = sum(int(i < 0.5) for i in self.targets)
 
         # Methods
-        self.__len__ = lambda: len(self.outputs)
         self.false_positives = lambda threshold=0.5: self.calc_metric(False, True, threshold) / self.num_negatives
         self.false_negatives = lambda threshold=0.5: self.calc_metric(False, False, threshold) / self.num_positives
         self.num_correct = lambda threshold=0.5: sum(
@@ -50,6 +49,9 @@ class Stats:
         )
         self.num_incorrect = lambda threshold=0.5: len(self) - self.num_correct(threshold)
         self.accuracy = lambda threshold=0.5: self.num_correct(threshold) / len(self)
+
+    def __len__(self):
+        return len(self.outputs)
 
     def to_dict(self):
         return {
