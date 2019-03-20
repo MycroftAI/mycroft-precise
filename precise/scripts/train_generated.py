@@ -28,7 +28,7 @@ from precise.model import create_model, ModelParams
 from precise.network_runner import Listener
 from precise.params import pr, save_params
 from precise.train_data import TrainData
-from precise.util import load_audio, glob_all, save_audio, play_audio, chunk_audio
+from precise.util import load_audio, glob_all, save_audio, chunk_audio
 
 usage = '''
     Train a model on infinitely generated batches
@@ -114,6 +114,7 @@ class GeneratedTrainer:
         self.pos_files_it = iter(cycle(pos_files))
 
     def layer_with(self, sample: np.ndarray, value: int) -> np.ndarray:
+        """Create an identical 2d array where the second row is filled with value"""
         b = np.full((2, len(sample)), value, dtype=float)
         b[0] = sample
         return b
