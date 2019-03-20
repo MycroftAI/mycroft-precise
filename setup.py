@@ -59,6 +59,7 @@ setup(
             'precise-engine=precise.scripts.engine:main',
             'precise-simulate=precise.scripts.simulate:main',
             'precise-test=precise.scripts.test:main',
+            'precise-graph=precise.scripts.graph:main',
             'precise-test-pocketsphinx=precise.pocketsphinx.scripts.test:main',
             'precise-train=precise.scripts.train:main',
             'precise-train-optimize=precise.scripts.train_optimize:main',
