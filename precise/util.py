@@ -19,9 +19,13 @@ from typing import *
 from precise.params import pr
 
 
-
 class InvalidAudio(ValueError):
     pass
+
+
+def chunk_audio(audio: np.ndarray, chunk_size: int) -> Generator[np.ndarray, None, None]:
+    for i in range(chunk_size, len(audio), chunk_size):
+        yield audio[i - chunk_size:i]
 
 
 def buffer_to_audio(buffer: bytes) -> np.ndarray:

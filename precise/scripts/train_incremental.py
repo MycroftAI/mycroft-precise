@@ -24,7 +24,7 @@ from precise.network_runner import Listener, KerasRunner
 from precise.params import pr
 from precise.train_data import TrainData
 from precise.scripts.train import Trainer
-from precise.util import load_audio, save_audio, glob_all
+from precise.util import load_audio, save_audio, glob_all, chunk_audio
 
 usage = '''
     Train a model to inhibit activation by
@@ -45,11 +45,6 @@ usage = '''
     
     ...
 '''
-
-
-def chunk_audio(audio: np.ndarray, chunk_size: int) -> Generator[np.ndarray, None, None]:
-    for i in range(chunk_size, len(audio), chunk_size):
-        yield audio[i - chunk_size:i]
 
 
 def load_trained_fns(model_name: str) -> list:
