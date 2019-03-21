@@ -36,6 +36,9 @@ usage = '''
     
     :-c --chunk_size int 4096
         Number of samples between tests
+    
+    :-t --threshold float 0.5
+        Network output required to be considered an activation
 '''
 
 
@@ -106,12 +109,12 @@ class Simulator:
                 continue
 
             predictions = self.evaluate(audio)
-            detector = TriggerDetector(self.args.chunk_size, trigger_level=0)
+            detector = TriggerDetector(self.args.chunk_size, trigger_level=0, threshold=self.args.threshold)
 
             metric = Metric(
                 chunk_size=self.args.chunk_size,
                 seconds=len(audio) / pr.sample_rate,
-                activated_chunks=(predictions > detector.sensitivity).sum(),
+                activated_chunks=(predictions > detector.threshold).sum(),
                 activations=sum(detector.update(i) for i in predictions),
                 activation_sum=predictions.sum()
             )

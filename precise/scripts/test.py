@@ -25,29 +25,17 @@ usage = '''
     :model str
         Either Keras (.net) or TensorFlow (.pb) model to test
     
-    :-t --use-train
+    :-u --use-train
         Evaluate training data instead of test data
     
     :-nf --no-filenames
         Don't print out the names of files that failed
     
+    :-t --threshold float 0.5
+        Network output required to be considered an activation
+    
     ...
 '''
-
-
-def show_stats(stats: Stats, show_filenames: bool):
-    if show_filenames:
-        fp_files = stats.calc_filenames(False, True)
-        fn_files = stats.calc_filenames(False, False)
-        print('=== False Positives ===')
-        print('\n'.join(fp_files))
-        print()
-        print('=== False Negatives ===')
-        print('\n'.join(fn_files))
-        print()
-    print(stats.counts_str())
-    print()
-    print(stats.summary_str())
 
 
 def main():
@@ -64,7 +52,19 @@ def main():
     stats = Stats(predictions, targets, filenames)
 
     print('Data:', data)
-    show_stats(stats, not args.no_filenames)
+
+    if not args.no_filenames:
+        fp_files = stats.calc_filenames(False, True, args.threshold)
+        fn_files = stats.calc_filenames(False, False, args.threshold)
+        print('=== False Positives ===')
+        print('\n'.join(fp_files))
+        print()
+        print('=== False Negatives ===')
+        print('\n'.join(fn_files))
+        print()
+    print(stats.counts_str(args.threshold))
+    print()
+    print(stats.summary_str(args.threshold))
 
 
 if __name__ == '__main__':

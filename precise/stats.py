@@ -53,23 +53,23 @@ class Stats:
     def __len__(self):
         return len(self.outputs)
 
-    def to_dict(self):
+    def to_dict(self, threshold=0.5):
         return {
-            'true_pos': self.calc_metric(True, True),
-            'true_neg': self.calc_metric(True, False),
-            'false_pos': self.calc_metric(False, True),
-            'false_neg': self.calc_metric(False, False),
+            'true_pos': self.calc_metric(True, True, threshold),
+            'true_neg': self.calc_metric(True, False, threshold),
+            'false_pos': self.calc_metric(False, True, threshold),
+            'false_neg': self.calc_metric(False, False, threshold),
         }
 
-    def counts_str(self):
-        return counts_str.format(**self.to_dict())
+    def counts_str(self, threshold=0.5):
+        return counts_str.format(**self.to_dict(threshold))
 
-    def summary_str(self):
+    def summary_str(self, threshold=0.5):
         return summary_str.format(
-            num_correct=self.num_correct(), total=len(self),
-            accuracy_ratio=self.accuracy(),
-            false_pos_ratio=self.false_positives(),
-            false_neg_ratio=self.false_negatives()
+            num_correct=self.num_correct(threshold), total=len(self),
+            accuracy_ratio=self.accuracy(threshold),
+            false_pos_ratio=self.false_positives(threshold),
+            false_neg_ratio=self.false_negatives(threshold)
         )
 
     def calc_filenames(self, is_correct: bool, actual_output: bool, threshold=0.5) -> list:

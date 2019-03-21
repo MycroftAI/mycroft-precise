@@ -98,16 +98,16 @@ class TriggerDetector:
     This prevents multiple close activations from occurring when
     the predictions look like ...!!!..!!...
     """
-    def __init__(self, chunk_size, sensitivity=0.5, trigger_level=3):
+    def __init__(self, chunk_size, threshold=0.5, trigger_level=3):
         self.chunk_size = chunk_size
-        self.sensitivity = sensitivity
+        self.threshold = threshold
         self.trigger_level = trigger_level
         self.activation = 0
 
     def update(self, prob):
         # type: (float) -> bool
         """Returns whether the new prediction caused an activation"""
-        chunk_activated = prob > 1 - self.sensitivity
+        chunk_activated = prob > self.threshold
 
         if chunk_activated or self.activation < 0:
             self.activation += 1
@@ -137,19 +137,17 @@ class PreciseRunner(object):
         engine (Engine): Object containing info on the binary engine
         trigger_level (int): Number of chunk activations needed to trigger on_activation
                        Higher values add latency but reduce false positives
-        sensitivity (float): From 0.0 to 1.0, relates to the network output level required
-                             to consider a chunk "active"
+        threshold (float): From 0.0 to 1.0, the network output level required to consider a chunk "active"
         stream (BinaryIO): Binary audio stream to read 16000 Hz 1 channel int16
                            audio from. If not given, the microphone is used
         on_prediction (Callable): callback for every new prediction
         on_activation (Callable): callback for when the wake word is heard
     """
 
-    def __init__(self, engine, trigger_level=3, sensitivity=0.5, stream=None,
+    def __init__(self, engine, trigger_level=3, threshold=0.5, stream=None,
                  on_prediction=lambda x: None, on_activation=lambda: None):
         self.engine = engine
         self.trigger_level = trigger_level
-        self.sensitivity = sensitivity
         self.stream = stream
         self.on_prediction = on_prediction
         self.on_activation = on_activation
@@ -159,7 +157,7 @@ class PreciseRunner(object):
         self.thread = None
         self.running = False
         self.is_paused = False
-        self.detector = TriggerDetector(self.chunk_size, sensitivity, trigger_level)
+        self.detector = TriggerDetector(self.chunk_size, threshold, trigger_level)
         atexit.register(self.stop)
 
     def _wrap_stream_read(self, stream):

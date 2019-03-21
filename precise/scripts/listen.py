@@ -33,10 +33,13 @@ usage = '''
     :-c --chunk-size int 2048
         Samples between inferences
     
-    :-t --threshold int 3
-        Number of positives to cause an activation
+    :-l --trigger-level int 3
+        Number of activated chunks to cause an activation
     
-    :-l --light-mode
+    :-t --threshold float 0.5
+        Network output required to be considered activated
+
+    :-b --basic-mode
         Report using . or ! rather than a visual representation
 
     :-s --save-dir str -
@@ -51,7 +54,6 @@ session_id, chunk_num = '%09d' % randint(0, 999999999), 0
 
 def main():
     args = create_parser(usage).parse_args()
-    sensitivity = 0.5
 
     def on_activation():
         activate_notify()
@@ -65,14 +67,14 @@ def main():
             chunk_num += 1
 
     def on_prediction(conf):
-        if args.light_mode:
+        if args.basic_mode:
             print('!' if conf > 0.7 else '.', end='', flush=True)
         else:
             max_width = 80
             width = min(get_terminal_size()[0], max_width)
             units = int(round(conf * width))
             bar = 'X' * units + '-' * (width - units)
-            cutoff = round((1.0 - sensitivity) * width)
+            cutoff = round(args.threshold * width)
             print(bar[:cutoff] + bar[cutoff:].replace('X', 'x'))
 
     listener = Listener(args.model, args.chunk_size)
@@ -86,7 +88,7 @@ def main():
 
     engine = ListenerEngine(listener, args.chunk_size)
     engine.get_prediction = get_prediction
-    runner = PreciseRunner(engine, args.threshold, sensitivity=sensitivity,
+    runner = PreciseRunner(engine, args.trigger_level, threshold=args.threshold,
                            on_activation=on_activation, on_prediction=on_prediction)
     runner.start()
     Event().wait()  # Wait forever
