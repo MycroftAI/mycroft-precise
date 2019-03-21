@@ -20,14 +20,17 @@ from precise.network_runner import Listener
 from precise.params import inject_params
 from precise.pocketsphinx.listener import PocketsphinxListener
 from precise.pocketsphinx.scripts.test import test_pocketsphinx
-from precise.scripts.test import show_stats, calc_stats, stats_to_dict
+from precise.stats import Stats
 from precise.train_data import TrainData
 
 usage = '''
     Evaluate a list of models on a dataset
     
-    :-t --use-train
+    :-u --use-train
         Evaluate training data instead of test data
+    
+    :-t --threshold floaat 0.5
+        Network output to be considered an activation
     
     :-pw --pocketsphinx-wake-word str -
         Optional wake word used to
@@ -90,11 +93,15 @@ def main():
         train, test = data.load(args.use_train, not args.use_train)
         inputs, targets = train if args.use_train else test
         predictions = Listener.find_runner(model_name)(model_name).predict(inputs)
-        stats = calc_stats(sum(data_files, []), targets, predictions)
+
+        stats = Stats(predictions, targets, sum(data_files, []))
 
         print('----', model_name, '----')
-        show_stats(stats, False)
-        metrics[model_name] = stats_to_dict(stats)
+        print(stats.counts_str())
+        print()
+        print(stats.summary_str())
+        print()
+        metrics[model_name] = stats.to_dict(args.threshold)
 
     print('Writing to:', args.output)
     with open(args.output, 'w') as f:
