@@ -35,13 +35,22 @@ usage = '''
     :-nf --no-filenames
         Don't print out the names of files that failed
     
+    :-r --resolution int 100
+        Number of points to generate
+    
+    :-p --power float 3.0
+        Power of point distribution
+    
+    :-l --labels
+        Print labels attached to each point
+    
     ...
 '''
 
 
-def test_thresholds(func, delta=0.01, power=3) -> list:
+def get_thresholds(points=100, power=3) -> list:
     """Run a function with a series of thresholds between 0 and 1"""
-    return [func((th * delta) ** power) for th in range(1, int(1.0 / delta))]
+    return [(i / (points + 1)) ** power for i in range(1, points + 1)]
 
 
 class CachedDataLoader:
@@ -91,11 +100,18 @@ def main():
         print('Generating statistics...')
         stats = Stats(predictions, targets, filenames)
         print('\n' + stats.counts_str() + '\n\n' + stats.summary_str() + '\n')
+
+        thresholds = get_thresholds(args.resolution, args.power)
         print('Generating x values...')
-        x = test_thresholds(stats.false_positives)
+        x = [stats.false_positives(i) for i in thresholds]
         print('Generating y values...')
-        y = test_thresholds(stats.false_negatives)
+        y = [stats.false_negatives(i) for i in thresholds]
+
         plt.plot(x, y, marker='x', linestyle='-', label=basename(splitext(model)[0]))
+
+        if args.labels:
+            for x, y, threshold in zip(x, y, thresholds):
+                plt.annotate('{:.4f}'.format(threshold), (x, y))
 
     print('Data:', data)
     plt.legend()
