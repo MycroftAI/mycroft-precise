@@ -12,12 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
-
 from prettyparse import create_parser
 
 from precise.network_runner import Listener
 from precise.params import inject_params
+from precise.stats import Stats
 from precise.train_data import TrainData
 
 usage = '''
@@ -35,60 +34,20 @@ usage = '''
     ...
 '''
 
-Stats = namedtuple('Stats', 'false_pos false_neg true_pos true_neg')
 
-
-def stats_to_dict(stats: Stats) -> dict:
-    return {
-        'true_pos': len(stats.true_pos),
-        'true_neg': len(stats.true_neg),
-        'false_pos': len(stats.false_pos),
-        'false_neg': len(stats.false_neg),
-    }
-
-
-def show_stats(stats: Stats, show_filenames):
-    false_pos, false_neg, true_pos, true_neg = stats
-
-    num_correct = len(true_pos) + len(true_neg)
-    total = num_correct + len(false_pos) + len(false_neg)
-
-    def prc(a: int, b: int):  # Rounded percent
-        return round(100.0 * (b and a / b), 2)
-
+def show_stats(stats: Stats, show_filenames: bool):
     if show_filenames:
+        fp_files = stats.calc_filenames(False, True)
+        fn_files = stats.calc_filenames(False, False)
         print('=== False Positives ===')
-        for i in false_pos:
-            print(i)
+        print('\n'.join(fp_files))
         print()
         print('=== False Negatives ===')
-        for i in false_neg:
-            print(i)
+        print('\n'.join(fn_files))
         print()
-    print('=== Counts ===')
-    print('False Positives:', len(false_pos))
-    print('True Negatives:', len(true_neg))
-    print('False Negatives:', len(false_neg))
-    print('True Positives:', len(true_pos))
+    print(stats.counts_str())
     print()
-    print('=== Summary ===')
-    print(num_correct, "out of", total)
-    print(prc(num_correct, total), "%")
-    print()
-    print(prc(len(false_pos), len(false_pos) + len(true_neg)), "% false positives")
-    print(prc(len(false_neg), len(false_neg) + len(true_pos)), "% false negatives")
-
-
-def calc_stats(filenames, targets, predictions) -> Stats:
-    stats = Stats([], [], [], [])
-    for name, target, prediction in zip(filenames, targets, predictions):
-        {
-            (True, False): stats.false_pos,
-            (True, True): stats.true_pos,
-            (False, True): stats.false_neg,
-            (False, False): stats.true_neg
-        }[prediction[0] > 0.5, target[0] > 0.5].append(name)
-    return stats
+    print(stats.summary_str())
 
 
 def main():
@@ -102,7 +61,7 @@ def main():
 
     filenames = sum(data.train_files if args.use_train else data.test_files, [])
     predictions = Listener.find_runner(args.model)(args.model).predict(inputs)
-    stats = calc_stats(filenames, targets, predictions)
+    stats = Stats(predictions, targets, filenames)
 
     print('Data:', data)
     show_stats(stats, not args.no_filenames)
