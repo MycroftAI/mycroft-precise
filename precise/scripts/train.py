@@ -79,12 +79,10 @@ class Trainer:
 
         inject_params(args.model)
         save_params(args.model)
-        self.train, self.test = self.load_data(self.args)
-
         params = ModelParams(skip_acc=args.no_validation, extra_metrics=args.extra_metrics,
                              loss_bias=1.0 - args.sensitivity)
         self.model = create_model(args.model, params)
-        self.model.summary()
+        self.train, self.test = self.load_data(self.args)
 
         from keras.callbacks import ModelCheckpoint, TensorBoard
         checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
@@ -160,6 +158,7 @@ class Trainer:
             return self.train[0], self.train[1]
 
     def run(self):
+        self.model.summary()
         try:
             train_inputs, train_outputs = self.sampled_data
             self.model.fit(
