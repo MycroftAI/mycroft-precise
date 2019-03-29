@@ -95,29 +95,3 @@ def vectorize_inhibit(audio: np.ndarray) -> np.ndarray:
             break
         inputs.append(vectorize(audio[:-offset]))
     return np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size))
-
-
-def get_cache_folder():
-    return os.path.join('.cache', hashlib.md5(
-        str(sorted(pr.__dict__.values())).encode()
-    ).hexdigest())
-
-
-def get_cache_file(object_key: str, ext='.npy') -> str:
-    return os.path.join(get_cache_folder(), object_key + ext)
-
-
-def load_vector(name: str, vectorizer: Callable = None) -> np.ndarray:
-    """Loads and caches a vector input from a wav or npy file"""
-    vectorizer = vectorizer or (vectorize_delta if pr.use_delta else vectorize)
-
-    save_name = name if name.endswith('.npy') else get_cache_file(name)
-
-    if os.path.isfile(save_name):
-        return np.load(save_name)
-
-    os.makedirs(os.path.dirname(save_name), exist_ok=True)
-
-    vec = vectorizer(load_audio(name))
-    np.save(save_name, vec)
-    return vec
