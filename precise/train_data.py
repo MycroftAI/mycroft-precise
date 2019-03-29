@@ -206,8 +206,13 @@ class TrainData:
             on_loop.i = 0
 
             new_inputs = cache.load(filenames, on_loop=on_loop)
+            new_outputs = np.array([[output] for _ in range(len(new_inputs))])
+            if new_inputs.size == 0:
+                new_inputs = np.empty((0, pr.n_features, pr.feature_size))
+            if new_outputs.size == 0:
+                new_outputs = np.empty((0, 1))
             input_parts.append(new_inputs)
-            output_parts.append([np.array([output]) for _ in range(len(new_inputs))])
+            output_parts.append(new_outputs)
             print('\r       \r', end='', flush=True)
 
         print('Loading wake-word...')
