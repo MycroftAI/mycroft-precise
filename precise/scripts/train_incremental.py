@@ -43,6 +43,9 @@ usage = '''
         Folder with properly encoded wav files of
         random audio that should not cause an activation
     
+    :-th --threshold float 0.5
+    	Network output to be considered activated
+    
     ...
 '''
 
@@ -118,7 +121,7 @@ class IncrementalTrainer(Trainer):
             print('\r' + str(i * 100. / num_chunks) + '%', end='', flush=True)
             self.audio_buffer = np.concatenate((self.audio_buffer[len(chunk):], chunk))
             conf = self.listener.update(chunk)
-            if conf > 0.5:
+            if conf > self.args.threshold:
                 self.samples_since_train += 1
                 name = splitext(basename(fn))[0] + '-' + str(i) + '.wav'
                 name = join(self.args.folder, 'test' if save_test else '', 'not-wake-word',
