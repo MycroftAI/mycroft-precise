@@ -70,7 +70,7 @@ setup(
     },
     install_requires=[
         'numpy',
-        'tensorflow==1.11.0',  # Must be on piwheels
+        'tensorflow>=1.13,<1.14',  # Must be on piwheels
         'sonopy',
         'pyaudio',
         'keras',
