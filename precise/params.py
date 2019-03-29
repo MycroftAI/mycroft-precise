@@ -15,6 +15,7 @@ from math import floor
 
 import attr
 import json
+import hashlib
 from os.path import isfile
 
 
@@ -62,6 +63,11 @@ class ListenerParams:
         if self.use_delta:
             num_features *= 2
         return num_features
+
+    def md5_hash(self):
+        return hashlib.md5(
+            str(sorted(pr.__dict__.values())).encode()
+        ).hexdigest()
 
 
 class Vectorizer:

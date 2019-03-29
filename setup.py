@@ -82,6 +82,7 @@ setup(
         'attrs',
         'fitipy',
         'bbopt',
-        'speechpy-fast'
+        'speechpy-fast',
+        'pyache'
     ]
 )

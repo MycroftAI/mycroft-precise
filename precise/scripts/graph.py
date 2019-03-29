@@ -22,7 +22,6 @@ from precise.network_runner import Listener
 from precise.params import inject_params, pr
 from precise.stats import Stats
 from precise.train_data import TrainData
-from precise.vectorization import get_cache_folder
 
 usage = '''
     Show ROC curves for a series of models
@@ -69,8 +68,8 @@ class CachedDataLoader:
     def load_for(self, model: str) -> Tuple[list, list]:
         """Injects the model parameters, reloading if they changed, and returning the data"""
         inject_params(model)
-        if get_cache_folder() != self.prev_cache:
-            self.prev_cache = get_cache_folder()
+        if self.prev_cache != pr.md5_hash():
+            self.prev_cache = pr.md5_hash()
             self.data = self.loader()
         return self.data
 
@@ -96,6 +95,7 @@ def main():
         train, test = loader.load_for(model)
         inputs, targets = train if args.use_train else test
         predictions = Listener.find_runner(model)(model).predict(inputs)
+        print(inputs.shape, targets.shape)
 
         print('Generating statistics...')
         stats = Stats(predictions, targets, filenames)

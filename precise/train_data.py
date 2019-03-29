@@ -18,10 +18,11 @@ from glob import glob
 from hashlib import md5
 from os.path import join, isfile
 from prettyparse import add_to_parser
+from pyache import Pyache
 from typing import *
 
-from precise.util import find_wavs, InvalidAudio
-from precise.vectorization import load_vector, vectorize_inhibit
+from precise.util import find_wavs, load_audio
+from precise.vectorization import vectorize_delta, vectorize
 
 
 class TrainData:
@@ -190,17 +191,23 @@ class TrainData:
 
     @staticmethod
     def __load_files(kw_files: list, nkw_files: list, vectorizer: Callable = None, shuffle=True) -> tuple:
-        inputs = []
-        outputs = []
+        from precise.params import pr
+
+        input_parts = []
+        output_parts = []
+
+        vectorizer = vectorizer or (vectorize_delta if pr.use_delta else vectorize)
+        cache = Pyache('.cache', lambda x: vectorizer(load_audio(x)), pr.md5_hash())
 
         def add(filenames, output):
-            for i, f in enumerate(filenames):
-                try:
-                    inputs.append(load_vector(f, vectorizer))
-                    outputs.append(np.array([output]))
-                except InvalidAudio as e:
-                    print('Skipping invalid file:', f, e)
-                print('\r{0:.2%}  '.format(i/len(filenames)), end='', flush=True)
+            def on_loop():
+                on_loop.i += 1
+                print('\r{0:.2%}  '.format(on_loop.i / len(filenames)), end='', flush=True)
+            on_loop.i = 0
+
+            new_inputs = cache.load(filenames, on_loop=on_loop)
+            input_parts.append(new_inputs)
+            output_parts.append([np.array([output]) for _ in range(len(new_inputs))])
             print('\r       \r', end='', flush=True)
 
         print('Loading wake-word...')
@@ -210,8 +217,8 @@ class TrainData:
         add(nkw_files, 0.0)
 
         from precise.params import pr
-        inputs = np.array(inputs) if inputs else np.empty((0, pr.n_features, pr.feature_size))
-        outputs = np.array(outputs) if outputs else np.empty((0, 1))
+        inputs = np.concatenate(input_parts) if input_parts else np.empty((0, pr.n_features, pr.feature_size))
+        outputs = np.concatenate(output_parts) if output_parts else np.empty((0, 1))
 
         shuffle_ids = np.arange(len(inputs))
         if shuffle:
