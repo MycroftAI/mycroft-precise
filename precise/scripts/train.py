@@ -23,6 +23,7 @@ from precise.model import create_model, ModelParams
 from precise.params import inject_params, save_params
 from precise.train_data import TrainData
 from precise.util import calc_sample_hash
+from precise.lr_finder_callback import LRFinder
 
 
 class Trainer:
@@ -60,6 +61,9 @@ class Trainer:
 
         :-em --extra-metrics
             Add extra metrics during training
+
+        :-lr --lr-finder
+            Learning rate finder
 
         ...
     '''
@@ -106,7 +110,7 @@ class Trainer:
             checkpoint, TensorBoard(
                 log_dir=self.model_base + '.logs',
             ), LambdaCallback(on_epoch_end=on_epoch_end)
-        ]
+        ] + [LRFinder()] * args.lr_finder
 
     def process_args(self, args: Any) -> Any:
         """Override to modify args"""

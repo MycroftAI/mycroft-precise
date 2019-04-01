@@ -76,5 +76,5 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
     load_keras()
     metrics = ['accuracy'] + params.extra_metrics * [false_pos, false_neg]
     set_loss_bias(params.loss_bias)
-    model.compile('rmsprop', weighted_log_loss, metrics=(not params.skip_acc) * metrics)
+    model.compile('sgd', weighted_log_loss, metrics=(not params.skip_acc) * metrics)
     return model
