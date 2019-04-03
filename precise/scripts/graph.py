@@ -111,6 +111,8 @@ def main():
     parser = create_parser(usage)
     parser.add_argument('models', nargs='*', help='Either Keras (.net) or TensorFlow (.pb) models to test')
     args = TrainData.parse_args(parser)
+    if not args.models and not args.input_file and args.folder:
+        args.input_file = args.folder
     if bool(args.models) == bool(args.input_file):
         parser.error('Please specify either a list of models or an input file')
 
@@ -118,18 +120,20 @@ def main():
         load_plt()  # Error early if matplotlib not installed
     import numpy as np
 
-    data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
-    filenames = sum(data.train_files if args.use_train else data.test_files, [])
-    loader = CachedDataLoader(partial(
-        data.load, args.use_train, not args.use_train, shuffle=False
-    ))
-
     if args.models:
+        data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
+        print('Data:', data)
+        filenames = sum(data.train_files if args.use_train else data.test_files, [])
+        loader = CachedDataLoader(partial(
+            data.load, args.use_train, not args.use_train, shuffle=False
+        ))
         model_data = calc_stats(args.models, loader, args.use_train, filenames)
     else:
         model_data = {
             name: Stats.from_np_dict(data) for name, data in np.load(args.input_file)['data'].item().items()
         }
+        for name, stats in model_data.items():
+            print('=== {} ===\n{}\n\n{}\n'.format(name, stats.counts_str(), stats.summary_str()))
 
     if args.output_file:
         np.savez(args.output_file, data={name: stats.to_np_dict() for name, stats in model_data.items()})
@@ -146,7 +150,6 @@ def main():
                 for x, y, threshold in zip(x, y, thresholds):
                     plt.annotate('{:.4f}'.format(threshold), (x, y))
 
-        print('Data:', data)
         plt.legend()
         plt.xlabel('False Positives')
         plt.ylabel('False Negatives')
