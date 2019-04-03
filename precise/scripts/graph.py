@@ -82,7 +82,7 @@ def main():
         raise SystemExit(2)
 
     parser = create_parser(usage)
-    parser.add_argument('models', nargs='+', help='Either Keras (.net) or TensorFlow (.pb) models to test')
+    parser.add_argument('models', nargs='*', help='Either Keras (.net) or TensorFlow (.pb) models to test')
     args = TrainData.parse_args(parser)
 
     data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
@@ -94,6 +94,7 @@ def main():
     for model in args.models:
         train, test = loader.load_for(model)
         inputs, targets = train if args.use_train else test
+        print('Running network...')
         predictions = Listener.find_runner(model)(model).predict(inputs)
         print(inputs.shape, targets.shape)
 
@@ -102,9 +103,7 @@ def main():
         print('\n' + stats.counts_str() + '\n\n' + stats.summary_str() + '\n')
 
         thresholds = get_thresholds(args.resolution, args.power)
-        print('Generating x values...')
         x = [stats.false_positives(i) for i in thresholds]
-        print('Generating y values...')
         y = [stats.false_negatives(i) for i in thresholds]
 
         plt.plot(x, y, marker='x', linestyle='-', label=basename(splitext(model)[0]))
