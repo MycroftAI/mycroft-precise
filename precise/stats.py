@@ -55,6 +55,18 @@ class Stats:
     def __len__(self):
         return len(self.outputs)
 
+    def to_np_dict(self):
+        import numpy as np
+        return {
+            'outputs': self.outputs,
+            'targets': self.targets,
+            'filenames': np.array(self.filenames)
+        }
+
+    @staticmethod
+    def from_np_dict(data) -> 'Stats':
+        return Stats(data['outputs'], data['targets'], data['filenames'])
+
     def to_dict(self, threshold=0.5):
         return {
             'true_pos': self.calc_metric(True, True, threshold),
