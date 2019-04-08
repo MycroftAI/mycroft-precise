@@ -18,8 +18,9 @@ from os.path import splitext
 from typing import *
 from typing import BinaryIO
 
+from precise.threshold_decoder import ThresholdDecoder
 from precise.model import load_precise_model
-from precise.params import inject_params
+from precise.params import inject_params, pr
 from precise.util import buffer_to_audio
 from precise.vectorization import vectorize_raw, add_deltas
 
@@ -91,6 +92,7 @@ class Listener:
         self.chunk_size = chunk_size
         runner_cls = runner_cls or self.find_runner(model_name)
         self.runner = runner_cls(model_name)
+        self.threshold_decoder = ThresholdDecoder(self.pr.threshold_config, pr.threshold_center)
 
     @staticmethod
     def find_runner(model_name: str) -> Type[Runner]:
@@ -134,4 +136,5 @@ class Listener:
         mfccs = self.update_vectors(stream)
         if self.pr.use_delta:
             mfccs = add_deltas(mfccs)
-        return self.runner.run(mfccs)
+        raw_output = self.runner.run(mfccs)
+        return self.threshold_decoder.decode(raw_output)

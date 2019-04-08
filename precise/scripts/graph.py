@@ -21,6 +21,7 @@ from typing import Callable, Tuple
 from precise.network_runner import Listener
 from precise.params import inject_params, pr
 from precise.stats import Stats
+from precise.threshold_decoder import ThresholdDecoder
 from precise.train_data import TrainData
 
 usage = '''
@@ -74,8 +75,8 @@ class CachedDataLoader:
     def load_for(self, model: str) -> Tuple[list, list]:
         """Injects the model parameters, reloading if they changed, and returning the data"""
         inject_params(model)
-        if self.prev_cache != pr.md5_hash():
-            self.prev_cache = pr.md5_hash()
+        if self.prev_cache != pr.vectorization_md5_hash():
+            self.prev_cache = pr.vectorization_md5_hash()
             self.data = self.loader()
         return self.data
 
@@ -139,13 +140,12 @@ def main():
         np.savez(args.output_file, data={name: stats.to_np_dict() for name, stats in model_data.items()})
     else:
         plt = load_plt()
-        thresholds = get_thresholds(args.resolution, args.power)
+        decoder = ThresholdDecoder(pr.threshold_config, pr.threshold_center)
+        thresholds = [decoder.encode(i) for i in np.linspace(0.0, 1.0, args.resolution)[1:-1]]
         for model_name, stats in model_data.items():
             x = [stats.false_positives(i) for i in thresholds]
             y = [stats.false_negatives(i) for i in thresholds]
-
             plt.plot(x, y, marker='x', linestyle='-', label=model_name)
-
             if args.labels:
                 for x, y, threshold in zip(x, y, thresholds):
                     plt.annotate('{:.4f}'.format(threshold), (x, y))

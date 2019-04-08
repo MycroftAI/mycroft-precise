@@ -197,7 +197,7 @@ class TrainData:
         output_parts = []
 
         vectorizer = vectorizer or (vectorize_delta if pr.use_delta else vectorize)
-        cache = Pyache('.cache', lambda x: vectorizer(load_audio(x)), pr.md5_hash())
+        cache = Pyache('.cache', lambda x: vectorizer(load_audio(x)), pr.vectorization_md5_hash())
 
         def add(filenames, output):
             def on_loop():

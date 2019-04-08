@@ -36,13 +36,13 @@ usage = '''
     :-l --trigger-level int 3
         Number of activated chunks to cause an activation
     
-    :-t --threshold float 0.5
+    :-s --sensitivity float 0.5
         Network output required to be considered activated
 
     :-b --basic-mode
         Report using . or ! rather than a visual representation
 
-    :-s --save-dir str -
+    :-d --save-dir str -
         Folder to save false positives
     
     :-p --save-prefix str -
@@ -74,7 +74,7 @@ def main():
             width = min(get_terminal_size()[0], max_width)
             units = int(round(conf * width))
             bar = 'X' * units + '-' * (width - units)
-            cutoff = round(args.threshold * width)
+            cutoff = round((1.0 - args.sensitivity) * width)
             print(bar[:cutoff] + bar[cutoff:].replace('X', 'x'))
 
     listener = Listener(args.model, args.chunk_size)
@@ -88,7 +88,7 @@ def main():
 
     engine = ListenerEngine(listener, args.chunk_size)
     engine.get_prediction = get_prediction
-    runner = PreciseRunner(engine, args.trigger_level, threshold=args.threshold,
+    runner = PreciseRunner(engine, args.trigger_level, sensitivity=args.sensitivity,
                            on_activation=on_activation, on_prediction=on_prediction)
     runner.start()
     Event().wait()  # Wait forever

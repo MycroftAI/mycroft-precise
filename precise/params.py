@@ -31,6 +31,8 @@ class ListenerParams:
     n_fft = attr.ib()  # type: int
     use_delta = attr.ib()  # type: bool
     vectorizer = attr.ib()  # type: int
+    threshold_config = attr.ib()  # type: tuple
+    threshold_center = attr.ib()  # type: float
 
     @property
     def buffer_samples(self):
@@ -64,9 +66,13 @@ class ListenerParams:
             num_features *= 2
         return num_features
 
-    def md5_hash(self):
+    def vectorization_md5_hash(self):
+        """Hash all the fields related to audio vectorization"""
+        keys = sorted(pr.__dict__)
+        keys.remove('threshold_config')
+        keys.remove('threshold_center')
         return hashlib.md5(
-            str(sorted(pr.__dict__.values())).encode()
+            str([pr.__dict__[i] for i in keys]).encode()
         ).hexdigest()
 
 
@@ -80,7 +86,7 @@ class Vectorizer:
 pr = ListenerParams(
     window_t=0.1, hop_t=0.05, buffer_t=1.5, sample_rate=16000,
     sample_depth=2, n_mfcc=13, n_filt=20, n_fft=512, use_delta=False,
-    vectorizer=Vectorizer.mfccs
+    threshold_config=((6, 4),), threshold_center=0.2, vectorizer=Vectorizer.mfccs
 )
 
 # Used to fill in old param files without new attributes

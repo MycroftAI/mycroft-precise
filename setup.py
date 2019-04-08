@@ -66,6 +66,7 @@ setup(
             'precise-train-sampled=precise.scripts.train_sampled:main',
             'precise-train-incremental=precise.scripts.train_incremental:main',
             'precise-train-generated=precise.scripts.train_generated:main',
+            'precise-calc-threshold=precise.scripts.calc_threshold:main',
         ]
     },
     install_requires=[

@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from math import exp, log, sqrt, pi
+import numpy as np
 from typing import *
 
 LOSS_BIAS = 0.9  # [0..1] where 1 is inf bias
@@ -66,3 +68,18 @@ def load_keras() -> Any:
     keras.metrics.false_positives = false_pos
     keras.metrics.false_neg = false_neg
     return keras
+
+
+def sigmoid(x):
+    """Sigmoid squashing function for scalars"""
+    return 1 / (1 + exp(-x))
+
+
+def asigmoid(x):
+    """Inverse sigmoid (logit) for scalars"""
+    return -log(1 / x - 1)
+
+
+def pdf(x, mu, std):
+    """Probability density function (normal distribution)"""
+    return (1.0 / (std * sqrt(2 * pi))) * np.exp(-(x - mu) ** 2 / (2 * std ** 2))

@@ -109,12 +109,12 @@ class Simulator:
                 continue
 
             predictions = self.evaluate(audio)
-            detector = TriggerDetector(self.args.chunk_size, trigger_level=0, threshold=self.args.threshold)
+            detector = TriggerDetector(self.args.chunk_size, trigger_level=0, sensitivity=self.args.threshold)
 
             metric = Metric(
                 chunk_size=self.args.chunk_size,
                 seconds=len(audio) / pr.sample_rate,
-                activated_chunks=(predictions > detector.threshold).sum(),
+                activated_chunks=(predictions > detector.sensitivity).sum(),
                 activations=sum(detector.update(i) for i in predictions),
                 activation_sum=predictions.sum()
             )
