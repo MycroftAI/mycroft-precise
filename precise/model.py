@@ -36,6 +36,7 @@ class ModelParams:
     extra_metrics = attr.ib(False)  # type: bool
     skip_acc = attr.ib(False)  # type: bool
     loss_bias = attr.ib(0.7)  # type: float
+    freeze_till = attr.ib(0)  # type: bool
 
 
 def load_precise_model(model_name: str) -> Any:
@@ -76,5 +77,7 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
     load_keras()
     metrics = ['accuracy'] + params.extra_metrics * [false_pos, false_neg]
     set_loss_bias(params.loss_bias)
+    for i in model.layers[:params.freeze_till]:
+        i.trainable = False
     model.compile('rmsprop', weighted_log_loss, metrics=(not params.skip_acc) * metrics)
     return model

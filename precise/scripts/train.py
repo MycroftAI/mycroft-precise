@@ -60,6 +60,10 @@ class Trainer:
 
         :-em --extra-metrics
             Add extra metrics during training
+        
+        :-f --freeze-till int 0
+            Freeze all weights up to this index (non-inclusive).
+            Can be negative to wrap from end
 
         ...
     '''
@@ -80,7 +84,7 @@ class Trainer:
         inject_params(args.model)
         save_params(args.model)
         params = ModelParams(skip_acc=args.no_validation, extra_metrics=args.extra_metrics,
-                             loss_bias=1.0 - args.sensitivity)
+                             loss_bias=1.0 - args.sensitivity, freeze_till=args.freeze_till)
         self.model = create_model(args.model, params)
         self.train, self.test = self.load_data(self.args)
 
