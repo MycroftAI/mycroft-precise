@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License
+import numpy as np
 
 counts_str = '''
 === Counts ===
@@ -35,8 +36,8 @@ class Stats:
     """Represents a set of statistics from a model run on a dataset"""
 
     def __init__(self, outputs, targets, filenames):
-        self.outputs = outputs
-        self.targets = targets
+        self.outputs = np.array(outputs)
+        self.targets = np.array(targets)
         self.filenames = filenames
         self.num_positives = int((self.targets > 0.5).sum())
         self.num_negatives = int((self.targets < 0.5).sum())
