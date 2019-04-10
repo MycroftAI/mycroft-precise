@@ -36,7 +36,7 @@ package_scripts() {
 
     out_name=$(tar_name "$tar_prefix")
     cd dist
-    tar czvf "$out_name" "$tar_prefix"
+    tar czvf "$out_name" "$combined_folder"
     cd ..
     mv "dist/$out_name" .
 }
