@@ -5,17 +5,22 @@ from glob import iglob
 from os.path import basename, dirname, abspath
 
 script_name = '%%SCRIPT%%'
-strip = False
+train_libs = %%TRAIN_LIBS%%
+strip = True
 site_packages = '.venv/lib/python3.6/site-packages/'
-print('PATH:', abspath('precise/scripts/{}.py'.format(script_name)))
+
+if train_libs:
+    binaries = [
+        (abspath(i), dirname(i.replace(site_packages, '')))
+        for i in iglob(site_packages + "tensorflow/**/*.so", recursive=True)
+    ]
+else:
+    binaries = []
 
 a = Analysis(
     [abspath('precise/scripts/{}.py'.format(script_name))],
     pathex=['.'],
-    binaries=[
-        (abspath(i), dirname(i.replace(site_packages, '')))
-        for i in iglob(site_packages + "tensorflow/**/*.so", recursive=True)
-    ],
+    binaries=binaries,
     datas=[],
     hiddenimports=['prettyparse', 'speechpy'],
     hookspath=[],
@@ -25,6 +30,11 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher
 )
+
+for i in range(len(a.binaries)):
+    dest, origin, kind = a.binaries[i]
+    if '_pywrap_tensorflow_internal' in dest:
+        a.binaries[i] = ('tensorflow.python.' + dest, origin, kind)
 
 pyz = PYZ(
     a.pure, a.zipped_data,
