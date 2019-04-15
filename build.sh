@@ -17,28 +17,31 @@ package_scripts() {
     local combined_folder=$2
     local scripts=$3
     local train_libs=$4
-    
-    rm -rf dist/
+    local completed_file="dist/completed_$combined_folder.txt"
+
+    if ! [ -f "$completed_file" ]; then
+        rm -rf "dist/$combined_folder"
+    fi
+    mkdir -p "dist/$combined_folder"
 
     for script in $scripts; do
+        exe=precise-$(echo "$script" | tr '_' '-')
+        if [ -f "$completed_file" ] && grep -qF "exe" "$completed_file"; then
+            continue
+        fi
         tmp_name=$(mktemp).spec
         cat "precise.template.spec" | replace "%%SCRIPT%%" "$script" | replace "%%TRAIN_LIBS%%" "$train_libs" > "$tmp_name"
         pyinstaller -y "$tmp_name"
-    done
-
-    local items=dist/*
-    for i in $items; do
-        mkdir -p "dist/$combined_folder"
-        if [ "$(readlink -f "$i")" != "$(readlink -f "dist/$combined_folder")" ]; then
-            cp -R $i/* "dist/$combined_folder"
-        fi
+        cp -R dist/$exe/* "dist/$combined_folder"
+        rm -rf "dist/$exe" "build/$exe"
+        echo "$exe" >> "$completed_file"
     done
 
     out_name=$(tar_name "$tar_prefix")
     cd dist
     tar czvf "$out_name" "$combined_folder"
+    md5sum "$out_name" > "$out_name.md5"
     cd ..
-    mv "dist/$out_name" .
 }
 
 set -eE
@@ -51,6 +54,6 @@ all_scripts=$(grep -oP '(?<=precise.scripts.)[a-z_]+' setup.py)
 package_scripts "precise-all" "precise" "$all_scripts" True
 package_scripts "precise-engine" "precise-engine" "engine" False
 
-tar_1=$(tar_name precise-all)
-tar_2=$(tar_name precise-engine)
+tar_1=dist/$(tar_name precise-all)
+tar_2=dist/$(tar_name precise-engine)
 echo "Wrote to $tar_1 and $tar_2"
