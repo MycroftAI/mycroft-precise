@@ -94,7 +94,7 @@ class OptimizeTrainer(Trainer):
                 *self.sampled_data, batch_size=self.args.batch_size,
                 epochs=self.epoch + self.args.epochs,
                 validation_data=self.test * (not self.args.no_validation),
-                callbacks=self.callbacks, initial_epoch=self.epoch,
+                callbacks=self.callbacks, initial_epoch=self.epoch
             )
             resp = model.evaluate(*self.test, batch_size=self.args.batch_size)
             if not isinstance(resp, (list, tuple)):
