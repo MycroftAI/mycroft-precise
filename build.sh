@@ -26,7 +26,7 @@ package_scripts() {
 
     for script in $scripts; do
         exe=precise-$(echo "$script" | tr '_' '-')
-        if [ -f "$completed_file" ] && grep -qF "exe" "$completed_file"; then
+        if [ -f "$completed_file" ] && grep -qF "$exe" "$completed_file"; then
             continue
         fi
         tmp_name=$(mktemp).spec
