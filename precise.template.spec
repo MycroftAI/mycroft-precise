@@ -3,16 +3,27 @@ block_cipher = None
 
 from glob import iglob
 from os.path import basename, dirname, abspath
+import os
+import fnmatch
 
 script_name = '%%SCRIPT%%'
 train_libs = %%TRAIN_LIBS%%
 strip = True
 site_packages = '.venv/lib/python3.6/site-packages/'
 
+
+def recursive_glob(treeroot, pattern):
+    results = []
+    for base, dirs, files in os.walk(treeroot):
+        goodfiles = fnmatch.filter(files, pattern)
+        results.extend(os.path.join(base, f) for f in goodfiles)
+    return results
+
+
 if train_libs:
     binaries = [
         (abspath(i), dirname(i.replace(site_packages, '')))
-        for i in iglob(site_packages + "tensorflow/**/*.so", recursive=True)
+        for i in recursive_glob(site_packages + "tensorflow/", "*.so")
     ]
 else:
     binaries = []
