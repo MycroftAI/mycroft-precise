@@ -32,8 +32,10 @@ package_scripts() {
         tmp_name=$(mktemp).spec
         cat "precise.template.spec" | replace "%%SCRIPT%%" "$script" | replace "%%TRAIN_LIBS%%" "$train_libs" > "$tmp_name"
         pyinstaller -y "$tmp_name"
-        cp -R dist/$exe/* "dist/$combined_folder"
-        rm -rf "dist/$exe" "build/$exe"
+        if [ "$exe" != "$combined_folder" ]; then
+            cp -R dist/$exe/* "dist/$combined_folder"
+            rm -rf "dist/$exe" "build/$exe"
+        fi
         echo "$exe" >> "$completed_file"
     done
 
