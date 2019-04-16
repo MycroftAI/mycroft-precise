@@ -12,7 +12,8 @@ work for a desktop:
 
 ```bash
 ARCH=x86_64
-wget https://github.com/MycroftAI/precise-data/raw/dist/$ARCH/precise-engine.tar.gz
+VERSION=0.3.0
+wget https://github.com/MycroftAI/mycroft-precise/releases/download/$VERSION/precise-all_${VERSION}_${ARCH}.tar.gz
 tar xvf precise-engine.tar.gz
 ```
 
