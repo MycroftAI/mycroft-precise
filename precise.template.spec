@@ -10,6 +10,8 @@ script_name = '%%SCRIPT%%'
 train_libs = %%TRAIN_LIBS%%
 strip = True
 site_packages = '.venv/lib/python3.6/site-packages/'
+hidden_imports = ['prettyparse', 'speechpy']
+binaries = []
 
 
 def recursive_glob(treeroot, pattern):
@@ -25,15 +27,14 @@ if train_libs:
         (abspath(i), dirname(i.replace(site_packages, '')))
         for i in recursive_glob(site_packages + "tensorflow/", "*.so")
     ]
-else:
-    binaries = []
+    hidden_imports += ['h5py']
 
 a = Analysis(
     [abspath('precise/scripts/{}.py'.format(script_name))],
     pathex=['.'],
     binaries=binaries,
     datas=[],
-    hiddenimports=['prettyparse', 'speechpy'],
+    hiddenimports=hidden_imports,
     hookspath=[],
     runtime_hooks=[],
     excludes=['PySide', 'PyQt4', 'PyQt5', 'matplotlib'],
