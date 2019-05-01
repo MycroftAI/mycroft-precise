@@ -183,7 +183,7 @@ class PreciseRunner(object):
         self.engine.start()
         self.running = True
         self.is_paused = False
-        self.thread = Thread(target=self._handle_predictions)
+        self.thread = Thread(target=self._handle_predictions, daemon=True)
         self.thread.daemon = True
         self.thread.start()
 
