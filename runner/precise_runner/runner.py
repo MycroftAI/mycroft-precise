@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import atexit
+
+import time
 from subprocess import PIPE, Popen
 from threading import Thread, Event
 
@@ -72,17 +74,25 @@ class ListenerEngine(Engine):
 
 
 class ReadWriteStream(object):
-    """Class used to support writing binary audio data at any pace"""
-    def __init__(self, s=b''):
+    """
+    Class used to support writing binary audio data at any pace,
+    optionally chopping when the buffer gets too large
+    """
+    def __init__(self, s=b'', chop_samples=-1):
         self.buffer = s
         self.write_event = Event()
+        self.chop_samples = chop_samples
 
     def read(self, n=-1, timeout=None):
         if n == -1:
             n = len(self.buffer)
+        if 0 < self.chop_samples < len(self.buffer):
+            self.buffer = self.buffer[self.chop_samples:]
+        return_time = time.time() + (float('inf') if timeout is None else timeout)
         while len(self.buffer) < n:
             self.write_event.clear()
-            self.write_event.wait(timeout)
+            if not self.write_event.wait(return_time - time.time()):
+                return b''
         chunk = self.buffer[:n]
         self.buffer = self.buffer[n:]
         return chunk
