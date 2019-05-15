@@ -87,8 +87,11 @@ class ReadWriteStream(object):
         if n == -1:
             n = len(self.buffer)
         if 0 < self.chop_samples < len(self.buffer):
-            self.buffer = self.buffer[self.chop_samples:]
-        return_time = time.time() + (float('inf') if timeout is None else timeout)
+            samples_left = len(self.buffer) % self.chop_samples
+            self.buffer = self.buffer[-samples_left:]
+        return_time = 1e10 if timeout is None else (
+                timeout + time.time()
+        )
         while len(self.buffer) < n:
             self.write_event.clear()
             if not self.write_event.wait(return_time - time.time()):
