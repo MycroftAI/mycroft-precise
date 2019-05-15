@@ -83,6 +83,9 @@ class ReadWriteStream(object):
         self.write_event = Event()
         self.chop_samples = chop_samples
 
+    def __len__(self):
+        return len(self.buffer)
+
     def read(self, n=-1, timeout=None):
         if n == -1:
             n = len(self.buffer)
