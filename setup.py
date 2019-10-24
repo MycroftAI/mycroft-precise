@@ -84,6 +84,8 @@ setup(
         'fitipy',
         'bbopt',
         'speechpy-fast',
-        'pyache'
+        'pyache',
+        'networkx==1.11',
+        'hyperopt==0.1.2'
     ]
 )
