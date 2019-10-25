@@ -15,36 +15,35 @@
 from itertools import islice
 
 from fitipy import Fitipy
-from prettyparse import create_parser
+from prettyparse import Usage
 
-from precise.scripts.train import Trainer
+from precise.scripts.train import TrainScript
 from precise.util import calc_sample_hash
 
-usage = '''
-    Train a model, sampling data points with the highest loss from a larger dataset
 
-    :-c --cycles int 200
-        Number of sampling cycles of size {epoch} to run
-        
-    :-n --num-sample-chunk int 50
-        Number of new samples to introduce at a time between training cycles
-    
-    :-sf --samples-file str -
-        Json file to write selected samples to.
-        Default: {model_base}.samples.json
-    
-    :-is --invert-samples
-        Unused parameter
-    ...
-'''
+class TrainSampledScript(TrainScript):
+    usage = Usage('''
+        Train a model, sampling data points with the highest loss from a larger dataset
 
+        :-c --cycles int 200
+            Number of sampling cycles of size {epoch} to run
 
-class SampledTrainer(Trainer):
-    def __init__(self):
-        parser = create_parser(usage)
-        super().__init__(parser)
+        :-n --num-sample-chunk int 50
+            Number of new samples to introduce at a time between training cycles
+
+        :-sf --samples-file str -
+            Json file to write selected samples to.
+            Default = {model_base}.samples.json
+
+        :-is --invert-samples
+            Unused parameter
+        ...
+    ''') | TrainScript.usage
+
+    def __init__(self, args):
+        super().__init__(args)
         if self.args.invert_samples:
-            parser.error('--invert-samples should be left blank')
+            raise ValueError('--invert-samples should be left blank')
         self.args.samples_file = (self.args.samples_file or '{model_base}.samples.json').format(
             model_base=self.model_base
         )
@@ -90,9 +89,7 @@ class SampledTrainer(Trainer):
             )
 
 
-def main():
-    SampledTrainer().run()
-
+main = TrainSampledScript.run_main
 
 if __name__ == '__main__':
     main()

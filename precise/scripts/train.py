@@ -12,21 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from argparse import ArgumentParser
 from fitipy import Fitipy
 from keras.callbacks import LambdaCallback
 from os.path import splitext, isfile
-from prettyparse import add_to_parser
+from prettyparse import Usage
 from typing import Any, Tuple
 
 from precise.model import create_model, ModelParams
 from precise.params import inject_params, save_params
+from precise.scripts.base_script import BaseScript
 from precise.train_data import TrainData
 from precise.util import calc_sample_hash
 
 
-class Trainer:
-    usage = '''
+class TrainScript(BaseScript):
+    usage = Usage('''
         Train a new model on a dataset
 
         :model str
@@ -60,26 +60,23 @@ class Trainer:
 
         :-em --extra-metrics
             Add extra metrics during training
-        
+
         :-f --freeze-till int 0
             Freeze all weights up to this index (non-inclusive).
             Can be negative to wrap from end
 
         ...
-    '''
+    ''') | TrainData.usage
 
-    def __init__(self, parser=None):
-        parser = parser or ArgumentParser()
-        add_to_parser(parser, self.usage, True)
-        args = TrainData.parse_args(parser)
-        self.args = args = self.process_args(args) or args
+    def __init__(self, args):
+        super().__init__(args)
 
         if args.invert_samples and not args.samples_file:
-            parser.error('You must specify --samples-file when using --invert-samples')
+            raise ValueError('You must specify --samples-file when using --invert-samples')
         if args.samples_file and not isfile(args.samples_file):
-            parser.error('No such file: ' + (args.invert_samples or args.samples_file))
+            raise ValueError('No such file: ' + (args.invert_samples or args.samples_file))
         if not 0.0 <= args.sensitivity <= 1.0:
-            parser.error('sensitivity must be between 0.0 and 1.0')
+            raise ValueError('sensitivity must be between 0.0 and 1.0')
 
         inject_params(args.model)
         save_params(args.model)
@@ -94,7 +91,7 @@ class Trainer:
         epoch_fiti = Fitipy(splitext(args.model)[0] + '.epoch')
         self.epoch = epoch_fiti.read().read(0, int)
 
-        def on_epoch_end(a, b):
+        def on_epoch_end(_a, _b):
             self.epoch += 1
             epoch_fiti.write().write(self.epoch, str)
 
@@ -111,10 +108,6 @@ class Trainer:
                 log_dir=self.model_base + '.logs',
             ), LambdaCallback(on_epoch_end=on_epoch_end)
         ]
-
-    def process_args(self, args: Any) -> Any:
-        """Override to modify args"""
-        pass
 
     @staticmethod
     def load_sample_data(filename, train_data) -> Tuple[set, dict]:
@@ -163,20 +156,15 @@ class Trainer:
 
     def run(self):
         self.model.summary()
-        try:
-            train_inputs, train_outputs = self.sampled_data
-            self.model.fit(
-                train_inputs, train_outputs, self.args.batch_size,
-                self.epoch + self.args.epochs, validation_data=self.test,
-                initial_epoch=self.epoch, callbacks=self.callbacks
-            )
-        except KeyboardInterrupt:
-            print()
+        train_inputs, train_outputs = self.sampled_data
+        self.model.fit(
+            train_inputs, train_outputs, self.args.batch_size,
+            self.epoch + self.args.epochs, validation_data=self.test,
+            initial_epoch=self.epoch, callbacks=self.callbacks
+        )
 
 
-def main():
-    Trainer().run()
-
+main = TrainScript.run_main
 
 if __name__ == '__main__':
     main()

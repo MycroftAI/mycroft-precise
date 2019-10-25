@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from itertools import chain
 from math import sqrt
 
 import numpy as np
@@ -20,39 +19,14 @@ import os
 from glob import glob
 from os import makedirs
 from os.path import join, dirname, abspath, splitext
-from pip._vendor.distlib._backport import shutil
-from prettyparse import create_parser
+import shutil
+from prettyparse import Usage
 from random import random
 
+from precise.scripts.base_script import BaseScript
 from precise.train_data import TrainData
 from precise.util import load_audio
 from precise.util import save_audio
-
-usage = '''
-    Create a duplicate dataset with added noise
-    
-    :folder str
-        Folder containing source dataset
-    
-    :-tg --tags-file str -
-        Tags file to optionally load from
-
-    :noise_folder str
-        Folder with wav files containing noise to be added
-
-    :output_folder str
-        Folder to write the duplicate generated dataset
-    
-    :-if --inflation-factor int 1
-        The number of noisy samples generated per single source sample
-    
-    :-nl --noise-ratio-low float 0.0
-        Minimum random ratio of noise to sample. 1.0 is all noise, no sample sound
-    
-    :-nh --noise-ratio-high float 0.4
-        Maximum random ratio of noise to sample. 1.0 is all noise, no sample sound
-    ...
-'''
 
 
 class NoiseData:
@@ -92,42 +66,72 @@ class NoiseData:
         return noise_ratio * adjusted_noise + (1.0 - noise_ratio) * audio
 
 
-def main():
-    args = create_parser(usage).parse_args()
-    args.tags_file = abspath(args.tags_file) if args.tags_file else None
-    args.folder = abspath(args.folder)
-    args.output_folder = abspath(args.output_folder)
-    noise_min, noise_max = args.noise_ratio_low, args.noise_ratio_high
+class AddNoiseScript(BaseScript):
+    usage = Usage(
+        """
+            Create a duplicate dataset with added noise
 
-    data = TrainData.from_both(args.tags_file, args.folder, args.folder)
-    noise_data = NoiseData(args.noise_folder)
-    print('Data:', data)
+            :folder str
+                Folder containing source dataset
 
-    def translate_filename(source: str, n=0) -> str:
-        assert source.startswith(args.folder)
-        relative_file = source[len(args.folder):].strip(os.path.sep)
-        if n > 0:
-            base, ext = splitext(relative_file)
-            relative_file = base + '.' + str(n) + ext
-        return join(args.output_folder, relative_file)
+            :-tg --tags-file str -
+                Tags file to optionally load from
 
-    all_filenames = sum(data.train_files + data.test_files, [])
-    for i, filename in enumerate(all_filenames):
-        print('{0:.2%}  \r'.format(i / (len(all_filenames) - 1)), end='', flush=True)
+            :noise_folder str
+                Folder with wav files containing noise to be added
 
-        audio = load_audio(filename)
-        for n in range(args.inflation_factor):
-            altered = noise_data.noised_audio(audio, noise_min + (noise_max - noise_min) * random())
-            output_filename = translate_filename(filename, n)
+            :output_folder str
+                Folder to write the duplicate generated dataset
 
-            makedirs(dirname(output_filename), exist_ok=True)
-            save_audio(output_filename, altered)
+            :-if --inflation-factor int 1
+                The number of noisy samples generated per single source sample
 
-    print('Done!')
+            :-nl --noise-ratio-low float 0.0
+                Minimum random ratio of noise to sample. 1.0 is all noise, no sample sound
 
-    if args.tags_file and args.tags_file.startswith(args.folder):
-        shutil.copy2(args.tags_file, translate_filename(args.tags_file))
+            :-nh --noise-ratio-high float 0.4
+                Maximum random ratio of noise to sample. 1.0 is all noise, no sample sound
+        """,
+        tags_file=lambda args: abspath(args.tags_file) if args.tags_file else None,
+        folder=lambda args: abspath(args.folder),
+        output_folder=lambda args: abspath(args.output_folder)
+    )
 
+    def run(self):
+        args = self.args
+        noise_min, noise_max = args.noise_ratio_low, args.noise_ratio_high
+
+        data = TrainData.from_both(args.tags_file, args.folder, args.folder)
+        noise_data = NoiseData(args.noise_folder)
+        print('Data:', data)
+
+        def translate_filename(source: str, n=0) -> str:
+            assert source.startswith(args.folder)
+            relative_file = source[len(args.folder):].strip(os.path.sep)
+            if n > 0:
+                base, ext = splitext(relative_file)
+                relative_file = base + '.' + str(n) + ext
+            return join(args.output_folder, relative_file)
+
+        all_filenames = sum(data.train_files + data.test_files, [])
+        for i, filename in enumerate(all_filenames):
+            print('{0:.2%}  \r'.format(i / (len(all_filenames) - 1)), end='', flush=True)
+
+            audio = load_audio(filename)
+            for n in range(args.inflation_factor):
+                altered = noise_data.noised_audio(audio, noise_min + (noise_max - noise_min) * random())
+                output_filename = translate_filename(filename, n)
+
+                makedirs(dirname(output_filename), exist_ok=True)
+                save_audio(output_filename, altered)
+
+        print('Done!')
+
+        if args.tags_file and args.tags_file.startswith(args.folder):
+            shutil.copy2(args.tags_file, translate_filename(args.tags_file))
+
+
+main = AddNoiseScript.run_main
 
 if __name__ == '__main__':
     main()

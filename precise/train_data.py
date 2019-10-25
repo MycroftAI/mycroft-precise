@@ -13,11 +13,10 @@
 # limitations under the License.
 import json
 import numpy as np
-from argparse import ArgumentParser
 from glob import glob
 from hashlib import md5
 from os.path import join, isfile
-from prettyparse import add_to_parser
+from prettyparse import Usage
 from pyache import Pyache
 from typing import *
 
@@ -27,6 +26,20 @@ from precise.vectorization import vectorize_delta, vectorize
 
 class TrainData:
     """Class to handle loading of wave data from categorized folders and tagged text files"""
+    usage = Usage('''
+        :folder str
+            Folder to load wav files from
+
+        :-tf --tags-folder str {folder}
+            Specify a different folder to load file ids
+            in tags file from
+
+        :-tg --tags-file str -
+            Text file to load tags from where each line is
+            <file_id> TAB (wake-word|not-wake-word) and
+            {folder}/<file_id>.wav exists
+
+    ''', tags_folder=lambda args: args.tags_folder.format(folder=args.folder))
 
     def __init__(self, train_files: Tuple[List[str], List[str]],
                  test_files: Tuple[List[str], List[str]]):
@@ -144,28 +157,6 @@ class TrainData:
     def merge(data_a: tuple, data_b: tuple) -> tuple:
         return np.concatenate((data_a[0], data_b[0])), np.concatenate((data_a[1], data_b[1]))
 
-    @staticmethod
-    def parse_args(parser: ArgumentParser) -> Any:
-        """Return parsed args from parser, adding options for train data inputs"""
-        extra_usage = '''
-            :folder str
-                Folder to load wav files from
-            
-            :-tf --tags-folder str {folder}
-                Specify a different folder to load file ids
-                in tags file from
-            
-            :-tg --tags-file str -
-                Text file to load tags from where each line is
-                <file_id> TAB (wake-word|not-wake-word) and
-                {folder}/<file_id>.wav exists
-            
-        '''
-        add_to_parser(parser, extra_usage)
-        args = parser.parse_args()
-        args.tags_folder = args.tags_folder.format(folder=args.folder)
-        return args
-
     def __repr__(self) -> str:
         string = '<TrainData wake_words={kws} not_wake_words={nkws}' \
                  ' test_wake_words={test_kws} test_not_wake_words={test_nkws}>'
@@ -203,6 +194,7 @@ class TrainData:
             def on_loop():
                 on_loop.i += 1
                 print('\r{0:.2%}  '.format(on_loop.i / len(filenames)), end='', flush=True)
+
             on_loop.i = 0
 
             new_inputs = cache.load(filenames, on_loop=on_loop)

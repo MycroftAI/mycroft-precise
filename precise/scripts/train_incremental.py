@@ -15,39 +15,16 @@
 import numpy as np
 from os import makedirs
 from os.path import basename, splitext, isfile, join
-from prettyparse import create_parser
+from prettyparse import Usage
 from random import random
 from typing import *
 
 from precise.model import create_model, ModelParams
 from precise.network_runner import Listener, KerasRunner
 from precise.params import pr
+from precise.scripts.train import TrainScript
 from precise.train_data import TrainData
-from precise.scripts.train import Trainer
 from precise.util import load_audio, save_audio, glob_all, chunk_audio
-
-usage = '''
-    Train a model to inhibit activation by
-    marking false activations and retraining
-    
-    :-e --epochs int 1
-        Number of epochs to train before continuing evaluation
-    
-    :-ds --delay-samples int 10
-        Number of false activations to save before re-training
-    
-    :-c --chunk-size int 2048
-        Number of samples between testing the neural network
-    
-    :-r --random-data-folder str data/random
-        Folder with properly encoded wav files of
-        random audio that should not cause an activation
-    
-    :-th --threshold float 0.5
-    	Network output to be considered activated
-    
-    ...
-'''
 
 
 def load_trained_fns(model_name: str) -> list:
@@ -64,9 +41,32 @@ def save_trained_fns(trained_fns: list, model_name: str):
         f.write('\n'.join(trained_fns).encode('utf8', 'surrogatepass'))
 
 
-class IncrementalTrainer(Trainer):
-    def __init__(self):
-        super().__init__(create_parser(usage))
+class TrainIncrementalScript(TrainScript):
+    usage = Usage('''
+        Train a model to inhibit activation by
+        marking false activations and retraining
+
+        :-e --epochs int 1
+            Number of epochs to train before continuing evaluation
+
+        :-ds --delay-samples int 10
+            Number of false activations to save before re-training
+
+        :-c --chunk-size int 2048
+            Number of samples between testing the neural network
+
+        :-r --random-data-folder str data/random
+            Folder with properly encoded wav files of
+            random audio that should not cause an activation
+
+        :-th --threshold float 0.5
+            Network output to be considered activated
+
+        ...
+    ''') | TrainScript.usage
+
+    def __init__(self, args):
+        super().__init__(args)
 
         for i in (
                 join(self.args.folder, 'not-wake-word', 'generated'),
@@ -153,12 +153,7 @@ class IncrementalTrainer(Trainer):
             save_trained_fns(self.trained_fns, self.args.model)
 
 
-def main():
-    try:
-        IncrementalTrainer().run()
-    except KeyboardInterrupt:
-        print()
-
+main = TrainIncrementalScript.run_main
 
 if __name__ == '__main__':
     main()

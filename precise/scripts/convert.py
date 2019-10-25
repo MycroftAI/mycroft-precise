@@ -15,73 +15,76 @@
 # limitations under the License.
 import os
 from os.path import split, isfile
-from prettyparse import create_parser
+from prettyparse import Usage
 from shutil import copyfile
 
-usage = '''
-    Convert wake word model from Keras to TensorFlow
-    
-    :model str
-        Input Keras model (.net)
-    
-    :-o --out str {model}.pb
-        Custom output TensorFlow protobuf filename
-'''
+from precise.scripts.base_script import BaseScript
 
 
-def convert(model_path: str, out_file: str):
-    """
-    Converts an HD5F file from Keras to a .pb for use with TensorFlow
+class ConvertScript(BaseScript):
+    usage = Usage('''
+        Convert wake word model from Keras to TensorFlow
 
-    Args:
-        model_path: location of Keras model
-        out_file: location to write protobuf
-    """
-    print('Converting', model_path, 'to', out_file, '...')
+        :model str
+            Input Keras model (.net)
 
-    import tensorflow as tf
-    from precise.model import load_precise_model
-    from keras import backend as K
+        :-o --out str {model}.pb
+            Custom output TensorFlow protobuf filename
+    ''')
 
-    out_dir, filename = split(out_file)
-    out_dir = out_dir or '.'
-    os.makedirs(out_dir, exist_ok=True)
+    def run(self):
+        args = self.args
+        model_name = args.model.replace('.net', '')
+        self.convert(args.model, args.out.format(model=model_name))
 
-    K.set_learning_phase(0)
-    model = load_precise_model(model_path)
+    def convert(self, model_path: str, out_file: str):
+        """
+        Converts an HD5F file from Keras to a .pb for use with TensorFlow
 
-    out_name = 'net_output'
-    tf.identity(model.output, name=out_name)
-    print('Output node name:', out_name)
-    print('Output folder:', out_dir)
+        Args:
+            model_path: location of Keras model
+            out_file: location to write protobuf
+        """
+        print('Converting', model_path, 'to', out_file, '...')
 
-    sess = K.get_session()
+        import tensorflow as tf
+        from precise.model import load_precise_model
+        from keras import backend as K
 
-    # Write the graph in human readable
-    tf.train.write_graph(sess.graph.as_graph_def(), out_dir, filename + 'txt', as_text=True)
-    print('Saved readable graph to:', filename + 'txt')
+        out_dir, filename = split(out_file)
+        out_dir = out_dir or '.'
+        os.makedirs(out_dir, exist_ok=True)
 
-    # Write the graph in binary .pb file
-    from tensorflow.python.framework import graph_util
-    from tensorflow.python.framework import graph_io
+        K.set_learning_phase(0)
+        model = load_precise_model(model_path)
 
-    cgraph = graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), [out_name])
-    graph_io.write_graph(cgraph, out_dir, filename, as_text=False)
+        out_name = 'net_output'
+        tf.identity(model.output, name=out_name)
+        print('Output node name:', out_name)
+        print('Output folder:', out_dir)
 
-    if isfile(model_path + '.params'):
-        copyfile(model_path + '.params', out_file + '.params')
+        sess = K.get_session()
 
-    print('Saved graph to:', filename)
+        # Write the graph in human readable
+        tf.train.write_graph(sess.graph.as_graph_def(), out_dir, filename + 'txt', as_text=True)
+        print('Saved readable graph to:', filename + 'txt')
 
-    del sess
+        # Write the graph in binary .pb file
+        from tensorflow.python.framework import graph_util
+        from tensorflow.python.framework import graph_io
+
+        cgraph = graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), [out_name])
+        graph_io.write_graph(cgraph, out_dir, filename, as_text=False)
+
+        if isfile(model_path + '.params'):
+            copyfile(model_path + '.params', out_file + '.params')
+
+        print('Saved graph to:', filename)
+
+        del sess
 
 
-def main():
-    args = create_parser(usage).parse_args()
-
-    model_name = args.model.replace('.net', '')
-    convert(args.model, args.out.format(model=model_name))
-
+main = ConvertScript.run_main
 
 if __name__ == '__main__':
     main()
