@@ -62,6 +62,8 @@ class EngineScript(BaseScript):
                 stdout.buffer.flush()
         except (EOFError, KeyboardInterrupt):
             pass
+        finally:
+            sys.stdout = stdout
 
 
 main = EngineScript.run_main

@@ -107,6 +107,10 @@ class ReadWriteStream(object):
         self.buffer += s
         self.write_event.set()
 
+    def flush(self):
+        """Makes compatible with sys.stdout"""
+        pass
+
 
 class TriggerDetector:
     """

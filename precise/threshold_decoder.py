@@ -34,9 +34,12 @@ class ThresholdDecoder:
     def decode(self, raw_output: float) -> float:
         if raw_output == 1.0 or raw_output == 0.0:
             return raw_output
-        ratio = (asigmoid(raw_output) - self.min_out) / self.out_range
-        ratio = min(max(ratio, 0.0), 1.0)
-        cp = self.cd[int(ratio * (len(self.cd) - 1) + 0.5)]
+        if self.out_range == 0:
+            cp = int(raw_output > self.min_out)
+        else:
+            ratio = (asigmoid(raw_output) - self.min_out) / self.out_range
+            ratio = min(max(ratio, 0.0), 1.0)
+            cp = self.cd[int(ratio * (len(self.cd) - 1) + 0.5)]
         if cp < self.center:
             return 0.5 * cp / self.center
         else:
