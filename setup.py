@@ -81,7 +81,7 @@ setup(
         'prettyparse<1.0',
         'precise-runner',
         'attrs',
-        'fitipy',
+        'fitipy<1.0',
         'bbopt',
         'speechpy-fast',
         'pyache',
