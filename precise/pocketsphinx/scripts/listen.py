@@ -12,56 +12,56 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from prettyparse import create_parser
-from random import randint
+from precise_runner import PreciseRunner
+from precise_runner.runner import ListenerEngine
+from prettyparse import Usage
 from threading import Event
 
 from precise.pocketsphinx.listener import PocketsphinxListener
+from precise.scripts.base_script import BaseScript
 from precise.util import activate_notify
-from precise_runner import PreciseRunner
-from precise_runner.runner import ListenerEngine
-
-usage = '''
-    Run Pocketsphinx on microphone audio input
-    
-    :key_phrase str
-        Key phrase composed of words from dictionary
-    
-    :dict_file str
-        Filename of dictionary with word pronunciations
-    
-    :hmm_folder str
-        Folder containing hidden markov model
-    
-    :-th --threshold str 1e-90
-        Threshold for activations
-    
-    :-c --chunk-size int 2048
-        Samples between inferences
-'''
-
-session_id, chunk_num = '%09d' % randint(0, 999999999), 0
 
 
-def main():
-    args = create_parser(usage).parse_args()
+class PocketsphinxListenScript(BaseScript):
+    usage = Usage('''
+        Run Pocketsphinx on microphone audio input
 
-    def on_activation():
-        activate_notify()
+        :key_phrase str
+            Key phrase composed of words from dictionary
 
-    def on_prediction(conf):
-        print('!' if conf > 0.5 else '.', end='', flush=True)
+        :dict_file str
+            Filename of dictionary with word pronunciations
 
-    runner = PreciseRunner(
-        ListenerEngine(
-            PocketsphinxListener(
-                args.key_phrase, args.dict_file, args.hmm_folder, args.threshold, args.chunk_size
-            )
-        ), 3, on_activation=on_activation, on_prediction=on_prediction
-    )
-    runner.start()
-    Event().wait()  # Wait forever
+        :hmm_folder str
+            Folder containing hidden markov model
 
+        :-th --threshold str 1e-90
+            Threshold for activations
+
+        :-c --chunk-size int 2048
+            Samples between inferences
+    ''')
+
+    def run(self):
+        def on_activation():
+            activate_notify()
+
+        def on_prediction(conf):
+            print('!' if conf > 0.5 else '.', end='', flush=True)
+
+        args = self.args
+        runner = PreciseRunner(
+            ListenerEngine(
+                PocketsphinxListener(
+                    args.key_phrase, args.dict_file, args.hmm_folder, args.threshold, args.chunk_size
+                )
+            ), 3, on_activation=on_activation, on_prediction=on_prediction
+        )
+        runner.start()
+        Event().wait()  # Wait forever
+
+
+main = PocketsphinxListenScript.run_main
 
 if __name__ == '__main__':
     main()

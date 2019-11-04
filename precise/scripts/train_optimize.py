@@ -12,45 +12,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import re
-from glob import glob
-from os import remove
-
-from os.path import isfile, splitext, join
-
 import numpy
 # Optimizer blackhat
 from bbopt import BlackBoxOptimizer
+from glob import glob
+from os import remove
+from os.path import isfile, splitext, join
 from pprint import pprint
-from prettyparse import create_parser
+from prettyparse import Usage
 from shutil import rmtree
 from typing import Any
 
 from precise.model import ModelParams, create_model
+from precise.scripts.train import TrainScript
 from precise.train_data import TrainData
-from precise.scripts.train import Trainer
-
-usage = '''
-    Use black box optimization to tune model hyperparameters
-    
-    :-t --trials-name str -
-        Filename to save hyperparameter optimization trials in
-        '.bbopt.json' will automatically be appended
-
-    :-c --cycles int 20
-        Number of cycles of optimization to run
-    
-    :-m --model str .cache/optimized.net
-        Model to load from
-    ...
-'''
 
 
-class OptimizeTrainer(Trainer):
-    usage = re.sub(r'.*:model str.*\n.*\n', '', Trainer.usage)
+class TrainOptimizeScript(TrainScript):
+    Usage('''
+        Use black box optimization to tune model hyperparameters
 
-    def __init__(self):
-        super().__init__(create_parser(usage))
+        :-t --trials-name str -
+            Filename to save hyperparameter optimization trials in
+            '.bbopt.json' will automatically be appended
+
+        :-c --cycles int 20
+            Number of cycles of optimization to run
+
+        :-m --model str .cache/optimized.net
+            Model to load from
+
+        ...
+    ''') | TrainScript.usage
+
+    def __init__(self, args):
+        super().__init__(args)
         self.bb = BlackBoxOptimizer(file=self.args.trials_name)
         if not self.test:
             data = TrainData.from_both(self.args.tags_file, self.args.tags_folder, self.args.folder)
@@ -128,9 +124,7 @@ class OptimizeTrainer(Trainer):
         pprint(best_example)
 
 
-def main():
-    OptimizeTrainer().run()
-
+main = TrainOptimizeScript.run_main
 
 if __name__ == '__main__':
     main()

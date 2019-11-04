@@ -15,50 +15,58 @@
 import sys
 
 import os
-from prettyparse import create_parser
+from prettyparse import Usage
 
 from precise import __version__
 from precise.network_runner import Listener
-
-usage = '''
-    stdin should be a stream of raw int16 audio, written in
-    groups of CHUNK_SIZE samples. If no CHUNK_SIZE is given
-    it will read until EOF. For every chunk, an inference
-    will be given via stdout as a float string, one per line
-    
-    :model_name str
-        Keras or TensorFlow model to read from
-
-    ...
-'''
+from precise.scripts.base_script import BaseScript
 
 
-def main():
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    stdout = sys.stdout
-    sys.stdout = sys.stderr
-
-    parser = create_parser(usage)
-    parser.add_argument('-v', '--version', action='version', version=__version__)
-    parser.add_argument('chunk_size', type=int, nargs='?', default=-1,
-                        help='Number of bytes to read before making a prediction.'
-                             'Higher values are less computationally expensive')
+def add_audio_pipe_to_parser(parser):
     parser.usage = parser.format_usage().strip().replace('usage: ', '') + ' < audio.wav'
-    args = parser.parse_args()
 
-    if sys.stdin.isatty():
-        parser.error('Please pipe audio via stdin using < audio.wav')
 
-    listener = Listener(args.model_name, args.chunk_size)
+class EngineScript(BaseScript):
+    usage = Usage('''
+        stdin should be a stream of raw int16 audio, written in
+        groups of CHUNK_SIZE samples. If no CHUNK_SIZE is given
+        it will read until EOF. For every chunk, an inference
+        will be given via stdout as a float string, one per line
 
-    try:
-        while True:
-            conf = listener.update(sys.stdin.buffer)
-            stdout.buffer.write((str(conf) + '\n').encode('ascii'))
-            stdout.buffer.flush()
-    except (EOFError, KeyboardInterrupt):
-        pass
+        :model_name str
+            Keras or TensorFlow model to read from
 
+        ...
+    ''')
+    usage.add_argument('-v', '--version', action='version', version=__version__)
+    usage.add_argument('chunk_size', type=int, nargs='?', default=-1,
+                       help='Number of bytes to read before making a prediction. '
+                            'Higher values are less computationally expensive')
+    usage.add_customizer(add_audio_pipe_to_parser)
+
+    def __init__(self, args):
+        super().__init__(args)
+        if sys.stdin.isatty():
+            raise ValueError('Please pipe audio via stdin using < audio.wav')
+
+    def run(self):
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+        stdout = sys.stdout
+        sys.stdout = sys.stderr
+        listener = Listener(self.args.model_name, self.args.chunk_size)
+
+        try:
+            while True:
+                conf = listener.update(sys.stdin.buffer)
+                stdout.buffer.write((str(conf) + '\n').encode('ascii'))
+                stdout.buffer.flush()
+        except (EOFError, KeyboardInterrupt):
+            pass
+        finally:
+            sys.stdout = stdout
+
+
+main = EngineScript.run_main
 
 if __name__ == '__main__':
     main()

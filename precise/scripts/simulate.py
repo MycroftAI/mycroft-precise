@@ -16,30 +16,14 @@ import attr
 import numpy as np
 from glob import glob
 from os.path import join, basename
-from prettyparse import create_parser
+from precise_runner.runner import TriggerDetector
+from prettyparse import Usage
 
 from precise.network_runner import Listener
 from precise.params import pr, inject_params
+from precise.scripts.base_script import BaseScript
 from precise.util import load_audio
 from precise.vectorization import vectorize_raw
-from precise_runner.runner import TriggerDetector
-
-usage = '''
-    Simulate listening to long chunks of audio to find
-    unbiased false positive metrics
-    
-    :model str
-        Either Keras (.net) or TensorFlow (.pb) model to test
-    
-    :folder str
-        Folder with a set of long wav files to test against
-    
-    :-c --chunk_size int 4096
-        Number of samples between tests
-    
-    :-t --threshold float 0.5
-        Network output required to be considered an activation
-'''
 
 
 @attr.s()
@@ -80,9 +64,26 @@ class Metric:
         )
 
 
-class Simulator:
-    def __init__(self):
-        self.args = create_parser(usage).parse_args()
+class SimulateScript(BaseScript):
+    usage = Usage('''
+        Simulate listening to long chunks of audio to find
+        unbiased false positive metrics
+
+        :model str
+            Either Keras (.net) or TensorFlow (.pb) model to test
+
+        :folder str
+            Folder with a set of long wav files to test against
+
+        :-c --chunk_size int 4096
+            Number of samples between tests
+
+        :-t --threshold float 0.5
+            Network output required to be considered an activation
+    ''')
+
+    def __init__(self, args):
+        super().__init__(args)
         inject_params(self.args.model)
         self.runner = Listener.find_runner(self.args.model)(self.args.model)
         self.audio_buffer = np.zeros(pr.buffer_samples, dtype=float)
@@ -127,9 +128,7 @@ class Simulator:
         print(total.info_string('Total'))
 
 
-def main():
-    Simulator().run()
-
+main = SimulateScript.run_main
 
 if __name__ == '__main__':
     main()

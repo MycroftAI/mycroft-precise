@@ -16,52 +16,13 @@ from select import select
 from sys import stdin
 from termios import tcsetattr, tcgetattr, TCSADRAIN
 
-import pyaudio
 import tty
 import wave
 from os.path import isfile
-from prettyparse import create_parser
+from prettyparse import Usage
+from pyaudio import PyAudio
 
-usage = '''
-    Record audio samples for use with precise
-    
-    :-w --width int 2
-        Sample width of audio
-    
-    :-r --rate int 16000
-        Sample rate of audio
-    
-    :-c --channels int 1
-        Number of audio channels
-'''
-
-
-def key_pressed():
-    return select([stdin], [], [], 0) == ([stdin], [], [])
-
-
-def termios_wrapper(main):
-    global orig_settings
-    orig_settings = tcgetattr(stdin)
-    try:
-        hide_input()
-        main()
-    finally:
-        tcsetattr(stdin, TCSADRAIN, orig_settings)
-
-
-def show_input():
-    tcsetattr(stdin, TCSADRAIN, orig_settings)
-
-
-def hide_input():
-    tty.setcbreak(stdin.fileno())
-
-
-orig_settings = None
-
-RECORD_KEY = ' '
-EXIT_KEY_CODE = 27
+from precise.scripts.base_script import BaseScript
 
 
 def record_until(p, should_return, args):
@@ -88,74 +49,103 @@ def save_audio(name, data, args):
     wf.close()
 
 
-def next_name(name):
-    name += '.wav'
-    pos, num_digits = None, None
-    try:
-        pos = name.index('#')
-        num_digits = name.count('#')
-    except ValueError:
-        print("Name must contain at least one # to indicate where to put the number.")
-        raise
+class CollectScript(BaseScript):
+    RECORD_KEY = ' '
+    EXIT_KEY_CODE = 27
 
-    def get_name(i):
-        nonlocal name, pos
-        return name[:pos] + str(i).zfill(num_digits) + name[pos + num_digits:]
+    usage = Usage('''
+        Record audio samples for use with precise
 
-    i = 0
-    while True:
-        if not isfile(get_name(i)):
-            break
-        i += 1
+        :-w --width int 2
+            Sample width of audio
 
-    return get_name(i)
+        :-r --rate int 16000
+            Sample rate of audio
+
+        :-c --channels int 1
+            Number of audio channels
+    ''')
+    usage.add_argument('file_label', nargs='?', help='File label (Ex. recording-##)')
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.orig_settings = tcgetattr(stdin)
+        self.p = PyAudio()
+
+    def key_pressed(self):
+        return select([stdin], [], [], 0) == ([stdin], [], [])
+
+    def show_input(self):
+        tcsetattr(stdin, TCSADRAIN, self.orig_settings)
+
+    def hide_input(self):
+        tty.setcbreak(stdin.fileno())
+
+    def next_name(self, name):
+        name += '.wav'
+        pos, num_digits = None, None
+        try:
+            pos = name.index('#')
+            num_digits = name.count('#')
+        except ValueError:
+            print("Name must contain at least one # to indicate where to put the number.")
+            raise
+
+        def get_name(i):
+            nonlocal name, pos
+            return name[:pos] + str(i).zfill(num_digits) + name[pos + num_digits:]
+
+        i = 0
+        while True:
+            if not isfile(get_name(i)):
+                break
+            i += 1
+
+        return get_name(i)
+
+    def wait_to_continue(self):
+        while True:
+            c = stdin.read(1)
+            if c == self.RECORD_KEY:
+                return True
+            elif ord(c) == self.EXIT_KEY_CODE:
+                return False
+
+    def record_until_key(self):
+        def should_return():
+            return self.key_pressed() and stdin.read(1) == self.RECORD_KEY
+
+        return record_until(self.p, should_return, self.args)
+
+    def _run(self):
+        args = self.args
+        self.show_input()
+        args.file_label = args.file_label or input("File label (Ex. recording-##): ")
+        args.file_label = args.file_label + ('' if '#' in args.file_label else '-##')
+        self.hide_input()
+
+        while True:
+            print('Press space to record (esc to exit)...')
+
+            if not self.wait_to_continue():
+                break
+
+            print('Recording...')
+            d = self.record_until_key()
+            name = self.next_name(args.file_label)
+            save_audio(name, d, args)
+            print('Saved as ' + name)
+
+    def run(self):
+        try:
+            self.hide_input()
+            self._run()
+        finally:
+            tcsetattr(stdin, TCSADRAIN, self.orig_settings)
+            self.p.terminate()
 
 
-def wait_to_continue():
-    while True:
-        c = stdin.read(1)
-        if c == RECORD_KEY:
-            return True
-        elif ord(c) == EXIT_KEY_CODE:
-            return False
-
-
-def record_until_key(p, args):
-    def should_return():
-        return key_pressed() and stdin.read(1) == RECORD_KEY
-
-    return record_until(p, should_return, args)
-
-
-def _main():
-    parser = create_parser(usage)
-    parser.add_argument('file_label', nargs='?', help='File label (Ex. recording-##)')
-    args = parser.parse_args()
-    show_input()
-    args.file_label = args.file_label or input("File label (Ex. recording-##): ")
-    args.file_label = args.file_label + ('' if '#' in args.file_label else '-##')
-    hide_input()
-
-    p = pyaudio.PyAudio()
-
-    while True:
-        print('Press space to record (esc to exit)...')
-
-        if not wait_to_continue():
-            break
-
-        print('Recording...')
-        d = record_until_key(p, args)
-        name = next_name(args.file_label)
-        save_audio(name, d, args)
-        print('Saved as ' + name)
-
-    p.terminate()
-
-
-def main():
-    termios_wrapper(_main)
-
+main = CollectScript.run_main
 
 if __name__ == '__main__':
     main()

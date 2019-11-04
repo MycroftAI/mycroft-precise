@@ -20,66 +20,66 @@ from contextlib import suppress
 from fitipy import Fitipy
 from keras.callbacks import LambdaCallback
 from os.path import splitext, join, basename
-from prettyparse import create_parser
+from prettyparse import Usage
 from random import random, shuffle
 from typing import *
 
 from precise.model import create_model, ModelParams
 from precise.network_runner import Listener
 from precise.params import pr, save_params
+from precise.scripts.base_script import BaseScript
 from precise.train_data import TrainData
 from precise.util import load_audio, glob_all, save_audio, chunk_audio
 
-usage = '''
-    Train a model on infinitely generated batches
 
-    :model str
-        Keras .net model file to load from and write to
+class TrainGeneratedScript(BaseScript):
+    usage = Usage('''
+        Train a model on infinitely generated batches
 
-    :-e --epochs int 100
-        Number of epochs to train on
+        :model str
+            Keras .net model file to load from and write to
 
-    :-b --batch-size int 200
-        Number of samples in each batch
-    
-    :-t --steps-per-epoch int 100
-        Number of steps that are considered an epoch
+        :-e --epochs int 100
+            Number of epochs to train on
 
-    :-c --chunk-size int 2048
-        Number of audio samples between generating a training sample
+        :-b --batch-size int 200
+            Number of samples in each batch
 
-    :-r --random-data-folder str data/random
-        Folder with properly encoded wav files of
-        random audio that should not cause an activation
+        :-t --steps-per-epoch int 100
+            Number of steps that are considered an epoch
 
-    :-s --sensitivity float 0.2
-        Weighted loss bias. Higher values decrease increase positives
+        :-c --chunk-size int 2048
+            Number of audio samples between generating a training sample
 
-    :-sb --save-best
-        Only save the model each epoch if its stats improve
+        :-r --random-data-folder str data/random
+            Folder with properly encoded wav files of
+            random audio that should not cause an activation
 
-    :-nv --no-validation
-        Disable accuracy and validation calculation
-        to improve speed during training
+        :-s --sensitivity float 0.2
+            Weighted loss bias. Higher values decrease increase positives
 
-    :-mm --metric-monitor str loss
-        Metric used to determine when to save
+        :-sb --save-best
+            Only save the model each epoch if its stats improve
 
-    :-em --extra-metrics
-        Add extra metrics during training
+        :-nv --no-validation
+            Disable accuracy and validation calculation
+            to improve speed during training
 
-    :-p --save-prob float 0.0
-        Probability of saving audio into debug/ww and debug/nww folders
+        :-mm --metric-monitor str loss
+            Metric used to determine when to save
 
-    ...
-'''
+        :-em --extra-metrics
+            Add extra metrics during training
 
+        :-p --save-prob float 0.0
+            Probability of saving audio into debug/ww and debug/nww folders
 
-class GeneratedTrainer:
+        ...
+    ''') | TrainData.usage
     """A trainer the runs on generated data by overlaying wakewords on background audio"""
-    def __init__(self):
-        parser = create_parser(usage)
-        self.args = args = TrainData.parse_args(parser)
+
+    def __init__(self, args):
+        super().__init__(args)
         self.audio_buffer = np.zeros(pr.buffer_samples, dtype=float)
         self.vals_buffer = np.zeros(pr.buffer_samples, dtype=float)
 
@@ -96,7 +96,7 @@ class GeneratedTrainer:
         epoch_fiti = Fitipy(splitext(args.model)[0] + '.epoch')
         self.epoch = epoch_fiti.read().read(0, int)
 
-        def on_epoch_end(a, b):
+        def on_epoch_end(_a, _b):
             self.epoch += 1
             epoch_fiti.write().write(self.epoch, str)
 
@@ -228,7 +228,8 @@ class GeneratedTrainer:
         _, test_data = self.data.load(train=False, test=True)
         try:
             self.model.fit_generator(
-                self.samples_to_batches(self.generate_samples(), self.args.batch_size), steps_per_epoch=self.args.steps_per_epoch,
+                self.samples_to_batches(self.generate_samples(), self.args.batch_size),
+                steps_per_epoch=self.args.steps_per_epoch,
                 epochs=self.epoch + self.args.epochs, validation_data=test_data,
                 callbacks=self.callbacks, initial_epoch=self.epoch
             )
@@ -237,12 +238,7 @@ class GeneratedTrainer:
             save_params(self.args.model)
 
 
-def main():
-    try:
-        GeneratedTrainer().run()
-    except KeyboardInterrupt:
-        print()
-
+main = TrainGeneratedScript.run_main
 
 if __name__ == '__main__':
     main()
