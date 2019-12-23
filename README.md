@@ -15,10 +15,16 @@ source. Take a look at a [comparison here][comparison].
 
 ### Communal models
 
-Training takes lots of data.  The Mycroft community is working together to jointly
-build datasets at https://home.mycroft.ai/#/precise.  These datasets are used to build the
-models used by the Mark 1 and other mycroft-core based voice assistants and [can be found here](https://github.com/MycroftAI/precise-data/tree/models).  Please come
-and help make things better for everyone!
+Training takes lots of data. The Mycroft community is working together to jointly
+build datasets at: 
+https://github.com/MycroftAI/precise-community-data.   
+These datasets are available for anyone to download, use and contribute to. A number 
+of models trained from this data are also provided.
+
+The official models selectable in your device settings at Home.mycroft.ai 
+[can be found here](https://github.com/MycroftAI/precise-data/tree/models).  
+
+Please come and help make things better for everyone!
 
 ### Train your own model
 
