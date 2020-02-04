@@ -2,14 +2,15 @@
 
 *A lightweight, simple-to-use, RNN wake word listener.*
 
-Precise is a wake word listener. Like its name suggests,
-a wake word listener's job is to continually listen to
-sounds and speech around the device, and activate when
-the sounds or speech match a wake word. Unlike other machine
-learning hotword detection tools, Mycroft Precise is fully open
-source. Take a look at a [comparison here][comparison].
+Precise is a wake word listener.  The software monitors an audio stream ( usually a microphone ) and when it recognizes a specific phrase it triggers an event.  For example, at Mycroft AI the team has trained Precise to recognize the phrase "Hey, Mycroft".  When the software recognizes this phrase it puts the rest of Mycroft's software into command mode and waits for a command from the person using the device.  Mycroft Precise is fully open source and can be trined to recognize anything from a name to a cough.
+
+In addition to Precise there are several proprietary wake word listeners out there.  If you are looking to spot a wakeword Precise might be a great solution, but if it's too resource intensive or isn't accurate enough here are some [alternative options][comparison].
 
 [comparison]: https://github.com/MycroftAI/mycroft-precise/wiki/Software-Comparison
+
+## Supported Operating Systems
+
+Precise is designed to run on Linux.  It is known to work on a variety of Linux distributions including Debian, Ubuntu and Raspbian.  It probably operates on other \*nx distributions.
 
 ## Training Models
 
@@ -29,7 +30,7 @@ Please come and help make things better for everyone!
 ### Train your own model
 
 You can find info on training your own models [here][train-guide]. It requires
-running through the [**Source Install** instructions][source-install] first.
+running through the [**source install instructions**][source-install] first.
 
 [train-guide]:https://github.com/MycroftAI/mycroft-precise/wiki/Training-your-own-wake-word#how-to-train-your-own-wake-word
 [source-install]:https://github.com/MycroftAI/mycroft-precise#source-install
