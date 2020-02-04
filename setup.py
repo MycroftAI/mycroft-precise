@@ -74,7 +74,7 @@ setup(
         'tensorflow>=1.13,<1.14',  # Must be on piwheels
         'sonopy',
         'pyaudio',
-        'keras',
+        'keras<=2.1.5',
         'h5py',
         'wavio',
         'typing',
