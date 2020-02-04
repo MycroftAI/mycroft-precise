@@ -82,10 +82,7 @@ setup(
         'precise-runner',
         'attrs',
         'fitipy<1.0',
-        'bbopt',
         'speechpy-fast',
         'pyache',
-        'networkx==1.11',
-        'hyperopt==0.1.2'
     ]
 )

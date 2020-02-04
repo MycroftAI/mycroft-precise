@@ -14,7 +14,6 @@
 # limitations under the License.
 import numpy
 # Optimizer blackhat
-from bbopt import BlackBoxOptimizer
 from glob import glob
 from os import remove
 from os.path import isfile, splitext, join
@@ -47,6 +46,7 @@ class TrainOptimizeScript(TrainScript):
 
     def __init__(self, args):
         super().__init__(args)
+        from bbopt import BlackBoxOptimizer
         self.bb = BlackBoxOptimizer(file=self.args.trials_name)
         if not self.test:
             data = TrainData.from_both(self.args.tags_file, self.args.tags_folder, self.args.folder)
