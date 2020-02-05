@@ -74,7 +74,7 @@ setup(
         'tensorflow>=1.13,<1.14',  # Must be on piwheels
         'sonopy',
         'pyaudio',
-        'keras',
+        'keras<=2.1.5',
         'h5py',
         'wavio',
         'typing',
@@ -82,10 +82,7 @@ setup(
         'precise-runner',
         'attrs',
         'fitipy<1.0',
-        # 'bbopt',
         'speechpy-fast',
         'pyache'
-        # 'networkx==1.11',
-        # 'hyperopt==0.1.2'
     ]
 )
