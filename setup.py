@@ -69,7 +69,7 @@ setup(
             'precise-calc-threshold=precise.scripts.calc_threshold:main',
         ]
     },
-    package_data={'precise': ['data/activate.wav']},
+    include_package_data=True,
     install_requires=[
         'numpy==1.16',
         'tensorflow>=1.13,<1.14',  # Must be on piwheels
