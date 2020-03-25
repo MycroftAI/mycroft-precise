@@ -52,7 +52,7 @@ class TrainOptimizeScript(TrainScript):
             data = TrainData.from_both(self.args.tags_file, self.args.tags_folder, self.args.folder)
             _, self.test = data.load(False, True)
 
-        from keras.callbacks import ModelCheckpoint
+        from tensorflow.keras.callbacks import ModelCheckpoint
         for i in list(self.callbacks):
             if isinstance(i, ModelCheckpoint):
                 self.callbacks.remove(i)

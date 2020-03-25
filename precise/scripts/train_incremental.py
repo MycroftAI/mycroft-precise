@@ -107,7 +107,7 @@ class TrainIncrementalScript(TrainScript):
                 validation_data=test_data, callbacks=self.callbacks, initial_epoch=self.epoch
             )
         finally:
-            self.listener.runner.model.save(self.args.model)
+            self.listener.runner.model.save(self.args.model,save_format='h5')
 
     def train_on_audio(self, fn: str):
         """Run through a single audio file"""
