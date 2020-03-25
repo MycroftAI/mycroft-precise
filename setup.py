@@ -44,9 +44,7 @@ setup(
     ],
     packages=[
         'precise',
-        'precise.scripts',
-        'precise.pocketsphinx',
-        'precise.pocketsphinx.scripts'
+        'precise.scripts'
     ],
     entry_points={
         'console_scripts': [
@@ -71,10 +69,10 @@ setup(
     },
     install_requires=[
         'numpy',
-        'tensorflow>=1.13,<1.14',  # Must be on piwheels
+        'tensorflow-gpu>=2',  # Must be on piwheels
         'sonopy',
         'pyaudio',
-        'keras<=2.1.5',
+        'keras>2.1.5',
         'h5py',
         'wavio',
         'typing',

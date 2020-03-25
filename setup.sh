@@ -60,4 +60,4 @@ fi
 
 pip install -e runner/
 pip install -e .
-pip install pocketsphinx  # Optional, for comparison
+#pip install pocketsphinx  # Optional, for comparison
