@@ -85,6 +85,34 @@ class KerasRunner(Runner):
     def run(self, inp: np.ndarray) -> float:
         return self.predict(inp[np.newaxis])[0][0]
 
+class TFLiteRunner(Runner):
+    def __init__(self, model_name: str):
+        import tensorflow as tf
+        #  Setup tflite environment
+        self.interpreter = tf.lite.Interpreter(model_path=model_name)
+        self.interpreter.allocate_tensors()
+        
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        
+    def predict(self, inputs: np.ndarray):
+        # Format output to match Keras's model.predict output
+        output_data = np.ndarray((inputs.shape[0],1), dtype=np.float32)
+        
+        # Support for multiple inputs
+        for input in inputs:
+          # Format as float32. Add a wrapper dimension.
+          current = np.array([input]).astype(np.float32)
+          
+          # Load data, run inference and extract output from tensor
+          self.interpreter.set_tensor(self.input_details[0]['index'], current)
+          self.interpreter.invoke()
+          output_data[count] = self.interpreter.get_tensor(self.output_details[0]['index'])
+          
+        return output_data
+
+    def run(self, inp: np.ndarray) -> float:
+        return self.predict(inp[np.newaxis])[0][0]
 
 class Listener:
     """Listener that preprocesses audio into MFCC vectors and executes neural networks"""
@@ -102,7 +130,8 @@ class Listener:
     def find_runner(model_name: str) -> Type[Runner]:
         runners = {
             '.net': KerasRunner,
-            '.pb': TensorFlowRunner
+            '.pb': TensorFlowRunner,
+            '.tflite': TFLiteRunner
         }
         ext = splitext(model_name)[-1]
         if ext not in runners:
