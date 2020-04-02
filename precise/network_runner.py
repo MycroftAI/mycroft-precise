@@ -97,6 +97,7 @@ class TFLiteRunner(Runner):
         
     def predict(self, inputs: np.ndarray):
         # Format output to match Keras's model.predict output
+        count = 0
         output_data = np.ndarray((inputs.shape[0],1), dtype=np.float32)
         
         # Support for multiple inputs
@@ -108,6 +109,7 @@ class TFLiteRunner(Runner):
           self.interpreter.set_tensor(self.input_details[0]['index'], current)
           self.interpreter.invoke()
           output_data[count] = self.interpreter.get_tensor(self.output_details[0]['index'])
+          count += 1
           
         return output_data
 
