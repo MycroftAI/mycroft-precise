@@ -69,7 +69,7 @@ setup(
     },
     install_requires=[
         'numpy',
-        'tensorflow-gpu>=2',  # Must be on piwheels
+        'tensorflow-gpu==2.2.0rc', # This should be changed for 2.2.0 when it's released.
         'sonopy',
         'pyaudio',
         'keras>2.1.5',
