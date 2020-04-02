@@ -68,19 +68,17 @@ class TensorFlowRunner(Runner):
 
 class KerasRunner(Runner):
     def __init__(self, model_name: str):
-        import tensorflow as tf
-        # ISSUE 88 - Following 3 lines added to resolve issue 88 - JM 2020-02-04 per liny90626
-        from tensorflow.python.keras.backend import set_session # ISSUE 88
-        self.sess = tf.compat.v1.Session() # ISSUE 88
-        set_session(self.sess) # ISSUE 88
+        # Load model using Keras (not tf.keras)
         self.model = load_precise_model(model_name)
-        self.graph = tf.compat.v1.get_default_graph()
+        
+        # TF 2.0 doesn't work well with sessions and graphs
+        # Only in tf.v1.compat, but that restricts usage of v2 features
+        self.graph = None
 
     def predict(self, inputs: np.ndarray):
-        from tensorflow.python.keras.backend import set_session		# ISSUE 88
-        with self.graph.as_default():
-            set_session(self.sess)		# ISSUE 88
-            return self.model.predict(inputs)
+        import keras as K
+        K.backend.tensorflow_backend._SYMBOLIC_SCOPE.value = True
+        return self.model.predict(inputs)
 
     def run(self, inp: np.ndarray) -> float:
         return self.predict(inp[np.newaxis])[0][0]
