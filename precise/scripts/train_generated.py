@@ -18,7 +18,7 @@ from math import sqrt
 import numpy as np
 from contextlib import suppress
 from fitipy import Fitipy
-from keras.callbacks import LambdaCallback
+from tensorflow.keras.callbacks import LambdaCallback
 from os.path import splitext, join, basename
 from prettyparse import Usage
 from random import random, shuffle
@@ -90,7 +90,7 @@ class TrainGeneratedScript(BaseScript):
         self.model = create_model(args.model, params)
         self.listener = Listener('', args.chunk_size, runner_cls=lambda x: None)
 
-        from keras.callbacks import ModelCheckpoint, TensorBoard
+        from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
         checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
                                      save_best_only=args.save_best)
         epoch_fiti = Fitipy(splitext(args.model)[0] + '.epoch')
@@ -234,7 +234,7 @@ class TrainGeneratedScript(BaseScript):
                 callbacks=self.callbacks, initial_epoch=self.epoch
             )
         finally:
-            self.model.save(self.args.model)
+            self.model.save(self.args.model, save_format='h5')
             save_params(self.args.model)
 
 

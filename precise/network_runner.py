@@ -41,15 +41,15 @@ class TensorFlowRunner(Runner):
             print('Warning: ', model_name, 'looks like a Keras model.')
         self.tf = import_module('tensorflow')
         self.graph = self.load_graph(model_name)
+        with self.graph.as_default():
+          self.inp_var = self.graph.get_operation_by_name('import/net_input').outputs[0]
+          self.out_var = self.graph.get_operation_by_name('import/net_output').outputs[0]
 
-        self.inp_var = self.graph.get_operation_by_name('import/net_input').outputs[0]
-        self.out_var = self.graph.get_operation_by_name('import/net_output').outputs[0]
-
-        self.sess = self.tf.Session(graph=self.graph)
+          self.sess = self.tf.compat.v1.Session(graph=self.graph)
 
     def load_graph(self, model_file: str) -> 'tf.Graph':
         graph = self.tf.Graph()
-        graph_def = self.tf.GraphDef()
+        graph_def = self.tf.compat.v1.GraphDef()
 
         with open(model_file, "rb") as f:
             graph_def.ParseFromString(f.read())
@@ -68,23 +68,51 @@ class TensorFlowRunner(Runner):
 
 class KerasRunner(Runner):
     def __init__(self, model_name: str):
-        import tensorflow as tf
-        # ISSUE 88 - Following 3 lines added to resolve issue 88 - JM 2020-02-04 per liny90626
-        from tensorflow.python.keras.backend import set_session # ISSUE 88
-        self.sess = tf.Session() # ISSUE 88
-        set_session(self.sess) # ISSUE 88
+        # Load model using Keras (not tf.keras)
         self.model = load_precise_model(model_name)
-        self.graph = tf.get_default_graph()
+        
+        # TF 2.0 doesn't work well with sessions and graphs
+        # Only in tf.v1.compat, but that restricts usage of v2 features
+        self.graph = None
 
     def predict(self, inputs: np.ndarray):
-        from tensorflow.python.keras.backend import set_session		# ISSUE 88
-        with self.graph.as_default():
-            set_session(self.sess)		# ISSUE 88
-            return self.model.predict(inputs)
+        import keras as K
+        K.backend.tensorflow_backend._SYMBOLIC_SCOPE.value = True
+        return self.model.predict(inputs)
 
     def run(self, inp: np.ndarray) -> float:
         return self.predict(inp[np.newaxis])[0][0]
 
+class TFLiteRunner(Runner):
+    def __init__(self, model_name: str):
+        import tensorflow as tf
+        #  Setup tflite environment
+        self.interpreter = tf.lite.Interpreter(model_path=model_name)
+        self.interpreter.allocate_tensors()
+        
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        
+    def predict(self, inputs: np.ndarray):
+        # Format output to match Keras's model.predict output
+        count = 0
+        output_data = np.ndarray((inputs.shape[0],1), dtype=np.float32)
+        
+        # Support for multiple inputs
+        for input in inputs:
+          # Format as float32. Add a wrapper dimension.
+          current = np.array([input]).astype(np.float32)
+          
+          # Load data, run inference and extract output from tensor
+          self.interpreter.set_tensor(self.input_details[0]['index'], current)
+          self.interpreter.invoke()
+          output_data[count] = self.interpreter.get_tensor(self.output_details[0]['index'])
+          count += 1
+          
+        return output_data
+
+    def run(self, inp: np.ndarray) -> float:
+        return self.predict(inp[np.newaxis])[0][0]
 
 class Listener:
     """Listener that preprocesses audio into MFCC vectors and executes neural networks"""
@@ -102,7 +130,8 @@ class Listener:
     def find_runner(model_name: str) -> Type[Runner]:
         runners = {
             '.net': KerasRunner,
-            '.pb': TensorFlowRunner
+            '.pb': TensorFlowRunner,
+            '.tflite': TFLiteRunner
         }
         ext = splitext(model_name)[-1]
         if ext not in runners:
