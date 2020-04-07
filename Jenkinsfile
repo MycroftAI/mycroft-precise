@@ -29,7 +29,7 @@ pipeline {
             }
             steps {
                 echo 'Building Precise Testing Docker Image'
-                sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
+                sh 'docker build -t precise-test:${BRANCH_ALIAS} test/Dockerfile'
                 echo 'Precise Test Suite'
                 timeout(time: 60, unit: 'MINUTES')
                 {
