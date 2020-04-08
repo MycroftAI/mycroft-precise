@@ -38,6 +38,41 @@ pipeline {
                         precise-test:${BRANCH_ALIAS}'
                 }
             }
+            post {
+                always {
+                    echo 'Report Test Results'
+                    echo 'Changing ownership...'
+                    sh 'docker run \
+                        --volume "$HOME/allure/precise/:/root/allure" \
+                        --entrypoint=/bin/bash \
+                        precise-test:${BRANCH_ALIAS} \
+                        -x -c "chown $(id -u $USER):$(id -g $USER) \
+                        -R /root/allure/"'
+
+                    echo 'Transferring...'
+                    sh 'rm -rf allure-result/*'
+                    sh 'mv $HOME/allure/precise/allure-result allure-result'
+                    script {
+                        allure([
+                            includeProperties: false,
+                            jdk: '',
+                            properties: [],
+                            reportBuildPolicy: 'ALWAYS',
+                            results: [[path: 'allure-result']]
+                        ])
+                    }
+                    unarchive mapping:['allure-report.zip': 'allure-report.zip']
+                    sh (
+                        label: 'Publish Report to Web Server',
+                        script: '''scp allure-report.zip root@157.245.127.234:~;
+                            ssh root@157.245.127.234 "unzip -o ~/allure-report.zip";
+                            ssh root@157.245.127.234 "rm -rf /var/www/voight-kampff/precise/${BRANCH_ALIAS]";
+                            ssh root@157.245.127.234 "mv allure-report /var/www/voight-kampff/precise/${BRANCH_ALIAS}"
+                        '''
+                    )
+                    echo 'Report Published'
+                }
+            }
         }
     }
     post {
