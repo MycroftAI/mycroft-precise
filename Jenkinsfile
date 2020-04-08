@@ -31,9 +31,11 @@ pipeline {
                 echo 'Building Precise Testing Docker Image'
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} test'
                 echo 'Precise Test Suite'
-                timeout(time: 60, unit: 'MINUTES')
+                timeout(time: 5, unit: 'MINUTES')
                 {
-                    sh 'docker run precise-test:${BRANCH_ALIAS}'
+                    sh 'docker run \
+                        -v "$HOME/allure/precise/:/root/allure" \
+                        precise-test:${BRANCH_ALIAS}'
                 }
             }
         }
