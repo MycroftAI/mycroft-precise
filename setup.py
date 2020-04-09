@@ -69,8 +69,9 @@ setup(
             'precise-calc-threshold=precise.scripts.calc_threshold:main',
         ]
     },
+    include_package_data=True,
     install_requires=[
-        'numpy',
+        'numpy==1.16',
         'tensorflow>=1.13,<1.14',  # Must be on piwheels
         'sonopy',
         'pyaudio',

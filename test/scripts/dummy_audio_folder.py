@@ -35,8 +35,14 @@ class DummyAudioFolder:
         return min + (max - min) * np.random.random() * pr.buffer_t
 
     def generate_samples(self, folder, name, value, duration):
+        """Generate sample file.
+
+        The file is generated in the specified folder, with the specified name,
+        dummy value and duration.
+        """
         for i in range(self.count):
-            save_audio(join(folder, name.format(i)), np.array([value] * int(duration * pr.sample_rate)))
+            save_audio(join(folder, name.format(i)),
+                       np.array([value] * int(duration * pr.sample_rate)))
 
     def subdir(self, *parts):
         folder = self.path(*parts)
