@@ -7,4 +7,4 @@ COPY . /opt/mycroft/mycroft-precise
 WORKDIR /opt/mycroft/mycroft-precise
 RUN pip install .
 RUN pip install pytest allure-pytest
-ENTRYPOINT ["pytest", "--alluredir", "/root/allure/allure-results"]
+ENTRYPOINT ["pytest", "--alluredir", "/root/allure/allure-result"]
