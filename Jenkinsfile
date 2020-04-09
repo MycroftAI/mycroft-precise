@@ -50,6 +50,7 @@ pipeline {
                         -R /root/allure/"'
 
                     echo 'Transferring...'
+                    sh 'ls -la $HOME/allure/precise/allure-report'
                     sh 'rm -rf allure-result/*'
                     sh 'mv $HOME/allure/precise/allure-result allure-result'
                     script {
