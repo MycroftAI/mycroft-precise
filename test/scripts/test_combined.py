@@ -26,18 +26,27 @@ def read_content(filename):
 
 
 def test_combined(train_folder, train_script):
+    """Test a "normal" development cycle, train, evaluate and calc threshold.
+    """
     train_script.run()
     params_file = train_folder.model + '.params'
     assert isfile(train_folder.model)
     assert isfile(params_file)
 
-    EvalScript.create(folder=train_folder.root, models=[train_folder.model]).run()
+    EvalScript.create(folder=train_folder.root,
+                      models=[train_folder.model]).run()
 
+    # Ensure that the graph script generates a numpy savez file
     out_file = train_folder.path('outputs.npz')
-    graph_script = GraphScript.create(folder=train_folder.root, models=[train_folder.model], output_file=out_file)
+    graph_script = GraphScript.create(folder=train_folder.root,
+                                      models=[train_folder.model],
+                                      output_file=out_file)
     graph_script.run()
     assert isfile(out_file)
 
+    # Esure the params are updated after threshold is calculated
     params_before = read_content(params_file)
-    CalcThresholdScript.create(folder=train_folder.root, model=train_folder.model, input_file=out_file).run()
+    CalcThresholdScript.create(folder=train_folder.root,
+                               model=train_folder.model,
+                               input_file=out_file).run()
     assert params_before != read_content(params_file)

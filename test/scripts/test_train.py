@@ -22,15 +22,20 @@ from test.scripts.dummy_audio_folder import DummyAudioFolder
 class DummyTrainFolder(DummyAudioFolder):
     def __init__(self, count=10):
         super().__init__(count)
-        self.generate_samples(self.subdir('wake-word'), 'ww-{}.wav', 1.0, self.rand(0, 2 * pr.buffer_t))
-        self.generate_samples(self.subdir('not-wake-word'), 'nww-{}.wav', 0.0, self.rand(0, 2 * pr.buffer_t))
-        self.generate_samples(self.subdir('test', 'wake-word'), 'ww-{}.wav', 1.0, self.rand(0, 2 * pr.buffer_t))
-        self.generate_samples(self.subdir('test', 'not-wake-word'), 'nww-{}.wav', 0.0, self.rand(0, 2 * pr.buffer_t))
+        self.generate_samples(self.subdir('wake-word'), 'ww-{}.wav', 1.0,
+                              self.rand(0, 2 * pr.buffer_t))
+        self.generate_samples(self.subdir('not-wake-word'), 'nww-{}.wav', 0.0,
+                              self.rand(0, 2 * pr.buffer_t))
+        self.generate_samples(self.subdir('test', 'wake-word'), 'ww-{}.wav',
+                              1.0, self.rand(0, 2 * pr.buffer_t))
+        self.generate_samples(self.subdir('test', 'not-wake-word'),
+                              'nww-{}.wav', 0.0, self.rand(0, 2 * pr.buffer_t))
         self.model = self.path('model.net')
 
 
 class TestTrain:
     def test_run_basic(self):
+        """Run a training and check that a model is generated."""
         folders = DummyTrainFolder(10)
         script = TrainScript.create(model=folders.model, folder=folders.root)
         script.run()
