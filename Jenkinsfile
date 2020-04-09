@@ -72,6 +72,77 @@ pipeline {
                     )
                     echo 'Report Published'
                 }
+                failure {
+                    // Send failure email containing a link to the Jenkins build
+                    // the results report and the console log messages to Mycroft
+                    // developers, the developers of the pull request and the
+                    // developers that caused the build to fail.
+                    echo 'Sending Failure Email'
+                    emailext (
+                        attachLog: true,
+                        subject: "FAILURE - Precise Tests - Build ${BRANCH_NAME} #${BUILD_NUMBER}",
+                        body: """
+                            <p>
+                                One or more tests failed. Use the
+                                resources below to identify the issue and fix
+                                the failing tests.
+                            </p>
+                            <br>
+                            <p>
+                                <a href='${BUILD_URL}'>
+                                    Jenkins Build Details
+                                </a>
+                                &nbsp(Requires account on Mycroft's Jenkins instance)
+                            </p>
+                            <br>
+                            <p>
+                                <a href='https://reports.mycroft.ai/precise/${BRANCH_ALIAS}'>
+                                    Report of Test Results
+                                </a>
+                            </p>
+                            <br>
+                            <p>Console log is attached.</p>""",
+                        replyTo: 'devops@mycroft.ai',
+                        recipientProviders: [
+                            [$class: 'RequesterRecipientProvider'],
+                            [$class:'CulpritsRecipientProvider'],
+                            [$class:'DevelopersRecipientProvider']
+                        ]
+                    )
+                }
+                success {
+                    // Send success email containing a link to the Jenkins build
+                    // and the results report to Mycroft developers, the developers
+                    // of the pull request and the developers that caused the
+                    // last failed build.
+                    echo 'Sending Success Email'
+                    emailext (
+                        subject: "SUCCESS - Precise Tests - Build ${BRANCH_NAME} #${BUILD_NUMBER}",
+                        body: """
+                            <p>
+                                All tests passed. No further action required.
+                            </p>
+                            <br>
+                            <p>
+                                <a href='${BUILD_URL}'>
+                                    Jenkins Build Details
+                                </a>
+                                &nbsp(Requires account on Mycroft's Jenkins instance)
+                            </p>
+                            <br>
+                            <p>
+                                <a href='https://reports.mycroft.ai/precise/${BRANCH_ALIAS}'>
+                                    Report of Test Results
+                                </a>
+                            </p>""",
+                        replyTo: 'devops@mycroft.ai',
+                        recipientProviders: [
+                            [$class: 'RequesterRecipientProvider'],
+                            [$class:'CulpritsRecipientProvider'],
+                            [$class:'DevelopersRecipientProvider']
+                        ]
+                    )
+                }
             }
         }
     }
