@@ -6,5 +6,5 @@ RUN mkdir -p /root/allure /opt/mycroft/mycroft-precise
 COPY . /opt/mycroft/mycroft-precise
 WORKDIR /opt/mycroft/mycroft-precise
 RUN pip install .
-RUN pip install pytest allure-pytest
+RUN pip install pytest pytest-allure-adaptor
 ENTRYPOINT ["pytest", "--alluredir", "/root/allure/allure-result"]
