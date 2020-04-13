@@ -1,3 +1,4 @@
 pylint
 black
 pytest
+flake8
