@@ -8,5 +8,5 @@ RUN pip install -r /opt/mycroft/mycroft-precise/requirements/test.txt
 RUN pip install -r /opt/mycroft/mycroft-precise/requirements/prod.txt
 COPY . /opt/mycroft/mycroft-precise
 WORKDIR /opt/mycroft/mycroft-precise
-ENTRYPOINT ["flake8", "/opt/mycroft/mycroft-precise/precise/scripts/collect.py"]
+ENTRYPOINT ["black", "--check", "/opt/mycroft/mycroft-precise/precise/scripts/collect.py"]
 #ENTRYPOINT ["pytest", "--alluredir", "/root/allure/allure-result"]
