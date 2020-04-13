@@ -23,6 +23,10 @@ pipeline {
             }
             steps {
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
+                timeout(time: 5, unit: 'MINUTES')
+                {
+                    sh 'docker run precise-test:${BRANCH_ALIAS}'
+                }
             }
         }
         // Run the build in the against the dev branch to check for compile errors
