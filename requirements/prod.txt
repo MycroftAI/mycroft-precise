@@ -1,0 +1,14 @@
+numpy==1.16
+tensorflow>=1.13,<1.14  # Must be on piwheels
+sonopy
+pyaudio
+keras<=2.1.5
+h5py
+wavio
+typing
+prettyparse>=1.1.0
+precise-runner
+attrs
+fitipy<1.0
+speechpy-fast
+pyache
