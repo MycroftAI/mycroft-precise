@@ -6,8 +6,21 @@ pipeline {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '5'))
     }
+    environment {
+        // Some branches have a "/" in their name (e.g. feature/new-and-cool)
+        // Some commands, such as those tha deal with directories, don't
+        // play nice with this naming convention.  Define an alias for the
+        // branch name that can be used in these scenarios.
+        BRANCH_ALIAS = sh(
+            script: 'echo $BRANCH_NAME | sed -e "s#/#-#g"',
+            returnStdout: true
+        ).trim()
+    }
     stages {
         stage('Code Quality') {
+            when {
+                branch 'feature/continuous-integration'
+            }
             steps {
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
             }
@@ -21,16 +34,6 @@ pipeline {
                     branch 'master'
                     changeRequest target: 'dev'
                 }
-            }
-            environment {
-                // Some branches have a "/" in their name (e.g. feature/new-and-cool)
-                // Some commands, such as those tha deal with directories, don't
-                // play nice with this naming convention.  Define an alias for the
-                // branch name that can be used in these scenarios.
-                BRANCH_ALIAS = sh(
-                    script: 'echo $BRANCH_NAME | sed -e "s#/#-#g"',
-                    returnStdout: true
-                ).trim()
             }
             steps {
                 echo 'Building Precise Testing Docker Image'
