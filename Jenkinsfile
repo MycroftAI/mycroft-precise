@@ -7,6 +7,11 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '5'))
     }
     stages {
+        stage('Code Quality') {
+            steps {
+                sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
+            }
+        }
         // Run the build in the against the dev branch to check for compile errors
         stage('Run Tests') {
             when {
