@@ -17,7 +17,6 @@ __pycache__/
 *.net
 *.json
 *.pbtxt
-*.txt
 *.wav
 
 # Data folders
