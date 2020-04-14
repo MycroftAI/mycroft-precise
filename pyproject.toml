@@ -1,4 +1,2 @@
 [tool.pylint.'MESSAGES CONTROL']
-disable=""",
-    Wrong hanging indentation before block (add 4 spaces).,
-"""
+disable="bad-continuation"
