@@ -27,7 +27,7 @@ pipeline {
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 timeout(time: 5, unit: 'MINUTES')
                 {
-                    sh 'docker run -v $HOME/code-quality:/root/code-quality --entrypoint cat precise-test:${BRANCH_ALIAS} /root/code-quality/changeset.txt'
+                    sh 'docker run -v $HOME/code-quality/:/root/code-quality --entrypoint cat precise-test:${BRANCH_ALIAS} /root/code-quality/change-set.txt'
                 }
             }
         }
