@@ -36,6 +36,10 @@ class FakeStdout:
 
 
 def test_engine(train_folder, train_script):
+    """
+    Test t hat the output format of the engina matches a decimal form in the
+    range 0.0 - 1.0.
+    """
     train_script.run()
     with open(glob.glob(join(train_folder.root, 'wake-word', '*.wav'))[0], 'rb') as f:
         data = f.read()
