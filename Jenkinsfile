@@ -25,11 +25,16 @@ pipeline {
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
-                timeout(time: 5, unit: 'MINUTES')
-                {
-                    sh 'docker run -v $HOME/code-quality/:/root/code-quality --entrypoint ls precise-test:${BRANCH_ALIAS} -la /root/code-quality/'
-                    sh 'docker run -v $HOME/code-quality/:/root/code-quality --entrypoint /bin/bash precise-test:${BRANCH_ALIAS} -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
-                }
+//                 sh 'docker run \
+//                     -v $HOME/code-quality/:/root/code-quality \
+//                     --entrypoint /bin/bash \
+//                     precise-test:${BRANCH_ALIAS} \
+//                     -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
+                sh 'docker run \
+                    -v $HOME/code-quality/:/root/code-quality \
+                    --entrypoint /bin/bash \
+                    precise-test:${BRANCH_ALIAS} \
+                    -x -c "grep -F .py /root/code-quality/change-set.txt | xargs pylint"'
             }
         }
         // Run the build in the against the dev branch to check for compile errors
