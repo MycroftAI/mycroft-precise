@@ -1,3 +1,4 @@
+"""Adding a docstring fo tests"""
 from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from prettyparse import Usage
