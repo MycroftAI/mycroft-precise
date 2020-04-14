@@ -28,7 +28,7 @@ pipeline {
                 timeout(time: 5, unit: 'MINUTES')
                 {
                     sh 'docker run -v $HOME/code-quality/:/root/code-quality --entrypoint ls precise-test:${BRANCH_ALIAS} -la /root/code-quality/'
-                    sh 'docker run -v $HOME/code-quality/:/root/code-quality --entrypoint /bin/bash precise-test:${BRANCH_ALIAS} -x -c "black --check $(< /root/code-quality/change-set.txt)'
+                    sh 'docker run -v $HOME/code-quality/:/root/code-quality --entrypoint /bin/bash precise-test:${BRANCH_ALIAS} -x -c "black --check $(< /root/code-quality/change-set.txt)"'
                 }
             }
         }
