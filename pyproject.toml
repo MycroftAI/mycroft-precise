@@ -1,0 +1,4 @@
+[tool.pylint.messages_control]
+disable=""",
+    bad-continuation,
+"""
