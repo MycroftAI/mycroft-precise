@@ -41,8 +41,7 @@ pipeline {
                     -v $HOME/code-quality/:/root/code-quality \
                     --entrypoint /bin/bash \
                     precise-test:${BRANCH_ALIAS} \
-                    -x -c "grep -F .py /root/code-quality/change-set.txt | \
-                    xargs pylint --rcfile /opt/mycroft/mycroft-precise/pyproject.toml"'
+                    -x -c "grep -F .py /root/code-quality/change-set.txt | xargs pylint"'
             }
         }
         // Run the build in the against the dev branch to check for compile errors
