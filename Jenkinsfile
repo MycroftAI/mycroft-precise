@@ -24,12 +24,10 @@ pipeline {
             steps {
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
-                sh 'cat $HOME/code-quality/change-set.txt'
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 timeout(time: 5, unit: 'MINUTES')
                 {
-                    sh 'docker run --entrypoint git precise-test:${BRANCH_ALIAS} --no-pager diff --name-only FETCH_HEAD > changeset.txt'
-                    sh 'docker run --entrypoint cat precise-test:${BRANCH_ALIAS} changeset.txt'
+                    sh 'docker run -v $HOME/code-quality:/root/code-quality --entrypoint cat precise-test:${BRANCH_ALIAS} /root/code-quality/changeset.txt'
                 }
             }
         }
