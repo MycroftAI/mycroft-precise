@@ -32,6 +32,7 @@ pipeline {
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
+                sh 'docker run --entrypoint ls precise-test:${BRANCH_ALIAS} -la'
                 sh 'docker run \
                     -v $HOME/code-quality/:/root/code-quality \
                     --entrypoint /bin/bash \
