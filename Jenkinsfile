@@ -23,7 +23,7 @@ pipeline {
             }
             steps {
                 sh 'git fetch origin dev'
-                sh 'git --no-pager diff --name-only FETCH_HEAD $(git merge-base FETCH_HEAD origin/dev)'
+                sh 'git --no-pager diff --name-only FETCH_HEAD'
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 timeout(time: 5, unit: 'MINUTES')
                 {
