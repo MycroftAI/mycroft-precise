@@ -23,11 +23,11 @@ pipeline {
             }
             steps {
                 sh 'git fetch origin dev'
-                sh 'git --no-pager diff --name-only FETCH_HEAD'
+                sh 'git --no-pager diff --name-only FETCH_HEAD > /tmp/changeset.txt'
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 timeout(time: 5, unit: 'MINUTES')
                 {
-                    sh 'docker run --entrypoint git precise-test:${BRANCH_ALIAS} --no-pager diff --name-only FETCH_HEAD'
+                    sh 'docker run precise-test:${BRANCH_ALIAS}'
                 }
             }
         }
