@@ -39,7 +39,7 @@ def weighted_log_loss(yt, yp) -> Any:
     pos_loss = -(0 + yt) * K.log(0 + yp + K.epsilon())
     neg_loss = -(1 - yt) * K.log(1 - yp + K.epsilon())
 
-    return LOSS_BIAS * K.mean(neg_loss) + (1. - LOSS_BIAS) * K.mean(pos_loss)
+    return LOSS_BIAS * K.mean(neg_loss) + (1.0 - LOSS_BIAS) * K.mean(pos_loss)
 
 
 def weighted_mse_loss(yt, yp) -> Any:
@@ -47,23 +47,28 @@ def weighted_mse_loss(yt, yp) -> Any:
 
     total = K.sum(K.ones_like(yt))
     neg_loss = total * K.sum(K.square(yp * (1 - yt))) / K.sum(1 - yt)
-    pos_loss = total * K.sum(K.square(1. - (yp * yt))) / K.sum(yt)
+    pos_loss = total * K.sum(K.square(1.0 - (yp * yt))) / K.sum(yt)
 
-    return LOSS_BIAS * neg_loss + (1. - LOSS_BIAS) * pos_loss
+    return LOSS_BIAS * neg_loss + (1.0 - LOSS_BIAS) * pos_loss
 
 
 def false_pos(yt, yp) -> Any:
     from keras import backend as K
-    return K.sum(K.cast(yp * (1 - yt) > 0.5, 'float')) / K.maximum(1.0, K.sum(1 - yt))
+
+    return K.sum(K.cast(yp * (1 - yt) > 0.5, "float")) / K.maximum(1.0, K.sum(1 - yt))
 
 
 def false_neg(yt, yp) -> Any:
     from keras import backend as K
-    return K.sum(K.cast((1 - yp) * (0 + yt) > 0.5, 'float')) / K.maximum(1.0, K.sum(0 + yt))
+
+    return K.sum(K.cast((1 - yp) * (0 + yt) > 0.5, "float")) / K.maximum(
+        1.0, K.sum(0 + yt)
+    )
 
 
 def load_keras() -> Any:
     import keras
+
     keras.losses.weighted_log_loss = weighted_log_loss
     keras.metrics.false_pos = false_pos
     keras.metrics.false_positives = false_pos
@@ -85,4 +90,4 @@ def pdf(x, mu, std):
     """Probability density function (normal distribution)"""
     if std == 0:
         return 0
-    return (1.0 / (std * sqrt(2 * pi))) * np.exp(-(x - mu) ** 2 / (2 * std ** 2))
+    return (1.0 / (std * sqrt(2 * pi))) * np.exp(-((x - mu) ** 2) / (2 * std ** 2))
