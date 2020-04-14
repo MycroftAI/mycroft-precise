@@ -27,7 +27,7 @@ pipeline {
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 timeout(time: 5, unit: 'MINUTES')
                 {
-                    sh 'docker run precise-test:${BRANCH_ALIAS}'
+                    sh 'docker run --entrypoint "git --no-pager diff --name-only FETCH_HEAD | xargs black" precise-test:${BRANCH_ALIAS}'
                 }
             }
         }
