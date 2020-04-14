@@ -1,2 +1,0 @@
-[tool.pylint.'MESSAGES CONTROL']
-disable="""C0330"""
