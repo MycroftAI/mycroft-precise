@@ -17,19 +17,26 @@ pipeline {
         ).trim()
     }
     stages {
-        stage('Code Quality') {
+        stage('Build, Format & Lint') {
+            // Build a Docker image containing the Precise application and all
+            // prerequisites.  Use git to determine the list of files changed.
+            // Filter the list of changed files into a list of Python modules.
+            // Pass the list of Python files changed into the Black code
+            // formatter. Build will fail if Black finds any changes to make.
+            // If Black check passes, run PyLint against the same set of Python
+            // modules. Build will fail if lint is found in code.
             when {
                 branch 'feature/continuous-integration'
             }
             steps {
+                sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
-                sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
-//                 sh 'docker run \
-//                     -v $HOME/code-quality/:/root/code-quality \
-//                     --entrypoint /bin/bash \
-//                     precise-test:${BRANCH_ALIAS} \
-//                     -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
+                sh 'docker run \
+                    -v $HOME/code-quality/:/root/code-quality \
+                    --entrypoint /bin/bash \
+                    precise-test:${BRANCH_ALIAS} \
+                    -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
                 sh 'docker run \
                     -v $HOME/code-quality/:/root/code-quality \
                     --entrypoint /bin/bash \
