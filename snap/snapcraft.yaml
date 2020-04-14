@@ -62,6 +62,12 @@ parts:
         - python3-h5py
         - swig
         - libatlas3-base
+  hey-mycroft:
+    plugin: dump
+    source: https://github.com/MycroftAI/precise-data/raw/models/hey-mycroft.tar.gz
+    source-type: tar
+    organize:
+        '*': /hey-mycroft/
 
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:

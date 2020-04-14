@@ -8,6 +8,8 @@ The package version is extracted from the setup.py script to remain consistent w
 
 Since Precise uses pyaudio, ALSA is required for things to work. This requires the [alsa-mixin](https://snapcraft-alsa.readthedocs.io/en/latest/snapcraft_usage.html) and results in some minor issues that needs to be handled. Library conflicts may occur if audio packages are included as part of the main application part, making them appear twice in conflicting versions. This is the reason that libportaudio2 and pulseaudio are in the stage-packages for the alsa-mixin part.
 
+The snap package also includes a the current pretrained "hey mycroft" model accessed through `/snap/mycroft-precise/current/hey-mycroft/hey-mycroft.pb`
+
 ## Plugs
 Plugs allows connecting the snap to the rest of the system, without any specified plugs the application will run without being able to access the system outside of the snap container, a read-only file system dedicated to the application.
 
