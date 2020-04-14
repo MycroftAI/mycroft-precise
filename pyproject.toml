@@ -1,2 +1,2 @@
 [tool.pylint.'MESSAGES CONTROL']
-disable="bad-continuation"
+disable="""C0330"""
