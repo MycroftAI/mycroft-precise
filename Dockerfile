@@ -7,6 +7,8 @@ COPY requirements/ /opt/mycroft/mycroft-precise/requirements/
 RUN pip install -r /opt/mycroft/mycroft-precise/requirements/test.txt
 RUN pip install -r /opt/mycroft/mycroft-precise/requirements/prod.txt
 COPY . /opt/mycroft/mycroft-precise
+RUN git --no-pager diff --name-only FETCH_HEAD > changeset.txt
+RUN cat changeset.txt
 WORKDIR /opt/mycroft/mycroft-precise
 ENTRYPOINT ["black", "--check", "/opt/mycroft/mycroft-precise/precise/scripts/collect.py"]
 #ENTRYPOINT ["pytest", "--alluredir", "/root/allure/allure-result"]
