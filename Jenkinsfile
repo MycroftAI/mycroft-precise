@@ -22,7 +22,7 @@ pipeline {
                 branch 'feature/continuous-integration'
             }
             steps {
-                sh 'git --no-pager diff dev --name-only'
+                sh 'git --no-pager diff --name-only FETCH_HEAD $(git merge-base FETCH_HEAD dev)'
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 timeout(time: 5, unit: 'MINUTES')
                 {
