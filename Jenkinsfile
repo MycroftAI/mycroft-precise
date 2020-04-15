@@ -29,15 +29,23 @@ pipeline {
                 branch 'feature/continuous-integration'
             }
             steps {
+                def failureType = 'BUILD'
                 sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
-                sh 'docker run --entrypoint ls precise-test:${BRANCH_ALIAS} -la'
+                def failureDescription = 'The Black code formatter identified \
+                    one or more Python modules that require formatting.  See the \
+                    attached log file to determine which modules that failed the check. \
+                    Run Black against those files, then commit and push the formatted code.'
                 sh 'docker run \
                     -v $HOME/code-quality/:/root/code-quality \
                     --entrypoint /bin/bash \
                     precise-test:${BRANCH_ALIAS} \
                     -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
+                def failureDescription = 'PyLint identified or more Python modules \
+                    with potential issues.  See the attached log file for the \
+                    PyLint output.  Address the issues, then commit and push the \
+                    refactored code.'
                 sh 'docker run \
                     -v $HOME/code-quality/:/root/code-quality \
                     --entrypoint /bin/bash \
@@ -183,6 +191,39 @@ pipeline {
                     docker container prune --force;
                     docker image prune --force;
                 '''
+            )
+        }
+        failure {
+            // Send failure email containing a link to the Jenkins build
+            // the results report and the console log messages to Mycroft
+            // developers, the developers of the pull request and the
+            // developers that caused the build to fail.
+            echo 'Sending Failure Email'
+            emailext (
+                attachLog: true,
+                subject: "${failureType} FAILURE - Precise - Build ${BRANCH_NAME} #${BUILD_NUMBER}",
+                body: """
+                    <p>${failureDescription}</p>
+                    <br>
+                    <p>
+                        <a href='${BUILD_URL}'>Jenkins Build Details</a>
+                        &nbsp(Requires account on Mycroft's Jenkins instance)
+                    </p>
+                    <br>
+                    <p>
+                        <a href='https://reports.mycroft.ai/precise/${BRANCH_ALIAS}'>
+                            Report of Test Results
+                        </a>
+                    </p>
+                    <br>
+                    <p>Console log is attached.</p>""",
+                replyTo: 'devops@mycroft.ai',
+                to: 'chris.veilleux@mycroft.ai'
+//                 recipientProviders: [
+//                     [$class: 'RequesterRecipientProvider'],
+//                     [$class:'CulpritsRecipientProvider'],
+//                     [$class:'DevelopersRecipientProvider']
+                ]
             )
         }
     }
