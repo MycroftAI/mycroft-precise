@@ -42,7 +42,7 @@ pipeline {
                     --entrypoint /bin/bash \
                     precise-test:${BRANCH_ALIAS} \
                     -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
-                def failureDescription = 'PyLint identified or more Python modules \
+                failureDescription = 'PyLint identified or more Python modules \
                     with potential issues.  See the attached log file for the \
                     PyLint output.  Address the issues, then commit and push the \
                     refactored code.'
