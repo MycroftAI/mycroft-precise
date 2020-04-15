@@ -223,7 +223,7 @@ pipeline {
 //                     [$class: 'RequesterRecipientProvider'],
 //                     [$class:'CulpritsRecipientProvider'],
 //                     [$class:'DevelopersRecipientProvider']
-                ]
+//                 ]
             )
         }
     }
