@@ -14,7 +14,7 @@
 """This is another test."""
 from math import exp, log, sqrt, pi
 import numpy as np
-from typing import *
+from typing import Any
 
 LOSS_BIAS = 0.9  # [0..1] where 1 is inf bias
 
