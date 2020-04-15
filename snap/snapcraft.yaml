@@ -1,0 +1,182 @@
+name: mycroft-precise
+adopt-info: mycroft-precise
+license: Apache-2.0
+summary: A wake word listener from Mycroft AI
+description: >
+  A lightweight, simple-to-use, RNN wake word listener, including all the tools to train your own custom wake word.
+  
+  Mycroft Precise monitors an audio stream (usually a microphone) and when it recognizes a specific phrase it triggers an event. For example, by default users of the Mycroft Voice Assistant are using a Precise model trained to spot the phrase "Hey Mycroft". When Precise recognizes this phrase it puts the Mycroft Voice Assistant into command mode performing speech recognition on whatever is next said by the person using the device.
+  
+  Mycroft Precise is fully open source and can be trained to recognize any short-phrase or sound, from a name to a cough.
+  
+  The default "Hey Mycroft" model is included, to test it, try:
+  `mycroft-precise.listen /snap/mycroft-precise/current/hey-mycroft/hey-mycroft.pb`
+  
+
+  **USAGE**
+  
+  
+  Running the listener
+  
+    mycroft-precise - Alias for mycroft-precise.engine
+    mycroft-precise.engine - Run a model on raw audio data from stdin
+    mycroft-precise.listen - Run a model on microphone audio input
+    mycroft-precise.listen-pocketsphinx - Run the PocketSphinx listener
+  
+  Data collection
+  
+    mycroft-precise.collect - Record audio samples for use with Precise
+    mycroft-precise.add-noise - Create a duplicate dataset with added noise
+  
+  Training
+  
+    mycroft-precise.train - Train a new model on a dataset
+    mycroft-precise.train-generated - Train a model on infinitely generated batches
+    mycroft-precise.train-incremental - Train a model to inhibit activation by marking false activations and retraining
+    mycroft-precise.train-optimize - Use black box optimization to tune model hyperparameters
+    mycroft-precise.train-sampled - Train a model, sampling data points with the highest loss from a larger dataset
+  
+  Evaluation and analysis
+  
+    mycroft-precise.test - Test a model against a dataset
+    mycroft-precise.test-pocketsphinx - Test PocketSphinx against a dataset
+    mycroft-precise.eval - Evaluate a list of models on a dataset
+    mycroft-precise.calc-threshold - Update the threshold values of a model for a dataset to make the sensitivity more accurate and linear
+    mycroft-precise.graph - Show ROC curves for a series of models
+    mycroft-precise.simulate - Simulate listening to long chunks of audio to find unbiased false positive metrics
+  
+  Model conversion
+  
+    mycroft-precise.convert - Convert wake-word model from Keras to TensorFlow
+base: core18
+grade: stable
+confinement: strict
+build-packages: [python3-dev, python3-setuptools, libtool, libffi-dev, libssl-dev, autoconf, build-essential]
+parts:
+  alsa-mixin:
+    build-packages:
+    - libasound2-dev
+    plugin: dump
+    source: https://github.com/diddlesnaps/snapcraft-alsa.git
+    source-subdir: snapcraft-assets
+    stage-packages:
+    - libslang2
+    - libasound2
+    - libasound2-plugins
+    - libportaudio2
+    - pulseaudio
+    - alsa-utils
+  mycroft-precise:
+    after: [alsa-mixin]
+    plugin: python
+    python-version: python3
+    source: https://github.com/MycroftAI/mycroft-precise.git
+    source-type: git
+    source-branch: dev
+    override-pull: |
+        snapcraftctl pull
+        # Set version to setup.py version if current commit is the latest
+        # tag, otherwise append "-dev" to the version string.
+        set +e
+        if [[ git describe --exact-match --tags $(git log -n1 --pretty='%h') ]]
+        then
+            VERSION=$(/usr/bin/python3 setup.py --version)
+        else
+            VERSION="$(/usr/bin/python3 setup.py --version)-dev"
+        fi
+        set -e
+        snapcraftctl set-version $VERSION
+    build-packages:
+        - python-setuptools
+        - python3-pip
+        - curl
+        - libopenblas-dev
+        - python3-scipy
+        - cython
+        - libhdf5-dev
+        - python3-h5py
+        - portaudio19-dev
+        - swig
+        - libatlas-base-dev
+    stage-packages:
+        - libopenblas-base
+        - python3
+        - python3-scipy
+        - cython
+        - libhdf5-100
+        - libhdf5-cpp-100
+        - python3-h5py
+        - swig
+        - libatlas3-base
+  hey-mycroft:
+    plugin: dump
+    source: https://github.com/MycroftAI/precise-data/raw/models/hey-mycroft.tar.gz
+    source-type: tar
+    organize:
+        '*': /hey-mycroft/
+
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+
+apps:
+  mycroft-precise:
+    plugs: [home]
+    command: bin/precise-engine
+  add-noise:
+    plugs: [home]
+    command: bin/precise-add-noise
+  calc-threshold:
+    plugs: [home]
+    command: bin/precise-calc-threshold
+  collect:
+    plugs: [home, audio-record, audio-playback]
+    command-chain:
+    - snap/command-chain/alsa-launch
+    command: bin/precise-collect
+  convert:
+    plugs: [home]
+    command: bin/precise-convert
+  eval:
+    plugs: [home]
+    command: bin/precise-eval
+  engine:
+    plugs: [home]
+    command: bin/precise-engine
+  graph:
+    plugs: [home]
+    command: bin/precise-graph
+  listen:
+    command-chain:
+    - snap/command-chain/alsa-launch
+    plugs: [home, audio-record, audio-playback]
+    command: bin/precise-listen
+  listen-pocketsphinx:
+    command-chain:
+    - snap/command-chain/alsa-launch
+    plugs: [home, audio-record, audio-playback]
+    command: bin/precise-listen-pocketsphinx
+  simulate:
+    plugs: [home]
+    command: bin/precise-simulate
+  test:
+    plugs: [home]
+    command: bin/precise-test
+  test-pocketsphinx:
+    plugs: [home]
+    command: bin/precise-test-pocketsphinx
+  train:
+    plugs: [home]
+    command: bin/precise-train
+  train-generated:
+    plugs: [home]
+    command: bin/precise-train-generated
+  train-incremental:
+    plugs: [home]
+    command: bin/precise-train-incremental
+  train-optimize:
+    plugs: [home]
+    command: bin/precise-train-optimize
+  train-sampled:
+    plugs: [home]
+    command: bin/precise-train-sampled
