@@ -29,27 +29,18 @@ pipeline {
                 branch 'feature/continuous-integration'
             }
             steps {
-                def failureType = 'BUILD'
-                sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
+                sh 'docker build -t precise:${BRANCH_ALIAS} .'
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
-                def failureDescription = 'The Black code formatter identified \
-                    one or more Python modules that require formatting.  See the \
-                    attached log file to determine which modules that failed the check. \
-                    Run Black against those files, then commit and push the formatted code.'
                 sh 'docker run \
                     -v $HOME/code-quality/:/root/code-quality \
                     --entrypoint /bin/bash \
-                    precise-test:${BRANCH_ALIAS} \
+                    precise:${BRANCH_ALIAS} \
                     -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
-                failureDescription = 'PyLint identified or more Python modules \
-                    with potential issues.  See the attached log file for the \
-                    PyLint output.  Address the issues, then commit and push the \
-                    refactored code.'
                 sh 'docker run \
                     -v $HOME/code-quality/:/root/code-quality \
                     --entrypoint /bin/bash \
-                    precise-test:${BRANCH_ALIAS} \
+                    precise:${BRANCH_ALIAS} \
                     -x -c "grep -F .py /root/code-quality/change-set.txt | xargs pylint"'
             }
         }
@@ -65,120 +56,13 @@ pipeline {
             }
             steps {
                 echo 'Building Precise Testing Docker Image'
-                sh 'docker build -t precise-test:${BRANCH_ALIAS} .'
+                sh 'docker build -t precise:${BRANCH_ALIAS} .'
                 echo 'Precise Test Suite'
                 timeout(time: 5, unit: 'MINUTES')
                 {
                     sh 'docker run \
                         -v "$HOME/allure/precise/:/root/allure" \
-                        precise-test:${BRANCH_ALIAS}'
-                }
-            }
-            post {
-                always {
-                    echo 'Report Test Results'
-                    echo 'Changing ownership...'
-                    sh 'docker run \
-                        --volume "$HOME/allure/precise/:/root/allure" \
-                        --entrypoint=/bin/bash \
-                        precise-test:${BRANCH_ALIAS} \
-                        -x -c "chown $(id -u $USER):$(id -g $USER) \
-                        -R /root/allure/"'
-
-                    echo 'Transferring...'
-                    sh 'ls -la $HOME/allure/precise/allure-result'
-                    sh 'rm -rf allure-result/*'
-                    sh 'mv $HOME/allure/precise/allure-result allure-result'
-                    script {
-                        allure([
-                            includeProperties: false,
-                            jdk: '',
-                            properties: [],
-                            reportBuildPolicy: 'ALWAYS',
-                            results: [[path: 'allure-result']]
-                        ])
-                    }
-                    unarchive mapping:['allure-report.zip': 'allure-report.zip']
-                    sh (
-                        label: 'Publish Report to Web Server',
-                        script: '''scp allure-report.zip root@157.245.127.234:~;
-                            ssh root@157.245.127.234 "unzip -o ~/allure-report.zip";
-                            ssh root@157.245.127.234 "rm -rf /var/www/voight-kampff/precise/${BRANCH_ALIAS}";
-                            ssh root@157.245.127.234 "mv allure-report /var/www/voight-kampff/precise/${BRANCH_ALIAS}"
-                        '''
-                    )
-                    echo 'Report Published'
-                }
-                failure {
-                    // Send failure email containing a link to the Jenkins build
-                    // the results report and the console log messages to Mycroft
-                    // developers, the developers of the pull request and the
-                    // developers that caused the build to fail.
-                    echo 'Sending Failure Email'
-                    emailext (
-                        attachLog: true,
-                        subject: "FAILURE - Precise Tests - Build ${BRANCH_NAME} #${BUILD_NUMBER}",
-                        body: """
-                            <p>
-                                One or more tests failed. Use the
-                                resources below to identify the issue and fix
-                                the failing tests.
-                            </p>
-                            <br>
-                            <p>
-                                <a href='${BUILD_URL}'>
-                                    Jenkins Build Details
-                                </a>
-                                &nbsp(Requires account on Mycroft's Jenkins instance)
-                            </p>
-                            <br>
-                            <p>
-                                <a href='https://reports.mycroft.ai/precise/${BRANCH_ALIAS}'>
-                                    Report of Test Results
-                                </a>
-                            </p>
-                            <br>
-                            <p>Console log is attached.</p>""",
-                        replyTo: 'devops@mycroft.ai',
-                        recipientProviders: [
-                            [$class: 'RequesterRecipientProvider'],
-                            [$class:'CulpritsRecipientProvider'],
-                            [$class:'DevelopersRecipientProvider']
-                        ]
-                    )
-                }
-                success {
-                    // Send success email containing a link to the Jenkins build
-                    // and the results report to Mycroft developers, the developers
-                    // of the pull request and the developers that caused the
-                    // last failed build.
-                    echo 'Sending Success Email'
-                    emailext (
-                        subject: "SUCCESS - Precise Tests - Build ${BRANCH_NAME} #${BUILD_NUMBER}",
-                        body: """
-                            <p>
-                                All tests passed. No further action required.
-                            </p>
-                            <br>
-                            <p>
-                                <a href='${BUILD_URL}'>
-                                    Jenkins Build Details
-                                </a>
-                                &nbsp(Requires account on Mycroft's Jenkins instance)
-                            </p>
-                            <br>
-                            <p>
-                                <a href='https://reports.mycroft.ai/precise/${BRANCH_ALIAS}'>
-                                    Report of Test Results
-                                </a>
-                            </p>""",
-                        replyTo: 'devops@mycroft.ai',
-                        recipientProviders: [
-                            [$class: 'RequesterRecipientProvider'],
-                            [$class:'CulpritsRecipientProvider'],
-                            [$class:'DevelopersRecipientProvider']
-                        ]
-                    )
+                        precise:${BRANCH_ALIAS}'
                 }
             }
         }
@@ -201,29 +85,53 @@ pipeline {
             echo 'Sending Failure Email'
             emailext (
                 attachLog: true,
-                subject: "${failureType} FAILURE - Precise - Build ${BRANCH_NAME} #${BUILD_NUMBER}",
+                subject: "FAILURE - Precise Build - ${BRANCH_NAME} #${BUILD_NUMBER}",
                 body: """
-                    <p>${failureDescription}</p>
-                    <br>
                     <p>
-                        <a href='${BUILD_URL}'>Jenkins Build Details</a>
-                        &nbsp(Requires account on Mycroft's Jenkins instance)
+                        Follow the link below to see details regarding
+                        the cause of the failure.  Once a fix is pushed,
+                        this job will be re-run automatically.
                     </p>
                     <br>
-                    <p>
-                        <a href='https://reports.mycroft.ai/precise/${BRANCH_ALIAS}'>
-                            Report of Test Results
-                        </a>
-                    </p>
-                    <br>
-                    <p>Console log is attached.</p>""",
+                    <p><a href='${BUILD_URL}'>Jenkins Build Details</a></p>
+                    <br>""",
                 replyTo: 'devops@mycroft.ai',
                 to: 'chris.veilleux@mycroft.ai'
-//                 recipientProviders: [
-//                     [$class: 'RequesterRecipientProvider'],
-//                     [$class:'CulpritsRecipientProvider'],
-//                     [$class:'DevelopersRecipientProvider']
-//                 ]
+                recipientProviders: [
+                    [$class: 'RequesterRecipientProvider'],
+                    [$class:'CulpritsRecipientProvider'],
+                    [$class:'DevelopersRecipientProvider']
+                ]
+            )
+        }
+        success {
+            // Send success email containing a link to the Jenkins build
+            // and the results report to Mycroft developers, the developers
+            // of the pull request and the developers that caused the
+            // last failed build.
+            echo 'Sending Success Email'
+            emailext (
+                subject: "SUCCESS - Precise Tests - Build ${BRANCH_NAME} #${BUILD_NUMBER}",
+                body: """
+                    <p>
+                        Build completed without issue. No further action required.
+                        Build details can be found by following the link below.
+                    </p>
+                    <br>
+                    <p>
+                        <a href='${BUILD_URL}'>
+                            Jenkins Build Details
+                        </a>
+                        &nbsp(Requires account on Mycroft's Jenkins instance)
+                    </p>
+                    <br>""",
+                replyTo: 'devops@mycroft.ai',
+                to: 'chris.veilleux@mycroft.ai'
+                recipientProviders: [
+                    [$class: 'RequesterRecipientProvider'],
+                    [$class:'CulpritsRecipientProvider'],
+                    [$class:'DevelopersRecipientProvider']
+                ]
             )
         }
     }
