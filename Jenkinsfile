@@ -96,7 +96,7 @@ pipeline {
                     <p><a href='${BUILD_URL}'>Jenkins Build Details</a></p>
                     <br>""",
                 replyTo: 'devops@mycroft.ai',
-                to: 'chris.veilleux@mycroft.ai'
+                to: 'chris.veilleux@mycroft.ai',
                 recipientProviders: [
                     [$class: 'RequesterRecipientProvider'],
                     [$class:'CulpritsRecipientProvider'],
@@ -126,7 +126,7 @@ pipeline {
                     </p>
                     <br>""",
                 replyTo: 'devops@mycroft.ai',
-                to: 'chris.veilleux@mycroft.ai'
+                to: 'chris.veilleux@mycroft.ai',
                 recipientProviders: [
                     [$class: 'RequesterRecipientProvider'],
                     [$class:'CulpritsRecipientProvider'],
