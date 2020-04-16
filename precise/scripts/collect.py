@@ -12,6 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Record audio samples for use with precise
+
+:-w --width int 2
+    Sample width of audio
+
+:-r --rate int 16000
+    Sample rate of audio
+
+:-c --channels int 1
+    Number of audio channels
+"""
 from select import select
 from sys import stdin
 from termios import tcsetattr, tcgetattr, TCSADRAIN
@@ -53,18 +65,7 @@ class CollectScript(BaseScript):
     RECORD_KEY = ' '
     EXIT_KEY_CODE = 27
 
-    usage = Usage('''
-        Record audio samples for use with precise
-
-        :-w --width int 2
-            Sample width of audio
-
-        :-r --rate int 16000
-            Sample rate of audio
-
-        :-c --channels int 1
-            Number of audio channels
-    ''')
+    usage = Usage(__doc__)
     usage.add_argument('file_label', nargs='?', help='File label (Ex. recording-##)')
 
     def __init__(self, args):

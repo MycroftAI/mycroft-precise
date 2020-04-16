@@ -12,6 +12,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Evaluate a list of models on a dataset
+
+:-u --use-train
+    Evaluate training data instead of test data
+
+:-t --threshold float 0.5
+    Network output to be considered an activation
+
+:-pw --pocketsphinx-wake-word str -
+    Optional wake word used to
+    generate a Pocketsphinx data point
+
+:-pd --pocketsphinx-dict str -
+    Optional word dictionary used to
+    generate a Pocketsphinx data point
+    Format = wake-word.yy-mm-dd.dict
+
+:-pf --pocketsphinx-folder str -
+    Optional hmm folder used to
+    generate a Pocketsphinx data point.
+
+:-pth --pocketsphinx-threshold float 1e-90
+    Optional threshold used to
+    generate a Pocketsphinx data point
+
+:-o --output str stats.json
+    Output json file
+
+...
+"""
 import json
 from os.path import isfile, isdir
 from prettyparse import Usage
@@ -25,37 +56,7 @@ from precise.train_data import TrainData
 
 
 class EvalScript(BaseScript):
-    usage = Usage('''
-        Evaluate a list of models on a dataset
-
-        :-u --use-train
-            Evaluate training data instead of test data
-
-        :-t --threshold float 0.5
-            Network output to be considered an activation
-
-        :-pw --pocketsphinx-wake-word str -
-            Optional wake word used to
-            generate a Pocketsphinx data point
-
-        :-pd --pocketsphinx-dict str -
-            Optional word dictionary used to
-            generate a Pocketsphinx data point
-            Format = wake-word.yy-mm-dd.dict
-
-        :-pf --pocketsphinx-folder str -
-            Optional hmm folder used to
-            generate a Pocketsphinx data point.
-
-        :-pth --pocketsphinx-threshold float 1e-90
-            Optional threshold used to
-            generate a Pocketsphinx data point
-
-        :-o --output str stats.json
-            Output json file
-
-        ...
-    ''')
+    usage = Usage(__doc__)
     usage.add_argument('models', nargs='*',
                        help='List of model filenames in format: wake-word.yy-mm-dd.net')
     usage |= TrainData.usage

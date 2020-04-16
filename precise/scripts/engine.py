@@ -12,6 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+stdin should be a stream of raw int16 audio, written in
+groups of CHUNK_SIZE samples. If no CHUNK_SIZE is given
+it will read until EOF. For every chunk, an inference
+will be given via stdout as a float string, one per line
+
+:model_name str
+    Keras or TensorFlow model to read from
+
+...
+"""
 import sys
 
 import os
@@ -27,17 +38,7 @@ def add_audio_pipe_to_parser(parser):
 
 
 class EngineScript(BaseScript):
-    usage = Usage('''
-        stdin should be a stream of raw int16 audio, written in
-        groups of CHUNK_SIZE samples. If no CHUNK_SIZE is given
-        it will read until EOF. For every chunk, an inference
-        will be given via stdout as a float string, one per line
-
-        :model_name str
-            Keras or TensorFlow model to read from
-
-        ...
-    ''')
+    usage = Usage(__doc__)
     usage.add_argument('-v', '--version', action='version', version=__version__)
     usage.add_argument('chunk_size', type=int, nargs='?', default=-1,
                        help='Number of bytes to read before making a prediction. '

@@ -12,6 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Train a model to inhibit activation by
+marking false activations and retraining
+
+:-e --epochs int 1
+    Number of epochs to train before continuing evaluation
+
+:-ds --delay-samples int 10
+    Number of false activations to save before re-training
+
+:-c --chunk-size int 2048
+    Number of samples between testing the neural network
+
+:-r --random-data-folder str data/random
+    Folder with properly encoded wav files of
+    random audio that should not cause an activation
+
+:-th --threshold float 0.5
+    Network output to be considered activated
+
+...
+"""
 import numpy as np
 from os import makedirs
 from os.path import basename, splitext, isfile, join
@@ -42,28 +64,7 @@ def save_trained_fns(trained_fns: list, model_name: str):
 
 
 class TrainIncrementalScript(TrainScript):
-    usage = Usage('''
-        Train a model to inhibit activation by
-        marking false activations and retraining
-
-        :-e --epochs int 1
-            Number of epochs to train before continuing evaluation
-
-        :-ds --delay-samples int 10
-            Number of false activations to save before re-training
-
-        :-c --chunk-size int 2048
-            Number of samples between testing the neural network
-
-        :-r --random-data-folder str data/random
-            Folder with properly encoded wav files of
-            random audio that should not cause an activation
-
-        :-th --threshold float 0.5
-            Network output to be considered activated
-
-        ...
-    ''') | TrainScript.usage
+    usage = Usage(__doc__) | TrainScript.usage
 
     def __init__(self, args):
         super().__init__(args)

@@ -12,6 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Create a duplicate dataset with added noise
+
+:folder str
+    Folder containing source dataset
+
+:-tg --tags-file str -
+    Tags file to optionally load from
+
+:noise_folder str
+    Folder with wav files containing noise to be added
+
+:output_folder str
+    Folder to write the duplicate generated dataset
+
+:-if --inflation-factor int 1
+    The number of noisy samples generated per single source sample
+
+:-nl --noise-ratio-low float 0.0
+    Minimum random ratio of noise to sample. 1.0 is all noise, no sample sound
+
+:-nh --noise-ratio-high float 0.4
+    Maximum random ratio of noise to sample. 1.0 is all noise, no sample sound
+"""
 from math import sqrt
 
 import numpy as np
@@ -68,30 +92,7 @@ class NoiseData:
 
 class AddNoiseScript(BaseScript):
     usage = Usage(
-        """
-            Create a duplicate dataset with added noise
-
-            :folder str
-                Folder containing source dataset
-
-            :-tg --tags-file str -
-                Tags file to optionally load from
-
-            :noise_folder str
-                Folder with wav files containing noise to be added
-
-            :output_folder str
-                Folder to write the duplicate generated dataset
-
-            :-if --inflation-factor int 1
-                The number of noisy samples generated per single source sample
-
-            :-nl --noise-ratio-low float 0.0
-                Minimum random ratio of noise to sample. 1.0 is all noise, no sample sound
-
-            :-nh --noise-ratio-high float 0.4
-                Maximum random ratio of noise to sample. 1.0 is all noise, no sample sound
-        """,
+        __doc__,
         tags_file=lambda args: abspath(args.tags_file) if args.tags_file else None,
         folder=lambda args: abspath(args.folder),
         output_folder=lambda args: abspath(args.output_folder)

@@ -12,6 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Test a dataset using Pocketsphinx
+
+:key_phrase str
+    Key phrase composed of words from dictionary
+
+:dict_file str
+    Filename of dictionary with word pronunciations
+
+:hmm_folder str
+    Folder containing hidden markov model
+
+:-th --threshold str 1e-90
+    Threshold for activations
+
+:-t --use-train
+    Evaluate training data instead of test data
+
+:-nf --no-filenames
+    Don't show the names of files that failed
+
+...
+"""
 import wave
 from prettyparse import Usage
 from subprocess import check_output, PIPE
@@ -23,29 +46,7 @@ from precise.train_data import TrainData
 
 
 class PocketsphinxTestScript(BaseScript):
-    usage = Usage('''
-        Test a dataset using Pocketsphinx
-
-        :key_phrase str
-            Key phrase composed of words from dictionary
-
-        :dict_file str
-            Filename of dictionary with word pronunciations
-
-        :hmm_folder str
-            Folder containing hidden markov model
-
-        :-th --threshold str 1e-90
-            Threshold for activations
-
-        :-t --use-train
-            Evaluate training data instead of test data
-
-        :-nf --no-filenames
-            Don't show the names of files that failed
-
-        ...
-    ''') | TrainData.usage
+    usage = Usage(__doc__) | TrainData.usage
 
     def __init__(self, args):
         super().__init__(args)
