@@ -44,8 +44,8 @@ pipeline {
                     -x -c "grep -F .py /root/code-quality/change-set.txt | xargs pylint"'
             }
         }
-        // Run the build in the against the dev branch to check for compile errors
         stage('Run Tests') {
+            // Run the unit and/or integration tests defined within the repository
             when {
                 anyOf {
                     branch 'feature/continuous-integration'
