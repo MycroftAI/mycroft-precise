@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Functions that convert audio to machine readable vectors
+"""
 import hashlib
 import numpy as np
 import os
@@ -24,6 +27,7 @@ inhibit_t = 0.4
 inhibit_dist_t = 1.0
 inhibit_hop_t = 0.1
 
+# Functions that convert audio frames -> vectors
 vectorizers = {
     Vectorizer.mels: lambda x: mel_spec(
         x, pr.sample_rate, (pr.window_samples, pr.hop_samples),
@@ -47,6 +51,7 @@ def vectorize_raw(audio: np.ndarray) -> np.ndarray:
 
 
 def add_deltas(features: np.ndarray) -> np.ndarray:
+    """Inserts extra features that are the difference between adjacent timesteps"""
     deltas = np.zeros_like(features)
     for i in range(1, len(features)):
         deltas[i] = features[i] - features[i - 1]
@@ -56,6 +61,9 @@ def add_deltas(features: np.ndarray) -> np.ndarray:
 
 def vectorize(audio: np.ndarray) -> np.ndarray:
     """
+    Converts audio to machine readable vectors using
+    configuration specified in ListenerParams (params.py)
+
     Args:
         audio: Audio verified to be of `sample_rate`
 
@@ -77,6 +85,7 @@ def vectorize(audio: np.ndarray) -> np.ndarray:
 
 
 def vectorize_delta(audio: np.ndarray) -> np.ndarray:
+    """Vectorizer for when use_delta is True"""
     return add_deltas(vectorize(audio))
 
 

@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Handles loading dataset into memory and processing it
+Used for training and generating statistics for a dataset
+"""
 import json
 import numpy as np
 from glob import glob
@@ -155,6 +159,7 @@ class TrainData:
 
     @staticmethod
     def merge(data_a: tuple, data_b: tuple) -> tuple:
+        """Combine two TrainData objects"""
         return np.concatenate((data_a[0], data_b[0])), np.concatenate((data_a[1], data_b[1]))
 
     def __repr__(self) -> str:

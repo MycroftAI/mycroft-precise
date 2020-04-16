@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Miscellaneous utility functions for things like audio loading
+"""
 import hashlib
 import numpy as np
 from os.path import join, dirname, abspath
@@ -20,6 +23,7 @@ from precise.params import pr
 
 
 class InvalidAudio(ValueError):
+    """Thrown the audio isn't in the expected format"""
     pass
 
 
@@ -40,6 +44,7 @@ def audio_to_buffer(audio: np.ndarray) -> bytes:
 
 def load_audio(file: Any) -> np.ndarray:
     """
+    Loads properly formatted audio from a file to a numpy array
     Args:
         file: Audio filename or file object
     Returns:
@@ -61,6 +66,7 @@ def load_audio(file: Any) -> np.ndarray:
 
 
 def save_audio(filename: str, audio: np.ndarray):
+    """Save loaded audio to file using the configured audio parameters"""
     import wavio
     save_audio = (audio * np.iinfo(np.int16).max).astype(np.int16)
     wavio.write(filename, save_audio, pr.sample_rate, sampwidth=pr.sample_depth, scale='none')
@@ -79,6 +85,7 @@ def play_audio(filename: str):
 
 
 def activate_notify():
+    """Play some sound to indicate a wakeword activation when testing a model"""
     audio = 'data/activate.wav'
     audio = join(dirname(abspath(__file__)), audio)
     play_audio(audio)
@@ -102,6 +109,7 @@ def find_wavs(folder: str) -> Tuple[List[str], List[str]]:
 
 
 def calc_sample_hash(inp: np.ndarray, outp: np.ndarray) -> str:
+    """Hashes a training sample of an input vector and target output vector"""
     md5 = hashlib.md5()
     md5.update(inp.tostring())
     md5.update(outp.tostring())

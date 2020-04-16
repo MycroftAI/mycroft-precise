@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Pieces that convert audio to predictions
+"""
 import numpy as np
 from abc import abstractmethod, ABCMeta
 from importlib import import_module
@@ -26,6 +29,10 @@ from precise.vectorization import vectorize_raw, add_deltas
 
 
 class Runner(metaclass=ABCMeta):
+    """
+    Classes that execute trained models on vectorized audio
+    and produce prediction values
+    """
     @abstractmethod
     def predict(self, inputs: np.ndarray) -> np.ndarray:
         pass
@@ -36,6 +43,7 @@ class Runner(metaclass=ABCMeta):
 
 
 class TensorFlowRunner(Runner):
+    """Executes a frozen Tensorflow model created from precise-convert"""
     def __init__(self, model_name: str):
         if model_name.endswith('.net'):
             print('Warning: ', model_name, 'looks like a Keras model.')
@@ -67,6 +75,7 @@ class TensorFlowRunner(Runner):
 
 
 class KerasRunner(Runner):
+    """ Executes a regular Keras model created from precise-train"""
     def __init__(self, model_name: str):
         import tensorflow as tf
         # ISSUE 88 - Following 3 lines added to resolve issue 88 - JM 2020-02-04 per liny90626
