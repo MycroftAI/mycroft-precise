@@ -84,7 +84,6 @@ pipeline {
             // developers that caused the build to fail.
             echo 'Sending Failure Email'
             emailext (
-                attachLog: true,
                 subject: "FAILURE - Precise Build - ${BRANCH_NAME} #${BUILD_NUMBER}",
                 body: """
                     <p>
