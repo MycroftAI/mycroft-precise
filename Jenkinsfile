@@ -26,8 +26,7 @@ pipeline {
             // If Black check passes, run PyLint against the same set of Python
             // modules. Build will fail if lint is found in code.
             when {
-                anyOf {
-//                     branch 'feature/continuous-integration'
+                not {
                     changeRequest fork: ''
                 }
             }
