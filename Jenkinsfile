@@ -26,9 +26,13 @@ pipeline {
             // If Black check passes, run PyLint against the same set of Python
             // modules. Build will fail if lint is found in code.
             when {
-                branch 'feature/continuous-integration'
+                anyOf {
+                    branch 'feature/continuous-integration'
+                    changeRequest target: 'dev'
+                }
             }
             steps {
+                echo 'Fork value: ${CHANGE_FORK}'
                 sh 'docker build -t precise:${BRANCH_ALIAS} .'
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
