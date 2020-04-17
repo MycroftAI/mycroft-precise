@@ -27,8 +27,8 @@ pipeline {
             // modules. Build will fail if lint is found in code.
             when {
                 anyOf {
-                    branch 'feature/continuous-integration'
-                    changeRequest fork: 'foo'
+//                     branch 'feature/continuous-integration'
+                    changeRequest fork: ''
                 }
             }
             steps {
