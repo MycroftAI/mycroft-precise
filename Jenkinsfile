@@ -28,7 +28,7 @@ pipeline {
             when {
                 anyOf {
                     branch 'feature/continuous-integration'
-                    changeRequest fork: ''
+                    changeRequest fork: 'foo'
                 }
             }
             steps {
