@@ -32,7 +32,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'docker build --build-arg PR=${CHANGE_FORK} -t precise:${BRANCH_ALIAS} .'
+                sh 'docker build --build-arg PR=${CHANGE_BRANCH} -t precise:${BRANCH_ALIAS} .'
                 sh 'git fetch origin dev'
                 sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
                 sh 'docker run \
