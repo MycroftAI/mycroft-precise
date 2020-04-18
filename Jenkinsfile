@@ -26,8 +26,7 @@ pipeline {
             // If Black check passes, run PyLint against the same set of Python
             // modules. Build will fail if lint is found in code.
             when {
-                changeRequest fork: ''
-                changeset 'functions.py'
+                changeRequest target: 'dev'
             }
             steps {
                 sh 'docker build --build-arg PR=${CHANGE_BRANCH} -t precise:${BRANCH_ALIAS} .'
