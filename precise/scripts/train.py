@@ -29,7 +29,8 @@ Train a new model on a dataset
     Number of epochs to train model for
 
 :-s --sensitivity float 0.2
-    Weighted loss bias. Higher values decrease increase positives
+    Target sensitivity when training. Higher values cause
+    more false positives
 
 :-b --batch-size int 5000
     Batch size for training

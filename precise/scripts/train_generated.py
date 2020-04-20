@@ -35,7 +35,8 @@ Train a model on infinitely generated batches
     random audio that should not cause an activation
 
 :-s --sensitivity float 0.2
-    Weighted loss bias. Higher values decrease increase positives
+    Target sensitivity when training. Higher values cause
+    more false positives
 
 :-sb --save-best
     Only save the model each epoch if its stats improve
