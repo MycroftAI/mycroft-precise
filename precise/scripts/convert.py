@@ -27,8 +27,8 @@ class ConvertScript(BaseScript):
         :model str
             Input Keras model (.net)
 
-        :-o --out str {model}.pb
-            Custom output TensorFlow protobuf filename
+        :-o --out str {model}.tflite
+            Custom output TensorFlow Lite filename
     ''')
 
     def run(self):
@@ -38,11 +38,11 @@ class ConvertScript(BaseScript):
 
     def convert(self, model_path: str, out_file: str):
         """
-        Converts an HD5F file from Keras to a .pb for use with TensorFlow
+        Converts an HD5F file from Keras to a .tflite for use with TensorFlow Runtime
 
         Args:
             model_path: location of Keras model
-            out_file: location to write protobuf
+            out_file: location to write TFLite model
         """
         print('Converting', model_path, 'to', out_file, '...')
         
