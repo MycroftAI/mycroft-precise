@@ -45,33 +45,29 @@ class ConvertScript(BaseScript):
             out_file: location to write TFLite model
         """
         print('Converting', model_path, 'to', out_file, '...')
-        
-        import tensorflow as tf # Using tensorflow v2.0
+
+        import tensorflow as tf # Using tensorflow v2.2
         from tensorflow import keras as K
         from precise.model import load_precise_model
         from precise.functions import weighted_log_loss
-        
+
         out_dir, filename = split(out_file)
         out_dir = out_dir or '.'
         os.makedirs(out_dir, exist_ok=True)
-        
+
         # Load custom loss function with model
         model = K.models.load_model(model_path, custom_objects={'weighted_log_loss': weighted_log_loss})
-        
         model.summary()
-        
-        # Support for freezing models to .pb has been removed in TF 2.0.
-        
+
+        # Support for freezing Keras models to .pb has been removed in TF 2.0.
+
         # Converting instead to TFLite model
         print('Starting TFLite conversion.')
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
         converter.target_ops = [tf.lite.OpsSet.TFLITE_BUILTINS,tf.lite.OpsSet.SELECT_TF_OPS]
-        #  converter.experimental_new_converter=True # TF2.2 uses experimental converter by default.
         tflite_model = converter.convert()
         open(out_file, "wb").write(tflite_model)
         print('Wrote to ' + out_file)
-
-        
 
 
 main = ConvertScript.run_main

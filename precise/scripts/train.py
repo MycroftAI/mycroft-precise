@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from fitipy import Fitipy
-from tensorflow.keras.callbacks import LambdaCallback
+from keras.callbacks import LambdaCallback
 from os.path import splitext, isfile
 from prettyparse import Usage
 from typing import Any, Tuple
@@ -85,11 +85,9 @@ class TrainScript(BaseScript):
         self.model = create_model(args.model, params)
         self.train, self.test = self.load_data(self.args)
 
-        from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping, ReduceLROnPlateau
+        from keras.callbacks import ModelCheckpoint
         checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
                                      save_best_only=args.save_best)
-        earlyStop = EarlyStopping(monitor='loss', min_delta=0.00005, patience=2500, verbose=1, mode='auto', baseline=None, restore_best_weights=True)
-        reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.85, min_delta=0.0001, patience=100, min_lr=0.0000005, verbose=1)
         epoch_fiti = Fitipy(splitext(args.model)[0] + '.epoch')
         self.epoch = epoch_fiti.read().read(0, int)
 
@@ -107,12 +105,7 @@ class TrainScript(BaseScript):
 
         self.callbacks = [
           checkpoint,
-          #  TensorBoard( # Disables tensorboard due to compat with tf2
-              #  log_dir=self.model_base + '.logs',
-          #  ),
           LambdaCallback(on_epoch_end=on_epoch_end),
-          reduce_lr,
-          earlyStop
         ]
 
     @staticmethod
