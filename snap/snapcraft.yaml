@@ -70,9 +70,7 @@ parts:
     after: [alsa-mixin]
     plugin: python
     python-version: python3
-    source: https://github.com/MycroftAI/mycroft-precise.git
-    source-type: git
-    source-branch: dev
+    source: .
     override-pull: |
         snapcraftctl pull
         # Set version to setup.py version if current commit is the latest
