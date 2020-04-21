@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import numpy as np
-from os import makedirs
+from os import makedirs, rename
 from os.path import basename, splitext, isfile, join
 from prettyparse import Usage
 from random import random
@@ -108,7 +108,7 @@ class TrainIncrementalScript(TrainScript):
             )
         finally:
             self.listener.runner.model.save(self.args.model + '.h5') # Save with '.h5' file extension to force format
-            os.rename(self.args.model + '.h5', self.args.model) # Rename with original
+            rename(self.args.model + '.h5', self.args.model) # Rename with original
 
     def train_on_audio(self, fn: str):
         """Run through a single audio file"""
