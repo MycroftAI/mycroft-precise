@@ -12,6 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Train a model, sampling data points with the highest loss from a larger dataset
+
+:-c --cycles int 200
+    Number of sampling cycles of size {epoch} to run
+
+:-n --num-sample-chunk int 50
+    Number of new samples to introduce at a time between training cycles
+
+:-sf --samples-file str -
+    Json file to write selected samples to.
+    Default = {model_base}.samples.json
+
+:-is --invert-samples
+    Unused parameter
+...
+"""
 from itertools import islice
 
 from fitipy import Fitipy
@@ -22,23 +39,7 @@ from precise.util import calc_sample_hash
 
 
 class TrainSampledScript(TrainScript):
-    usage = Usage('''
-        Train a model, sampling data points with the highest loss from a larger dataset
-
-        :-c --cycles int 200
-            Number of sampling cycles of size {epoch} to run
-
-        :-n --num-sample-chunk int 50
-            Number of new samples to introduce at a time between training cycles
-
-        :-sf --samples-file str -
-            Json file to write selected samples to.
-            Default = {model_base}.samples.json
-
-        :-is --invert-samples
-            Unused parameter
-        ...
-    ''') | TrainScript.usage
+    usage = Usage(__doc__) | TrainScript.usage
 
     def __init__(self, args):
         super().__init__(args)

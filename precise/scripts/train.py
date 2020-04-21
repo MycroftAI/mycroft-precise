@@ -12,6 +12,48 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Train a new model on a dataset
+
+:model str
+    Keras model file (.net) to load from and save to
+
+:-sf --samples-file str -
+    Loads subset of data from the provided json file
+    generated with precise-train-sampled
+
+:-is --invert-samples
+    Loads subset of data not inside --samples-file
+
+:-e --epochs int 10
+    Number of epochs to train model for
+
+:-s --sensitivity float 0.2
+    Target sensitivity when training. Higher values cause
+    more false positives
+
+:-b --batch-size int 5000
+    Batch size for training
+
+:-sb --save-best
+    Only save the model each epoch if its stats improve
+
+:-nv --no-validation
+    Disable accuracy and validation calculation
+    to improve speed during training
+
+:-mm --metric-monitor str loss
+    Metric used to determine when to save
+
+:-em --extra-metrics
+    Add extra metrics during training
+
+:-f --freeze-till int 0
+    Freeze all weights up to this index (non-inclusive).
+    Can be negative to wrap from end
+
+...
+"""
 from fitipy import Fitipy
 from keras.callbacks import LambdaCallback
 from os.path import splitext, isfile
@@ -26,47 +68,7 @@ from precise.util import calc_sample_hash
 
 
 class TrainScript(BaseScript):
-    usage = Usage('''
-        Train a new model on a dataset
-
-        :model str
-            Keras model file (.net) to load from and save to
-
-        :-sf --samples-file str -
-            Loads subset of data from the provided json file
-            generated with precise-train-sampled
-
-        :-is --invert-samples
-            Loads subset of data not inside --samples-file
-
-        :-e --epochs int 10
-            Number of epochs to train model for
-
-        :-s --sensitivity float 0.2
-            Weighted loss bias. Higher values decrease increase positives
-
-        :-b --batch-size int 5000
-            Batch size for training
-
-        :-sb --save-best
-            Only save the model each epoch if its stats improve
-
-        :-nv --no-validation
-            Disable accuracy and validation calculation
-            to improve speed during training
-
-        :-mm --metric-monitor str loss
-            Metric used to determine when to save
-
-        :-em --extra-metrics
-            Add extra metrics during training
-
-        :-f --freeze-till int 0
-            Freeze all weights up to this index (non-inclusive).
-            Can be negative to wrap from end
-
-        ...
-    ''') | TrainData.usage
+    usage = Usage(__doc__) | TrainData.usage
 
     def __init__(self, args):
         super().__init__(args)

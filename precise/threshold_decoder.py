@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Code for converting network output to confidence level
+"""
 import numpy as np
 from typing import Tuple
 
@@ -23,6 +26,14 @@ class ThresholdDecoder:
     This works by estimating the logit normal distribution of network
     activations using a series of averages and standard deviations to
     calculate a cumulative probability distribution
+
+    Background:
+    We could simply take the output of the neural network as the confidence of a given
+    prediction, but this typically jumps quickly between 0.01 and 0.99 even in cases where
+    the network is less confident about a prediction. This is a symptom of the sigmoid squashing
+    high values to values close to 1. This ThresholdDecoder measures the average output of
+    the network over a dataset and uses that to create a smooth distribution so that an output
+    of 80% means that the network output is greater than roughly 80% of the dataset
     """
     def __init__(self, mu_stds: Tuple[Tuple[float, float]], center=0.5, resolution=200, min_z=-4, max_z=4):
         self.min_out = int(min(mu + min_z * std for mu, std in mu_stds))

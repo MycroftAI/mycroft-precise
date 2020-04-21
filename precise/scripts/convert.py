@@ -13,6 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Convert wake word model from Keras to TensorFlow
+
+:model str
+    Input Keras model (.net)
+
+:-o --out str {model}.pb
+    Custom output TensorFlow protobuf filename
+"""
 import os
 from os.path import split, isfile
 from prettyparse import Usage
@@ -22,15 +31,7 @@ from precise.scripts.base_script import BaseScript
 
 
 class ConvertScript(BaseScript):
-    usage = Usage('''
-        Convert wake word model from Keras to TensorFlow
-
-        :model str
-            Input Keras model (.net)
-
-        :-o --out str {model}.pb
-            Custom output TensorFlow protobuf filename
-    ''')
+    usage = Usage(__doc__)
 
     def run(self):
         args = self.args

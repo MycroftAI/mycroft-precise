@@ -12,6 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Test a model against a dataset
+
+:model str
+    Either Keras (.net) or TensorFlow (.pb) model to test
+
+:-u --use-train
+    Evaluate training data instead of test data
+
+:-nf --no-filenames
+    Don't print out the names of files that failed
+
+:-t --threshold float 0.5
+    Network output required to be considered an activation
+
+...
+"""
 from prettyparse import Usage
 
 from precise.network_runner import Listener
@@ -22,23 +39,7 @@ from precise.train_data import TrainData
 
 
 class TestScript(BaseScript):
-    usage = Usage('''
-        Test a model against a dataset
-
-        :model str
-            Either Keras (.net) or TensorFlow (.pb) model to test
-
-        :-u --use-train
-            Evaluate training data instead of test data
-
-        :-nf --no-filenames
-            Don't print out the names of files that failed
-
-        :-t --threshold float 0.5
-            Network output required to be considered an activation
-
-        ...
-    ''') | TrainData.usage
+    usage = Usage(__doc__) | TrainData.usage
 
     def run(self):
         args = self.args

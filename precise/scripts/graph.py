@@ -12,6 +12,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License
+"""
+Show ROC curves for a series of models
+
+...
+
+:-t --use-train
+    Evaluate training data instead of test data
+
+:-nf --no-filenames
+    Don't print out the names of files that failed
+
+:-r --resolution int 100
+    Number of points to generate
+
+:-p --power float 3.0
+    Power of point distribution
+
+:-l --labels
+    Print labels attached to each point
+
+:-o --output-file str -
+    File to write data instead of displaying it
+
+:-i --input-file str -
+    File to read data from and visualize
+
+...
+"""
 import numpy as np
 from functools import partial
 from os.path import basename, splitext
@@ -81,34 +109,7 @@ def calc_stats(model_files, loader, use_train, filenames):
 
 
 class GraphScript(BaseScript):
-    usage = Usage('''
-        Show ROC curves for a series of models
-
-        ...
-
-        :-t --use-train
-            Evaluate training data instead of test data
-
-        :-nf --no-filenames
-            Don't print out the names of files that failed
-
-        :-r --resolution int 100
-            Number of points to generate
-
-        :-p --power float 3.0
-            Power of point distribution
-
-        :-l --labels
-            Print labels attached to each point
-
-        :-o --output-file str -
-            File to write data instead of displaying it
-
-        :-i --input-file str -
-            File to read data from and visualize
-
-        ...
-    ''')
+    usage = Usage(__doc__)
     usage.add_argument('models', nargs='*', help='Either Keras (.net) or TensorFlow (.pb) models to test')
     usage |= TrainData.usage
 

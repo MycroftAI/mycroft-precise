@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Mathematical functions used to customize
+computation in various places
+"""
 from math import exp, log, sqrt, pi
 import numpy as np
 from typing import *
@@ -20,6 +24,11 @@ LOSS_BIAS = 0.9  # [0..1] where 1 is inf bias
 
 def set_loss_bias(bias: float):
     """
+    Changes the loss bias
+
+    This allows customizing the acceptable tolerance between
+    false negatives and false positives
+
     Near 1.0 reduces false positives
     Near 0.0 reduces false negatives
     """
@@ -42,6 +51,7 @@ def weighted_log_loss(yt, yp) -> Any:
 
 
 def weighted_mse_loss(yt, yp) -> Any:
+    """Standard mse loss with a weighting between false negatives and positives"""
     from keras import backend as K
 
     total = K.sum(K.ones_like(yt))
@@ -52,16 +62,27 @@ def weighted_mse_loss(yt, yp) -> Any:
 
 
 def false_pos(yt, yp) -> Any:
+    """
+    Metric for Keras that *estimates* false positives while training
+    This will not be completely accurate because it weights batches
+    equally
+    """
     from keras import backend as K
     return K.sum(K.cast(yp * (1 - yt) > 0.5, 'float')) / K.maximum(1.0, K.sum(1 - yt))
 
 
 def false_neg(yt, yp) -> Any:
+    """
+    Metric for Keras that *estimates* false negatives while training
+    This will not be completely accurate because it weights batches
+    equally
+    """
     from keras import backend as K
     return K.sum(K.cast((1 - yp) * (0 + yt) > 0.5, 'float')) / K.maximum(1.0, K.sum(0 + yt))
 
 
 def load_keras() -> Any:
+    """Imports Keras injecting custom functions to prevent exceptions"""
     import keras
     keras.losses.weighted_log_loss = weighted_log_loss
     keras.metrics.false_pos = false_pos

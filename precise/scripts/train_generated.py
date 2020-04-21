@@ -12,6 +12,50 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Train a model on infinitely generated batches
+
+:model str
+    Keras .net model file to load from and write to
+
+:-e --epochs int 100
+    Number of epochs to train on
+
+:-b --batch-size int 200
+    Number of samples in each batch
+
+:-t --steps-per-epoch int 100
+    Number of steps that are considered an epoch
+
+:-c --chunk-size int 2048
+    Number of audio samples between generating a training sample
+
+:-r --random-data-folder str data/random
+    Folder with properly encoded wav files of
+    random audio that should not cause an activation
+
+:-s --sensitivity float 0.2
+    Target sensitivity when training. Higher values cause
+    more false positives
+
+:-sb --save-best
+    Only save the model each epoch if its stats improve
+
+:-nv --no-validation
+    Disable accuracy and validation calculation
+    to improve speed during training
+
+:-mm --metric-monitor str loss
+    Metric used to determine when to save
+
+:-em --extra-metrics
+    Add extra metrics during training
+
+:-p --save-prob float 0.0
+    Probability of saving audio into debug/ww and debug/nww folders
+
+...
+"""
 from itertools import cycle
 from math import sqrt
 
@@ -33,49 +77,7 @@ from precise.util import load_audio, glob_all, save_audio, chunk_audio
 
 
 class TrainGeneratedScript(BaseScript):
-    usage = Usage('''
-        Train a model on infinitely generated batches
-
-        :model str
-            Keras .net model file to load from and write to
-
-        :-e --epochs int 100
-            Number of epochs to train on
-
-        :-b --batch-size int 200
-            Number of samples in each batch
-
-        :-t --steps-per-epoch int 100
-            Number of steps that are considered an epoch
-
-        :-c --chunk-size int 2048
-            Number of audio samples between generating a training sample
-
-        :-r --random-data-folder str data/random
-            Folder with properly encoded wav files of
-            random audio that should not cause an activation
-
-        :-s --sensitivity float 0.2
-            Weighted loss bias. Higher values decrease increase positives
-
-        :-sb --save-best
-            Only save the model each epoch if its stats improve
-
-        :-nv --no-validation
-            Disable accuracy and validation calculation
-            to improve speed during training
-
-        :-mm --metric-monitor str loss
-            Metric used to determine when to save
-
-        :-em --extra-metrics
-            Add extra metrics during training
-
-        :-p --save-prob float 0.0
-            Probability of saving audio into debug/ww and debug/nww folders
-
-        ...
-    ''') | TrainData.usage
+    usage = Usage(__doc__) | TrainData.usage
     """A trainer the runs on generated data by overlaying wakewords on background audio"""
 
     def __init__(self, args):

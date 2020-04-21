@@ -12,6 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Simulate listening to long chunks of audio to find
+unbiased false positive metrics
+
+:model str
+    Either Keras (.net) or TensorFlow (.pb) model to test
+
+:folder str
+    Folder with a set of long wav files to test against
+
+:-c --chunk_size int 4096
+    Number of samples between tests
+
+:-t --threshold float 0.5
+    Network output required to be considered an activation
+"""
 import attr
 import numpy as np
 from glob import glob
@@ -65,22 +81,7 @@ class Metric:
 
 
 class SimulateScript(BaseScript):
-    usage = Usage('''
-        Simulate listening to long chunks of audio to find
-        unbiased false positive metrics
-
-        :model str
-            Either Keras (.net) or TensorFlow (.pb) model to test
-
-        :folder str
-            Folder with a set of long wav files to test against
-
-        :-c --chunk_size int 4096
-            Number of samples between tests
-
-        :-t --threshold float 0.5
-            Network output required to be considered an activation
-    ''')
+    usage = Usage(__doc__)
 
     def __init__(self, args):
         super().__init__(args)

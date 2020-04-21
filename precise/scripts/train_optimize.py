@@ -12,6 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Use black box optimization to tune model hyperparameters
+
+:-t --trials-name str -
+    Filename to save hyperparameter optimization trials in
+    '.bbopt.json' will automatically be appended
+
+:-c --cycles int 20
+    Number of cycles of optimization to run
+
+:-m --model str .cache/optimized.net
+    Model to load from
+
+...
+"""
 import numpy
 # Optimizer blackhat
 from glob import glob
@@ -28,21 +43,7 @@ from precise.train_data import TrainData
 
 
 class TrainOptimizeScript(TrainScript):
-    Usage('''
-        Use black box optimization to tune model hyperparameters
-
-        :-t --trials-name str -
-            Filename to save hyperparameter optimization trials in
-            '.bbopt.json' will automatically be appended
-
-        :-c --cycles int 20
-            Number of cycles of optimization to run
-
-        :-m --model str .cache/optimized.net
-            Model to load from
-
-        ...
-    ''') | TrainScript.usage
+    Usage(__doc__) | TrainScript.usage
 
     def __init__(self, args):
         super().__init__(args)

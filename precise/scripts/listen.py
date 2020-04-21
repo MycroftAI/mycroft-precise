@@ -12,6 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Run a model on microphone audio input
+
+:model str
+    Either Keras (.net) or TensorFlow (.pb) model to run
+
+:-c --chunk-size int 2048
+    Samples between inferences
+
+:-l --trigger-level int 3
+    Number of activated chunks to cause an activation
+
+:-s --sensitivity float 0.5
+    Network output required to be considered activated
+
+:-b --basic-mode
+    Report using . or ! rather than a visual representation
+
+:-d --save-dir str -
+    Folder to save false positives
+
+:-p --save-prefix str -
+    Prefix for saved filenames
+"""
 import numpy as np
 from os.path import join
 from precise_runner import PreciseRunner
@@ -27,30 +51,7 @@ from precise.util import save_audio, buffer_to_audio, activate_notify
 
 
 class ListenScript(BaseScript):
-    usage = Usage('''
-        Run a model on microphone audio input
-
-        :model str
-            Either Keras (.net) or TensorFlow (.pb) model to run
-
-        :-c --chunk-size int 2048
-            Samples between inferences
-
-        :-l --trigger-level int 3
-            Number of activated chunks to cause an activation
-
-        :-s --sensitivity float 0.5
-            Network output required to be considered activated
-
-        :-b --basic-mode
-            Report using . or ! rather than a visual representation
-
-        :-d --save-dir str -
-            Folder to save false positives
-
-        :-p --save-prefix str -
-            Prefix for saved filenames
-    ''')
+    usage = Usage(__doc__)
 
     def __init__(self, args):
         super().__init__(args)

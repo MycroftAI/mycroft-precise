@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Loads model
+"""
 import attr
 from os.path import isfile
 from typing import *
@@ -26,17 +29,20 @@ if TYPE_CHECKING:
 class ModelParams:
     """
     Attributes:
-        recurrent_units:
-        dropout:
-        extra_metrics: Whether to include false positive and false negative metrics
+        recurrent_units: Number of GRU units. Higher values increase computation
+                         but allow more complex learning. Too high of a value causes overfitting
+        dropout: Reduces overfitting but can potentially decrease accuracy if too high
+        extra_metrics: Whether to include false positive and false negative metrics while training
         skip_acc: Whether to skip accuracy calculation while training
+        loss_bias: Near 1.0 reduces false positives. See <set_loss_bias>
+        freeze_till: Layer number from start to freeze after loading (allows for partial training)
     """
     recurrent_units = attr.ib(20)  # type: int
     dropout = attr.ib(0.2)  # type: float
     extra_metrics = attr.ib(False)  # type: bool
     skip_acc = attr.ib(False)  # type: bool
     loss_bias = attr.ib(0.7)  # type: float
-    freeze_till = attr.ib(0)  # type: bool
+    freeze_till = attr.ib(0)  # type: int
 
 
 def load_precise_model(model_name: str) -> Any:
@@ -70,7 +76,8 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
         model = Sequential()
         model.add(GRU(
             params.recurrent_units, activation='linear',
-            input_shape=(pr.n_features, pr.feature_size), dropout=params.dropout, name='net'
+            input_shape=(
+                pr.n_features, pr.feature_size), dropout=params.dropout, name='net'
         ))
         model.add(Dense(1, activation='sigmoid'))
 
@@ -79,5 +86,6 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
     set_loss_bias(params.loss_bias)
     for i in model.layers[:params.freeze_till]:
         i.trainable = False
-    model.compile('rmsprop', weighted_log_loss, metrics=(not params.skip_acc) * metrics)
+    model.compile('rmsprop', weighted_log_loss,
+                  metrics=(not params.skip_acc) * metrics)
     return model
