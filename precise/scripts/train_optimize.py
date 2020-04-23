@@ -13,116 +13,122 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Use black box optimization to tune model hyperparameters
+Use black box optimization to tune model hyperparameters. Call
+this script in a loop to iteratively tune parameters
 
-:-t --trials-name str -
+:trials_name str
     Filename to save hyperparameter optimization trials in
     '.bbopt.json' will automatically be appended
 
-:-c --cycles int 20
-    Number of cycles of optimization to run
+:noise_folder str
+    Folder with random noise to evaluate ambient activations
 
-:-m --model str .cache/optimized.net
-    Model to load from
+:-ie --interaction-estimate int 100
+    Estimated number of interactions per day
+
+:-aaa --ambient-activation-annoyance float 1.0
+    An ambient activation is X times as annoying as a failed
+    activation when the wake word is spoken
+
+:-bp --base-params str {}
+    Json string containing base ListenerParams for all models
 
 ...
 """
-import numpy
-# Optimizer blackhat
-from glob import glob
-from os import remove
-from os.path import isfile, splitext, join
-from pprint import pprint
-from prettyparse import Usage
-from shutil import rmtree
-from typing import Any
+import json
+from math import exp
+from uuid import uuid4
 
+from keras.models import save_model
+from prettyparse import Usage
+
+from precise.annoyance_estimator import AnnoyanceEstimator
 from precise.model import ModelParams, create_model
+from precise.params import pr, save_params
 from precise.scripts.train import TrainScript
-from precise.train_data import TrainData
+from precise.stats import Stats
 
 
 class TrainOptimizeScript(TrainScript):
-    Usage(__doc__) | TrainScript.usage
+    usage = Usage(__doc__) | TrainScript.usage
+    del usage.arguments['model']  # Remove 'model' argument from original TrainScript
 
     def __init__(self, args):
-        super().__init__(args)
         from bbopt import BlackBoxOptimizer
+        pr.__dict__.update(json.loads(args.base_params))
+        args.model = args.trials_name + '-cur'
+        save_params(args.model)
+        super().__init__(args)
         self.bb = BlackBoxOptimizer(file=self.args.trials_name)
-        if not self.test:
-            data = TrainData.from_both(self.args.tags_file, self.args.tags_folder, self.args.folder)
-            _, self.test = data.load(False, True)
 
-        from keras.callbacks import ModelCheckpoint
-        for i in list(self.callbacks):
-            if isinstance(i, ModelCheckpoint):
-                self.callbacks.remove(i)
+    def calc_params_cost(self, model):
+        """
+        Models the real world cost of additional model parameters
+        Up to a certain point, having more parameters isn't worse.
+        However, at a certain point more parameters will risk
+        running slower than realtime and become unfeasible. This
+        is why it's modelled exponentially with some reasonable
+        number of acceptable parameters.
 
-    def process_args(self, args: Any):
-        model_parts = glob(splitext(args.model)[0] + '.*')
-        if len(model_parts) < 5:
-            for name in model_parts:
-                if isfile(name):
-                    remove(name)
-                else:
-                    rmtree(name)
-        args.trials_name = args.trials_name.replace('.bbopt.json', '').replace('.json', '')
-        if not args.trials_name:
-            if isfile(join('.cache', 'trials.bbopt.json')):
-                remove(join('.cache', 'trials.bbopt.json'))
-            args.trials_name = join('.cache', 'trials')
+        Ideally, this would be replaced with floating point
+        computations and the numbers would be configurable
+        rather than chosen relatively arbitrarily
+        """
+        return 1.0 + exp((model.count_params() - 11000) / 10000)
 
     def run(self):
-        print('Writing to:', self.args.trials_name + '.bbopt.json')
-        for i in range(self.args.cycles):
-            self.bb.run(backend="random")
-            print("\n= %d = (example #%d)" % (i + 1, len(self.bb.get_data()["examples"]) + 1))
+        self.bb.run(alg='tree_structured_parzen_estimator')
 
-            params = ModelParams(
-                recurrent_units=self.bb.randint("units", 1, 70, guess=50),
-                dropout=self.bb.uniform("dropout", 0.1, 0.9, guess=0.6),
-                extra_metrics=self.args.extra_metrics,
-                skip_acc=self.args.no_validation,
-                loss_bias=1.0 - self.args.sensitivity
-            )
-            print('Testing with:', params)
-            model = create_model(self.args.model, params)
-            model.fit(
-                *self.sampled_data, batch_size=self.args.batch_size,
-                epochs=self.epoch + self.args.epochs,
-                validation_data=self.test * (not self.args.no_validation),
-                callbacks=self.callbacks, initial_epoch=self.epoch
-            )
-            resp = model.evaluate(*self.test, batch_size=self.args.batch_size)
-            if not isinstance(resp, (list, tuple)):
-                resp = [resp, None]
-            test_loss, test_acc = resp
-            predictions = model.predict(self.test[0], batch_size=self.args.batch_size)
+        model = create_model(None, ModelParams(
+            recurrent_units=self.bb.randint("units", 1, 120, guess=30),
+            dropout=self.bb.uniform("dropout", 0.05, 0.9, guess=0.2),
+            extra_metrics=self.args.extra_metrics,
+            skip_acc=self.args.no_validation,
+            loss_bias=self.bb.uniform(
+                'loss_bias', 0.01, 0.99, guess=1.0 - self.args.sensitivity
+            ),
+            freeze_till=0
+        ))
+        model.fit(
+            *self.sampled_data, batch_size=self.args.batch_size,
+            epochs=self.args.epochs,
+            validation_data=self.test * (not self.args.no_validation),
+            callbacks=[]
+        )
+        test_in, test_out = self.test
+        test_pred = model.predict(test_in, batch_size=self.args.batch_size)
+        stats_dict = Stats(test_pred, test_out, []).to_dict()
 
-            num_false_positive = numpy.sum(predictions * (1 - self.test[1]) > 0.5)
-            num_false_negative = numpy.sum((1 - predictions) * self.test[1] > 0.5)
-            false_positives = num_false_positive / numpy.sum(self.test[1] < 0.5)
-            false_negatives = num_false_negative / numpy.sum(self.test[1] > 0.5)
+        ann_est = AnnoyanceEstimator(
+            model, self.args.interaction_estimate,
+            self.args.ambient_activation_annoyance
+        ).estimate(
+            model, test_pred, test_out,
+            self.args.noise_folder, self.args.batch_size
+        )
+        params_cost = self.calc_params_cost(model)
+        cost = ann_est.annoyance + params_cost
 
-            from math import exp
-            param_score = 1.0 / (1.0 + exp((model.count_params() - 11000) / 2000))
-            fitness = param_score * (1.0 - 0.2 * false_negatives - 0.8 * false_positives)
+        model_name = '{}-{}.net'.format(self.args.trials_name, str(uuid4()))
+        save_model(model, model_name)
+        save_params(model_name)
 
-            self.bb.remember({
-                "test loss": test_loss,
-                "test accuracy": test_acc,
-                "false positive%": false_positives,
-                "false negative%": false_negatives,
-                "fitness": fitness
-            })
-
-            print("False positive: ", false_positives * 100, "%")
-
-            self.bb.maximize(fitness)
-            pprint(self.bb.get_current_run())
-        best_example = self.bb.get_optimal_run()
-        print("\n= BEST = (example #%d)" % self.bb.get_data()["examples"].index(best_example))
-        pprint(best_example)
+        self.bb.remember({
+            'test_stats': stats_dict,
+            'best_threshold': ann_est.threshold,
+            'cost': cost,
+            'cost_info': {
+                'params_cost': params_cost,
+                'annoyance': ann_est.annoyance,
+                'ww_annoyance': ann_est.ww_annoyance,
+                'nww_annoyance': ann_est.nww_annoyance,
+            },
+            'model': model_name
+        })
+        print('Current Run: {}'.format(json.dumps(
+            self.bb.get_current_run(), indent=4
+        )))
+        self.bb.minimize(cost)
 
 
 main = TrainOptimizeScript.run_main
