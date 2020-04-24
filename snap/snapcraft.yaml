@@ -48,6 +48,8 @@ description: >
   Model conversion
   
     mycroft-precise.convert - Convert wake-word model from Keras to TensorFlow
+architectures:
+  - build-on: [amd64]
 base: core18
 grade: stable
 confinement: strict
