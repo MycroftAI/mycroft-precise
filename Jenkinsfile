@@ -15,33 +15,22 @@ pipeline {
             script: 'echo $BRANCH_NAME | sed -e "s#/#-#g"',
             returnStdout: true
         ).trim()
+        //spawns GITHUB_USR and GITHUB_PSW environment variables
+        GITHUB=credentials('38b2e4a6-167a-40b2-be6f-d69be42c8190')
     }
     stages {
-        stage('Build, Format & Lint') {
-            // Build a Docker image containing the Precise application and all
-            // prerequisites.  Use git to determine the list of files changed.
-            // Filter the list of changed files into a list of Python modules.
-            // Pass the list of Python files changed into the Black code
-            // formatter. Build will fail if Black finds any changes to make.
-            // If Black check passes, run PyLint against the same set of Python
-            // modules. Build will fail if lint is found in code.
+        stage('Lint & Format') {
+            // Run PyLint and Black to check code quality.
             when {
                 changeRequest target: 'dev'
             }
             steps {
-                sh 'docker build -f test/Dockerfile -t precise:${BRANCH_ALIAS} .'
-                sh 'git fetch origin dev'
-                sh 'git --no-pager diff --name-only FETCH_HEAD > $HOME/code-quality/change-set.txt'
-                sh 'docker run \
-                    -v $HOME/code-quality/:/root/code-quality \
-                    --entrypoint /bin/bash \
-                    precise:${BRANCH_ALIAS} \
-                    -x -c "grep -F .py /root/code-quality/change-set.txt | xargs black --check"'
-                sh 'docker run \
-                    -v $HOME/code-quality/:/root/code-quality \
-                    --entrypoint /bin/bash \
-                    precise:${BRANCH_ALIAS} \
-                    -x -c "grep -F .py /root/code-quality/change-set.txt | xargs pylint"'
+                sh 'docker build \
+                    --build-arg github_api_key=$GITHUB_PSW \
+                    --file test/Dockerfile \
+                    --target code-checker \
+                    -t precise:${BRANCH_ALIAS} .'
+                sh 'docker run precise:${BRANCH_ALIAS}'
             }
         }
         stage('Run Tests') {
@@ -55,7 +44,11 @@ pipeline {
             }
             steps {
                 echo 'Building Precise Testing Docker Image'
-                sh 'docker build -f test/Dockerfile -t precise:${BRANCH_ALIAS} .'
+                sh 'docker build \
+                    --build-arg github_api_key=$GITHUB_PSW \
+                    --file test/Dockerfile \
+                    --target test-runner \
+                    -t precise:${BRANCH_ALIAS} .'
                 echo 'Precise Test Suite'
                 timeout(time: 5, unit: 'MINUTES')
                 {
