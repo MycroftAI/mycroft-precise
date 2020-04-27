@@ -32,14 +32,24 @@ def chunk_audio(audio: np.ndarray, chunk_size: int) -> Generator[np.ndarray, Non
         yield audio[i - chunk_size:i]
 
 
+def float_audio_to_int(audio: np.ndarray) -> np.ndarray:
+    """Converts [-1.0, 1.0] -> [-32768,  32767]"""
+    return (audio.astype(np.float32, order='C') * (0x7FFF + 0.5) - 0.5).astype('<i2')
+
+
+def int_audio_to_float(int_audio: np.ndarray) -> np.ndarray:
+    """Converts [-32768,  32767] -> [-1.0, 1.0]"""
+    return (int_audio + 0.5) / (0x7FFF + 0.5)
+
+
 def buffer_to_audio(buffer: bytes) -> np.ndarray:
     """Convert a raw mono audio byte string to numpy array of floats"""
-    return np.fromstring(buffer, dtype='<i2').astype(np.float32, order='C') / 32768.0
+    return int_audio_to_float(np.frombuffer(buffer, dtype='<i2'))
 
 
 def audio_to_buffer(audio: np.ndarray) -> bytes:
     """Convert a numpy array of floats to raw mono audio"""
-    return (audio * 32768).astype('<i2').tostring()
+    return float_audio_to_int(audio).tostring()
 
 
 def load_audio(file: Any) -> np.ndarray:
@@ -61,15 +71,14 @@ def load_audio(file: Any) -> np.ndarray:
     if wav.rate != pr.sample_rate:
         raise InvalidAudio('Unsupported sample rate: ' + str(wav.rate))
 
-    data = np.squeeze(wav.data)
-    return data.astype(np.float32) / float(np.iinfo(data.dtype).max)
+    return int_audio_to_float(np.squeeze(wav.data))
 
 
 def save_audio(filename: str, audio: np.ndarray):
     """Save loaded audio to file using the configured audio parameters"""
     import wavio
-    save_audio = (audio * np.iinfo(np.int16).max).astype(np.int16)
-    wavio.write(filename, save_audio, pr.sample_rate, sampwidth=pr.sample_depth, scale='none')
+    int_audio = float_audio_to_int(audio)
+    wavio.write(filename, int_audio, pr.sample_rate, sampwidth=pr.sample_depth, scale='none')
 
 
 def play_audio(filename: str):
