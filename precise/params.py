@@ -18,6 +18,7 @@ These configure the following stages:
  - Interpretation of the network output to a confidence value
 """
 from math import floor
+from typing import Optional
 
 import attr
 import json
@@ -68,7 +69,7 @@ class ListenerParams:
     use_delta = attr.ib()  # type: bool
     vectorizer = attr.ib()  # type: int
     threshold_config = attr.ib()  # type: tuple
-    threshold_center = attr.ib()  # type: float
+    threshold_center = attr.ib()  # type: Optional[float]
 
     @property
     def buffer_samples(self):
@@ -140,7 +141,7 @@ class Vectorizer:
 pr = ListenerParams(
     buffer_t=1.5, window_t=0.1, hop_t=0.05, sample_rate=16000,
     sample_depth=2, n_fft=512, n_filt=20, n_mfcc=13, use_delta=False,
-    threshold_config=((6, 4),), threshold_center=0.2, vectorizer=Vectorizer.mfccs
+    threshold_config=(), threshold_center=None, vectorizer=Vectorizer.mfccs
 )
 
 # Used to fill in old param files without new attributes
