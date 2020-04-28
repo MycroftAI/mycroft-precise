@@ -18,6 +18,7 @@ from os.path import isfile
 from precise.scripts.calc_threshold import CalcThresholdScript
 from precise.scripts.eval import EvalScript
 from precise.scripts.graph import GraphScript
+from test.scripts.test_utils.dummy_train_folder import DummyTrainFolder
 
 
 def read_content(filename):
@@ -25,21 +26,20 @@ def read_content(filename):
         return f.read()
 
 
-def test_combined(train_folder, train_script):
+def test_combined(train_folder: DummyTrainFolder, trained_model: str):
     """Test a "normal" development cycle, train, evaluate and calc threshold.
     """
-    train_script.run()
-    params_file = train_folder.model + '.params'
-    assert isfile(train_folder.model)
+    params_file = trained_model + '.params'
+    assert isfile(trained_model)
     assert isfile(params_file)
 
     EvalScript.create(folder=train_folder.root,
-                      models=[train_folder.model]).run()
+                      models=[trained_model]).run()
 
     # Ensure that the graph script generates a numpy savez file
     out_file = train_folder.path('outputs.npz')
     graph_script = GraphScript.create(folder=train_folder.root,
-                                      models=[train_folder.model],
+                                      models=[trained_model],
                                       output_file=out_file)
     graph_script.run()
     assert isfile(out_file)
@@ -47,6 +47,6 @@ def test_combined(train_folder, train_script):
     # Esure the params are updated after threshold is calculated
     params_before = read_content(params_file)
     CalcThresholdScript.create(folder=train_folder.root,
-                               model=train_folder.model,
+                               model=trained_model,
                                input_file=out_file).run()
     assert params_before != read_content(params_file)

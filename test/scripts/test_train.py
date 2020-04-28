@@ -14,29 +14,14 @@
 # limitations under the License.
 from os.path import isfile
 
-from precise.params import pr
 from precise.scripts.train import TrainScript
-from test.scripts.dummy_audio_folder import DummyAudioFolder
-
-
-class DummyTrainFolder(DummyAudioFolder):
-    def __init__(self, count=10):
-        super().__init__(count)
-        self.generate_samples(self.subdir('wake-word'), 'ww-{}.wav', 1.0,
-                              self.rand(0, 2 * pr.buffer_t))
-        self.generate_samples(self.subdir('not-wake-word'), 'nww-{}.wav', 0.0,
-                              self.rand(0, 2 * pr.buffer_t))
-        self.generate_samples(self.subdir('test', 'wake-word'), 'ww-{}.wav',
-                              1.0, self.rand(0, 2 * pr.buffer_t))
-        self.generate_samples(self.subdir('test', 'not-wake-word'),
-                              'nww-{}.wav', 0.0, self.rand(0, 2 * pr.buffer_t))
-        self.model = self.path('model.net')
+from test.scripts.test_utils.dummy_train_folder import DummyTrainFolder
 
 
 class TestTrain:
-    def test_run_basic(self):
+    def test_run_basic(self, train_folder: DummyTrainFolder):
         """Run a training and check that a model is generated."""
-        folders = DummyTrainFolder(10)
-        script = TrainScript.create(model=folders.model, folder=folders.root)
-        script.run()
-        assert isfile(folders.model)
+        train_script = TrainScript.create(model=train_folder.model, folder=train_folder.root, epochs=10)
+        train_script.run()
+        assert isfile(train_folder.model)
+        assert isfile(train_folder.model + '.params')
