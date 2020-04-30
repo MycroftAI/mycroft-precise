@@ -11,8 +11,9 @@ COPY requirements/test.txt mycroft-precise/requirements/
 RUN pip install -r mycroft-precise/requirements/test.txt
 COPY requirements/prod.txt mycroft-precise/requirements/
 RUN pip install -r mycroft-precise/requirements/prod.txt
-RUN ls mycroft-precise
-RUN pip install mycroft-precise/runner
+RUN ls
+RUN pwd
+RUN pip install runner
 COPY . mycroft-precise
 
 # Clone the devops repository, which contiains helper scripts for some continuous
