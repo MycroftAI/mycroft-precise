@@ -48,6 +48,8 @@ description: >
   Model conversion
   
     mycroft-precise.convert - Convert wake-word model from Keras to TensorFlow
+architectures:
+  - build-on: [amd64]
 base: core18
 grade: stable
 confinement: strict
@@ -70,9 +72,7 @@ parts:
     after: [alsa-mixin]
     plugin: python
     python-version: python3
-    source: https://github.com/MycroftAI/mycroft-precise.git
-    source-type: git
-    source-branch: dev
+    source: .
     override-pull: |
         snapcraftctl pull
         # Set version to setup.py version if current commit is the latest

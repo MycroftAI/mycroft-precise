@@ -19,6 +19,12 @@ pipeline {
         GITHUB=credentials('38b2e4a6-167a-40b2-be6f-d69be42c8190')
     }
     stages {
+        stage('Setup') {
+            steps {
+                sh 'git clone https://$GITHUB_PSW@github.com/MycroftAI/devops.git'
+            }
+        }
+
         stage('Lint & Format') {
             // Run PyLint and Black to check code quality.
             when {
@@ -58,14 +64,56 @@ pipeline {
                 }
             }
         }
+        stage('Build and upload snap package') {
+            environment {
+                SNAP_LOGIN=credentials('snapcraft_login')
+            }
+            when {
+                anyOf {
+                    branch 'dev'
+                    branch 'release/*'
+                }
+            }
+            steps {
+                echo 'Building snap package...'
+                sh 'docker build -f ./devops/snapcraft/Dockerfile -t \
+                    snapcraft-build .'
+                echo 'Building snap package...'
+                sh 'docker run  -v "${PWD}":/build -w /build \
+                        snapcraft-build:latest snapcraft'
+                echo 'Pushing package to snap store'
+                sh('''
+                    mkdir -p .snapcraft
+                    cat ${SNAP_LOGIN} | base64 --decode --ignore-garbage \
+                        > .snapcraft/snapcraft.cfg
+                    docker run  -v "${PWD}":/build -w /build \
+                        snapcraft-build:latest snapcraft \
+                        push --release edge *.snap
+                    rm -rf .snapcraft
+                   ''')
+            }
+        }
     }
     post {
         cleanup {
+            sh(
+                label: 'Snapcraft Cleanup',
+                script: '''
+                    docker run  -v "${PWD}":/build -w /build \
+                        snapcraft-build:latest snapcraft clean
+                    '''
+            )
             sh(
                 label: 'Docker Container and Image Cleanup',
                 script: '''
                     docker container prune --force;
                     docker image prune --force;
+                '''
+            )
+            sh(
+                label: 'Devops scripts cleanup',
+                script: '''
+                    rm -rf devops
                 '''
             )
         }
