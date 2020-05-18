@@ -80,8 +80,10 @@ def play_audio(filename: str):
     import platform
     from subprocess import Popen
 
-    player = 'play' if platform.system() == 'Darwin' else 'aplay'
-    Popen([player, '-q', filename])
+    if platform.system() == 'Darwin':
+        Popen(['afplay', filename])
+    else:
+        Popen(['aplay', '-q', filename])
 
 
 def activate_notify():
