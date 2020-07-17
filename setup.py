@@ -69,10 +69,9 @@ setup(
     },
     install_requires=[
         'numpy',
-        'tensorflow-gpu==2.2.0rc', # This should be changed for 2.2.0 when it's released.
+        'tensorflow-gpu==2.2.0',
         'sonopy',
         'pyaudio',
-        'keras>2.1.5',
         'h5py',
         'wavio',
         'typing',
