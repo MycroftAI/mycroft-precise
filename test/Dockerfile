@@ -22,7 +22,6 @@ ENV GITHUB_API_KEY=$github_api_key
 RUN pip install pipenv
 RUN git clone https://$github_api_key@github.com/MycroftAI/devops.git
 WORKDIR /opt/mycroft/devops/jenkins
-RUN git checkout continuous_integration
 RUN pipenv install
 ENTRYPOINT ["pipenv", "run", "python","-m", "pipeline.code_check", "--repository", "mycroft-precise", "--pull-request", "PR-149"]
 
