@@ -75,6 +75,11 @@ from precise_runner import PreciseEngine, PreciseRunner
 engine = PreciseEngine('precise-engine/precise-engine', 'my_model_file.pb')
 runner = PreciseRunner(engine, on_activation=lambda: print('hello'))
 runner.start()
+
+# Sleep forever
+from time import sleep
+while True:
+    sleep(10)
 ```
 
 ### Source Install
@@ -120,6 +125,11 @@ from precise_runner import PreciseEngine, PreciseRunner
 engine = PreciseEngine('.venv/bin/precise-engine', 'my_model_file.pb')
 runner = PreciseRunner(engine, on_activation=lambda: print('hello'))
 runner.start()
+
+# Sleep forever
+from time import sleep
+while True:
+    sleep(10)
 ```
 
 In addition to the `precise-engine` executable, doing a **Source Install** gives you
