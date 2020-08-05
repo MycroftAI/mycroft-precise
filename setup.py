@@ -12,9 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from os.path import join, dirname, abspath
 from setuptools import setup
 
 from precise import __version__
+
+with open(join(dirname(abspath(__file__)), 'requirements/prod.txt')) as f:
+    requirements = []
+    for line in f.readlines():
+        requirements.append(line.split('#')[0].strip())
 
 setup(
     name='mycroft-precise',
@@ -70,20 +76,5 @@ setup(
         ]
     },
     include_package_data=True,
-    install_requires=[
-        'numpy==1.16',
-        'tensorflow>=1.13,<1.14',  # Must be on piwheels
-        'sonopy',
-        'pyaudio',
-        'keras<=2.1.5',
-        'h5py',
-        'wavio',
-        'typing',
-        'prettyparse>=1.1.0',
-        'precise-runner',
-        'attrs',
-        'fitipy<1.0',
-        'speechpy-fast',
-        'pyache'
-    ]
+    install_requires=requirements
 )
