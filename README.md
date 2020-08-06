@@ -144,6 +144,51 @@ source .venv/bin/activate  # Gain access to precise-* executables
 precise-listen my_model_file.pb
 ```
 
+### Install engine from source to Mycroft
+
+Pre-requirests: Working **Source Install**, Mycroft source install and http server.
+
+After messing with the source code you can build a `precise-engine` and `precise-runner`
+executables and install them to your Mycroft Source installation.
+
+```bash
+source .venv/bin/activate # Gain access to precise-* executables
+
+./bash build.sh  #Build a new executables
+
+rm -r /home/user/.mycroft/precise/precise-engin*  #Remove old precise engine
+cp -r ./mycroft-precise/dist/precise-engin* /var/www/html/ #Copy a new build tarball with md5 hash to your http server
+
+mycroft-pip install ./mycroft-precise/runner  #Install a new build precise runner to Mycroft
+
+mycroft-config edit user   #Add information about a new precise module to Mycroft user config
+###
+"listener": {
+    "wake_word": "my_model_file"
+  },
+  "hotwords": {
+    "my_model_file": {
+      "module": "precise",
+      "local_model_file": "/directory-with-model/my_model_file.pb",
+      "sensitivity": 0.5
+"precise": {
+    "dist_url": "http://10.0.1.1/precise-engine_0.3.0_x86_64.tar.gz",   # Address of your html server
+    "model_url": "https://raw.githubusercontent.com/MycroftAI/precise-data/models-dev/{wake_word}.tar.gz"
+  }
+###
+
+mycroft-start debug  #Start Mycroft with CLI to see any errors
+```
+
+At first run, Mycroft  will try to download the new engine and install it. Mycroft will show INFO 
+messages about it in CLI. After succesful installation, You can start to use it.  
+  
+If anything goes wrong, Mycroft will prompt You with error messages in CLI.  
+  
+To revert installed engine remove directory `precise-engine` and `precise-engine*.tz.gz` from
+ `/home/user/.mycroft/precision/` directory, remove config entry added in steps above and restart
+ Mycroft. It will automatically download and install stable release.
+
 ## How it Works
 
 At it's core, Precise uses just a single recurrent network, specifically a GRU.
