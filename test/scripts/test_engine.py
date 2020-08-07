@@ -21,6 +21,8 @@ from os.path import join
 from precise.scripts.engine import EngineScript
 from runner.precise_runner import ReadWriteStream
 
+from test.scripts.test_utils.dummy_train_folder import DummyTrainFolder
+
 
 class FakeStdin:
     def __init__(self, data: bytes):
@@ -35,18 +37,17 @@ class FakeStdout:
         self.buffer = ReadWriteStream()
 
 
-def test_engine(train_folder, train_script):
+def test_engine(train_folder: DummyTrainFolder, trained_model: str):
     """
-    Test t hat the output format of the engina matches a decimal form in the
+    Test t hat the output format of the engine matches a decimal form in the
     range 0.0 - 1.0.
     """
-    train_script.run()
     with open(glob.glob(join(train_folder.root, 'wake-word', '*.wav'))[0], 'rb') as f:
         data = f.read()
     try:
         sys.stdin = FakeStdin(data)
         sys.stdout = FakeStdout()
-        EngineScript.create(model_name=train_folder.model).run()
+        EngineScript.create(model_name=trained_model).run()
         assert re.match(rb'[01]\.[0-9]+', sys.stdout.buffer.buffer)
     finally:
         sys.stdin = sys.__stdin__

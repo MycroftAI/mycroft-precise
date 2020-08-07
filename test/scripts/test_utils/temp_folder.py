@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2019 Mycroft AI Inc.
+# Copyright 2020 Mycroft AI Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,35 +14,17 @@
 # limitations under the License.
 import atexit
 
-import numpy as np
 import os
 from os import makedirs
 from os.path import isdir, join
 from shutil import rmtree
 from tempfile import mkdtemp
 
-from precise.params import pr
-from precise.util import save_audio
 
-
-class DummyAudioFolder:
-    def __init__(self, count=10):
-        self.count = count
-        self.root = mkdtemp()
+class TempFolder:
+    def __init__(self, root=None):
+        self.root = mkdtemp() if root is None else root
         atexit.register(self.cleanup)
-
-    def rand(self, min, max):
-        return min + (max - min) * np.random.random() * pr.buffer_t
-
-    def generate_samples(self, folder, name, value, duration):
-        """Generate sample file.
-
-        The file is generated in the specified folder, with the specified name,
-        dummy value and duration.
-        """
-        for i in range(self.count):
-            save_audio(join(folder, name.format(i)),
-                       np.array([value] * int(duration * pr.sample_rate)))
 
     def subdir(self, *parts):
         folder = self.path(*parts)

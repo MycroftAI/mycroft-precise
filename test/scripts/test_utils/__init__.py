@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# Copyright 2019 Mycroft AI Inc.
+# Copyright 2020 Mycroft AI Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from os.path import isfile
-
-from precise.scripts.convert import ConvertScript
-from test.scripts.test_utils.temp_folder import TempFolder
-
-
-def test_convert(temp_folder: TempFolder, trained_model: str):
-    pb_model = temp_folder.path('model.pb')
-    ConvertScript.create(model=trained_model, out=pb_model).run()
-    assert isfile(pb_model)

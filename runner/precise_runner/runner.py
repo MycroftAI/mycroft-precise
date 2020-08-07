@@ -16,7 +16,7 @@ import atexit
 
 import time
 from subprocess import PIPE, Popen
-from threading import Thread, Event
+from threading import Thread, Event, current_thread
 
 
 class Engine(object):
@@ -82,6 +82,7 @@ class ReadWriteStream(object):
         self.buffer = s
         self.write_event = Event()
         self.chop_samples = chop_samples
+        self.eof = False
 
     def __len__(self):
         return len(self.buffer)
@@ -95,13 +96,17 @@ class ReadWriteStream(object):
         return_time = 1e10 if timeout is None else (
                 timeout + time.time()
         )
-        while len(self.buffer) < n:
+        while len(self.buffer) < n and not self.eof:
             self.write_event.clear()
             if not self.write_event.wait(return_time - time.time()):
                 return b''
         chunk = self.buffer[:n]
         self.buffer = self.buffer[n:]
         return chunk
+
+    def close(self):
+        self.write_event.set()
+        self.eof = True
 
     def write(self, s):
         self.buffer += s
@@ -210,10 +215,12 @@ class PreciseRunner(object):
     def stop(self):
         """Stop listening and close stream"""
         if self.thread:
-            self.running = False
             if isinstance(self.stream, ReadWriteStream):
-                self.stream.write(b'\0' * self.chunk_size)
-            self.thread.join()
+                self.stream.close()
+            else:
+                self.running = False
+            if current_thread() is not self.thread:
+                self.thread.join()
             self.thread = None
 
         self.engine.stop()
@@ -233,6 +240,11 @@ class PreciseRunner(object):
         """Continuously check Precise process output"""
         while self.running:
             chunk = self.stream.read(self.chunk_size)
+
+            if len(chunk) < self.chunk_size:  # EOF
+                self.stop()
+                self.running = False
+                return
 
             if self.is_paused:
                 continue

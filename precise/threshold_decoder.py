@@ -27,6 +27,13 @@ class ThresholdDecoder:
     activations using a series of averages and standard deviations to
     calculate a cumulative probability distribution
 
+    Args:
+        mu_stds: tuple of pairs of (mean, standard deviation) that model the positive network output
+        center: proportion of activations that a threshold of 0.5 indicates. Pass as None to disable decoding
+        resolution: precision of cumulative sum estimation. Increases memory usage
+        min_z: Minimum z score to generate in distribution map
+        max_z: Maximum z score to generate in distribution map
+
     Background:
     We could simply take the output of the neural network as the confidence of a given
     prediction, but this typically jumps quickly between 0.01 and 0.99 even in cases where
@@ -36,14 +43,17 @@ class ThresholdDecoder:
     of 80% means that the network output is greater than roughly 80% of the dataset
     """
     def __init__(self, mu_stds: Tuple[Tuple[float, float]], center=0.5, resolution=200, min_z=-4, max_z=4):
-        self.min_out = int(min(mu + min_z * std for mu, std in mu_stds))
-        self.max_out = int(max(mu + max_z * std for mu, std in mu_stds))
-        self.out_range = self.max_out - self.min_out
-        self.cd = np.cumsum(self._calc_pd(mu_stds, resolution))
+        self.min_out = self.max_out = self.out_range = 0
+        self.cd = np.array([])
         self.center = center
+        if center is not None:
+            self.min_out = int(min([mu + min_z * std for mu, std in mu_stds]))
+            self.max_out = int(max([mu + max_z * std for mu, std in mu_stds]))
+            self.out_range = self.max_out - self.min_out
+            self.cd = np.cumsum(self._calc_pd(mu_stds, resolution))
 
     def decode(self, raw_output: float) -> float:
-        if raw_output == 1.0 or raw_output == 0.0:
+        if self.center is None or raw_output == 1.0 or raw_output == 0.0:
             return raw_output
         if self.out_range == 0:
             cp = int(raw_output > self.min_out)
@@ -57,6 +67,8 @@ class ThresholdDecoder:
             return 0.5 + 0.5 * (cp - self.center) / (1 - self.center)
 
     def encode(self, threshold: float) -> float:
+        if self.center is None:
+            return threshold
         threshold = 0.5 * threshold / self.center
         if threshold < 0.5:
             cp = threshold * self.center * 2
