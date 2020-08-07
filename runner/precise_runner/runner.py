@@ -62,9 +62,20 @@ class PreciseEngine(Engine):
     def get_prediction(self, chunk):
         if len(chunk) != self.chunk_size:
             raise ValueError('Invalid chunk size: ' + str(len(chunk)))
-        self.proc.stdin.write(chunk)
-        self.proc.stdin.flush()
-        return float(self.proc.stdout.readline())
+        try:
+            self.proc.stdin.write(chunk)
+            self.proc.stdin.flush()
+            line = self.proc.stdout.readline()
+        except BrokenPipeError:
+            raise SystemExit(0)
+        if not line:
+            raise SystemExit(0)
+        else:
+            try:
+                return float(line)
+            except ValueError:
+                output = line + self.proc.stdout.read()
+                raise RuntimeError('Engine produced the following error: {}'.format(output))
 
 
 class ListenerEngine(Engine):
