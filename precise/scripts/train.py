@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from fitipy import Fitipy
-from keras.callbacks import LambdaCallback
+from tensorflow.keras.callbacks import LambdaCallback
 from os.path import splitext, isfile
 from prettyparse import Usage
 from typing import Any, Tuple
@@ -85,7 +85,7 @@ class TrainScript(BaseScript):
         self.model = create_model(args.model, params)
         self.train, self.test = self.load_data(self.args)
 
-        from keras.callbacks import ModelCheckpoint
+        from tensorflow.keras.callbacks import ModelCheckpoint
         checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
                                      save_best_only=args.save_best)
         epoch_fiti = Fitipy(splitext(args.model)[0] + '.epoch')
