@@ -44,7 +44,9 @@ setup(
     ],
     packages=[
         'precise',
-        'precise.scripts'
+        'precise.scripts',
+        'precise.pocketsphinx',
+        'precise.pocketsphinx.scripts'
     ],
     entry_points={
         'console_scripts': [
