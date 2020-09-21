@@ -30,7 +30,7 @@ package_scripts() {
             continue
         fi
         tmp_name=$(mktemp).spec
-        cat "precise.template.spec" | replace "%%SCRIPT%%" "$script" | replace "%%TRAIN_LIBS%%" "$train_libs" > "$tmp_name"
+        cat "precise.template.spec" | replace "%%SCRIPT%%" "$script" | replace "%%TRAIN_LIBS%%" "$train_libs" | replace "%%STRIP%%" "True" > "$tmp_name"
         pyinstaller -y "$tmp_name"
         if [ "$exe" != "$combined_folder" ]; then
             cp -R dist/$exe/* "dist/$combined_folder"

@@ -5,10 +5,11 @@ from glob import iglob
 from os.path import basename, dirname, abspath
 import os
 import fnmatch
+from PyInstaller.utils.hooks import collect_data_files
 
 script_name = '%%SCRIPT%%'
 train_libs = %%TRAIN_LIBS%%
-strip = True
+strip = %%STRIP%%
 site_packages = '.venv/lib/python3.6/site-packages/'
 hidden_imports = ['prettyparse', 'speechpy']
 binaries = []
@@ -29,11 +30,13 @@ if train_libs:
     ]
     hidden_imports += ['h5py']
 
+datas = collect_data_files('astor', subdir=None, include_py_files=False)
+
 a = Analysis(
     [abspath('precise/scripts/{}.py'.format(script_name))],
     pathex=['.'],
     binaries=binaries,
-    datas=[],
+    datas=datas,
     hiddenimports=hidden_imports,
     hookspath=[],
     runtime_hooks=[],
@@ -42,6 +45,7 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher
 )
+
 
 for i in range(len(a.binaries)):
     dest, origin, kind = a.binaries[i]
