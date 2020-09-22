@@ -110,7 +110,7 @@ def filecontains(path, string):
         string (str): The phrase to look for.
     
     Returns:
-        True of the given file contains the given phrase, False otherwise.
+        True if the given file contains the given phrase, False otherwise.
 
     """
     try:
