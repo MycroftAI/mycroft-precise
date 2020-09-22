@@ -54,7 +54,7 @@ def package_scripts(tar_prefix, combined_folder, scripts, train_libs):
             f.write(exe + '\n')
         
     out_name = tar_name(tar_prefix)
-    make_tarfile(join('dist', out_name), join('dist', combined_folder))
+    make_tarfile(join('dist', combined_folder), join('dist', out_name))
     with open(join('dist', "{}.md5".format(out_name)), 'w') as md5file:
         md5file.write(filemd5(join('dist', out_name)))
     
