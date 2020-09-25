@@ -72,7 +72,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'numpy==1.16',
-        'tensorflow>=1.13,<1.14',  # Must be on piwheels
+        'tensorflow>=1.13,<1.16',  # Must be on piwheels
         'sonopy',
         'pyaudio',
         'keras<=2.1.5',
