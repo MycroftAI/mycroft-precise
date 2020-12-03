@@ -27,7 +27,7 @@ Record audio samples for use with precise
 
 
 import wave
-from precise import coninput
+from precise import _coninput
 from os.path import isfile
 from prettyparse import Usage
 from pyaudio import PyAudio
@@ -69,7 +69,7 @@ class CollectScript(BaseScript):
     def __init__(self, args):
         super().__init__(args)
         self.p = PyAudio()
-        self.input = coninput.get_input()
+        self.input = _coninput.get_input()
 
     def next_name(self, name):
         name += '.wav'

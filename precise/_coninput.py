@@ -49,7 +49,7 @@ class InputInterface:
         pass
 
 
-class POSIX(InputInterface):
+class POSIXInput(InputInterface):
 
     def __init__(self):
         self.orig_settings = tcgetattr(stdin)
@@ -67,7 +67,7 @@ class POSIX(InputInterface):
         return stdin.read(1)
 
 
-class Windows(InputInterface):
+class WindowsInput(InputInterface):
 
     def __init__(self):
         self.input_shown = True
@@ -93,6 +93,6 @@ class Windows(InputInterface):
 
 def get_input() -> InputInterface:
     if os_name == "nt":
-        return Windows()
+        return WindowsInput()
     else:
-        return POSIX()
+        return POSIXInput()
