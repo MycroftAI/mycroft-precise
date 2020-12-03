@@ -42,3 +42,4 @@ tqdm==4.31.1
 typing==3.6.6
 wavio==0.0.4
 Werkzeug==0.15.3
+playsound

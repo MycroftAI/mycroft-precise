@@ -84,6 +84,7 @@ setup(
         'attrs',
         'fitipy<1.0',
         'speechpy-fast',
-        'pyache'
+        'pyache',
+        'playsound'
     ]
 )

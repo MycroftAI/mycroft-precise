@@ -24,12 +24,10 @@ Record audio samples for use with precise
 :-c --channels int 1
     Number of audio channels
 """
-from select import select
-from sys import stdin
-from termios import tcsetattr, tcgetattr, TCSADRAIN
 
-import tty
+
 import wave
+from precise import coninput
 from os.path import isfile
 from prettyparse import Usage
 from pyaudio import PyAudio
@@ -70,17 +68,8 @@ class CollectScript(BaseScript):
 
     def __init__(self, args):
         super().__init__(args)
-        self.orig_settings = tcgetattr(stdin)
         self.p = PyAudio()
-
-    def key_pressed(self):
-        return select([stdin], [], [], 0) == ([stdin], [], [])
-
-    def show_input(self):
-        tcsetattr(stdin, TCSADRAIN, self.orig_settings)
-
-    def hide_input(self):
-        tty.setcbreak(stdin.fileno())
+        self.input = coninput.get_input()
 
     def next_name(self, name):
         name += '.wav'
@@ -106,7 +95,7 @@ class CollectScript(BaseScript):
 
     def wait_to_continue(self):
         while True:
-            c = stdin.read(1)
+            c = self.input.read_key()
             if c == self.RECORD_KEY:
                 return True
             elif ord(c) == self.EXIT_KEY_CODE:
@@ -114,16 +103,16 @@ class CollectScript(BaseScript):
 
     def record_until_key(self):
         def should_return():
-            return self.key_pressed() and stdin.read(1) == self.RECORD_KEY
+            return self.input.key_pressed() and self.input.read_key() == self.RECORD_KEY
 
         return record_until(self.p, should_return, self.args)
 
     def _run(self):
         args = self.args
-        self.show_input()
+        self.input.show_input()
         args.file_label = args.file_label or input("File label (Ex. recording-##): ")
         args.file_label = args.file_label + ('' if '#' in args.file_label else '-##')
-        self.hide_input()
+        self.input.hide_input()
 
         while True:
             print('Press space to record (esc to exit)...')
@@ -139,10 +128,10 @@ class CollectScript(BaseScript):
 
     def run(self):
         try:
-            self.hide_input()
+            self.input.hide_input()
             self._run()
         finally:
-            tcsetattr(stdin, TCSADRAIN, self.orig_settings)
+            self.input.show_input()
             self.p.terminate()
 
 
