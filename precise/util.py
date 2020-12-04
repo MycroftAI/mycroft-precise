@@ -77,13 +77,8 @@ def play_audio(filename: str):
     Args:
         filename: Audio filename
     """
-    import platform
-    from subprocess import Popen
-
-    if platform.system() == 'Darwin':
-        Popen(['afplay', filename])
-    else:
-        Popen(['aplay', '-q', filename])
+    from playsound import playsound
+    playsound(filename, block=False)
 
 
 def activate_notify():

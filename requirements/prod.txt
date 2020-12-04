@@ -3,7 +3,7 @@ tensorflow>=1.13,<1.14  # Must be on piwheels
 sonopy
 pyaudio
 keras<=2.1.5
-h5py
+h5py<3.0.0
 wavio
 typing
 prettyparse>=1.1.0
@@ -12,3 +12,4 @@ attrs
 fitipy<1.0
 speechpy-fast
 pyache
+playsound
