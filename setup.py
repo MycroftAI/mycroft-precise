@@ -76,7 +76,7 @@ setup(
         'sonopy',
         'pyaudio',
         'keras<=2.1.5',
-        'h5py',
+        'h5py<3.0.0',
         'wavio',
         'typing',
         'prettyparse>=1.1.0',
