@@ -27,7 +27,7 @@ PyAudio==0.2.11
 pymongo==3.7.2
 pyparsing==2.3.1
 python-dateutil==2.8.0
-PyYAML==5.1
+PyYAML==5.4
 scikit-learn==0.20.3
 scikit-optimize==0.5.2
 scipy==1.2.1
