@@ -15,6 +15,7 @@
 import atexit
 
 import time
+import logging
 from subprocess import PIPE, Popen
 from threading import Thread, Event
 
@@ -172,6 +173,7 @@ class PreciseRunner(object):
         self.on_prediction = on_prediction
         self.on_activation = on_activation
         self.chunk_size = engine.chunk_size
+        self.logger = logging.getLogger(__name__)
 
         self.pa = None
         self.thread = None
@@ -233,11 +235,15 @@ class PreciseRunner(object):
         """Continuously check Precise process output"""
         while self.running:
             chunk = self.stream.read(self.chunk_size)
+            self.logger.debug("stream chunk length: %s",  len(chunk))
 
-            if self.is_paused:
+            if self.is_paused or len(chunk) == 0:
                 continue
-
-            prob = self.engine.get_prediction(chunk)
-            self.on_prediction(prob)
+            try:
+                prob = self.engine.get_prediction(chunk) 
+                self.on_prediction(prob)
+            except Exception:
+                self.logger.exception("problem processing prediction: ")
+                continue
             if self.detector.update(prob):
                 self.on_activation()
