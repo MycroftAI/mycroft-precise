@@ -16,7 +16,7 @@ Markdown==3.1
 matplotlib==3.0.3
 mock==2.0.0
 -e git+git@github.com:MycroftAI/mycroft-precise@37ef1ab91eeca81fd889bce2967775b2f6918d97#egg=mycroft_precise
-numpy==1.16.2
+numpy==1.22.0
 pbr==5.1.3
 pocketsphinx==0.1.15
 portalocker==1.4.0
