@@ -22,7 +22,7 @@ pocketsphinx==0.1.15
 portalocker==1.4.0
 -e git+git@github.com:MycroftAI/mycroft-precise@37ef1ab91eeca81fd889bce2967775b2f6918d97#egg=precise_runner&subdirectory=runner
 prettyparse==0.1.4
-protobuf==3.7.1
+protobuf==3.18.3
 PyAudio==0.2.11
 pymongo==3.7.2
 pyparsing==2.3.1
