@@ -78,15 +78,9 @@ class KerasRunner(Runner):
     """ Executes a regular Keras model created from precise-train"""
     def __init__(self, model_name: str):
         import tensorflow as tf
-        # ISSUE 88 - Following 3 lines added to resolve issue 88 - JM 2020-02-04 per liny90626
-        from tensorflow.python.keras.backend import set_session # ISSUE 88
-        self.sess = tf.Session() # ISSUE 88
-        set_session(self.sess) # ISSUE 88
         self.model = load_precise_model(model_name)
 
     def predict(self, inputs: np.ndarray):
-        from tensorflow.python.keras.backend import set_session		# ISSUE 88
-        set_session(self.sess)		# ISSUE 88
         return self.model.predict(inputs)
 
     def run(self, inp: np.ndarray) -> float:
