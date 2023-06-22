@@ -83,13 +83,11 @@ class KerasRunner(Runner):
         self.sess = tf.Session() # ISSUE 88
         set_session(self.sess) # ISSUE 88
         self.model = load_precise_model(model_name)
-        self.graph = tf.get_default_graph()
 
     def predict(self, inputs: np.ndarray):
         from tensorflow.python.keras.backend import set_session		# ISSUE 88
-        with self.graph.as_default():
-            set_session(self.sess)		# ISSUE 88
-            return self.model.predict(inputs)
+        set_session(self.sess)		# ISSUE 88
+        return self.model.predict(inputs)
 
     def run(self, inp: np.ndarray) -> float:
         return self.predict(inp[np.newaxis])[0][0]

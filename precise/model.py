@@ -70,7 +70,7 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
         model = load_precise_model(model_name)
     else:
         from keras.layers.core import Dense
-        from keras.layers.recurrent import GRU
+        from keras.layers import GRU
         from keras.models import Sequential
 
         model = Sequential()
