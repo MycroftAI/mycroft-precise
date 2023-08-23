@@ -69,7 +69,7 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
         print('Loading from ' + model_name + '...')
         model = load_precise_model(model_name)
     else:
-        from keras.layers.core import Dense
+        from tensorflow.keras.layers import Dense
         from keras.layers import GRU
         from keras.models import Sequential
 
