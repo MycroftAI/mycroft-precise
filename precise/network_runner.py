@@ -53,11 +53,11 @@ class TensorFlowRunner(Runner):
         self.inp_var = self.graph.get_operation_by_name('import/net_input').outputs[0]
         self.out_var = self.graph.get_operation_by_name('import/net_output').outputs[0]
 
-        self.sess = self.tf.Session(graph=self.graph)
+        self.sess = self.tf.compat.v1.Session(graph=self.graph)
 
     def load_graph(self, model_file: str) -> 'tf.Graph':
         graph = self.tf.Graph()
-        graph_def = self.tf.GraphDef()
+        graph_def = self.tf.compat.v1.GraphDef()
 
         with open(model_file, "rb") as f:
             graph_def.ParseFromString(f.read())

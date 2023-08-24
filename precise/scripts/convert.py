@@ -48,39 +48,38 @@ class ConvertScript(BaseScript):
         """
         print('Converting', model_path, 'to', out_file, '...')
 
-        import tensorflow as tf
+        import tensorflow.compat.v1 as tf
         from precise.model import load_precise_model
-        from keras import backend as K
+        from tensorflow.compat.v1.keras import backend as K
 
         out_dir, filename = split(out_file)
         out_dir = out_dir or '.'
         os.makedirs(out_dir, exist_ok=True)
 
         K.set_learning_phase(0)
-        model = load_precise_model(model_path)
-
-        out_name = 'net_output'
-        tf.identity(model.output, name=out_name)
-        print('Output node name:', out_name)
-        print('Output folder:', out_dir)
-
         sess = K.get_session()
+        with sess.graph.as_default():
+            model = load_precise_model(model_path)
 
-        # Write the graph in human readable
-        tf.train.write_graph(sess.graph.as_graph_def(), out_dir, filename + 'txt', as_text=True)
-        print('Saved readable graph to:', filename + 'txt')
+            out_name = 'net_output'
+            tf.identity(model.output, name=out_name)
+            print('Output node name:', out_name)
+            print('Output folder:', out_dir)
 
-        # Write the graph in binary .pb file
-        from tensorflow.python.framework import graph_util
-        from tensorflow.python.framework import graph_io
+            # Write the graph in human readable
+            tf.train.write_graph(sess.graph.as_graph_def(), out_dir, filename + 'txt', as_text=True)
+            print('Saved readable graph to:', filename + 'txt')
 
-        cgraph = graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), [out_name])
-        graph_io.write_graph(cgraph, out_dir, filename, as_text=False)
+            # Write the graph in binary .pb file
+            from tensorflow.python.framework import graph_io
 
-        if isfile(model_path + '.params'):
-            copyfile(model_path + '.params', out_file + '.params')
+            cgraph = tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), [out_name])
+            graph_io.write_graph(cgraph, out_dir, filename, as_text=False)
 
-        print('Saved graph to:', filename)
+            if isfile(model_path + '.params'):
+                copyfile(model_path + '.params', out_file + '.params')
+
+            print('Saved graph to:', filename)
 
         del sess
 
