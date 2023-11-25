@@ -83,7 +83,7 @@ def false_neg(yt, yp) -> Any:
 
 def load_keras() -> Any:
     """Imports Keras injecting custom functions to prevent exceptions"""
-    import keras
+    import tensorflow.keras as keras
     keras.losses.weighted_log_loss = weighted_log_loss
     keras.metrics.false_pos = false_pos
     keras.metrics.false_positives = false_pos

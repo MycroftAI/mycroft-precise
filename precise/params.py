@@ -23,6 +23,7 @@ import attr
 import json
 import hashlib
 from os.path import isfile
+from os import makedirs
 
 
 @attr.s(frozen=True)
@@ -161,5 +162,6 @@ def inject_params(model_name: str) -> ListenerParams:
 
 def save_params(model_name: str):
     """Save current global listener params to a file"""
+    makedirs(model_name, exist_ok=True)
     with open(model_name + '.params', 'w') as f:
         json.dump(pr.__dict__, f)

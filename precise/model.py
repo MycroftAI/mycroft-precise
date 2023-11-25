@@ -22,7 +22,7 @@ from precise.functions import load_keras, false_pos, false_neg, weighted_log_los
 from precise.params import inject_params, pr
 
 if TYPE_CHECKING:
-    from tensorflow.compat.v1.keras.models import Sequential
+    from tensorflow.keras import Sequential
 
 
 @attr.s()
@@ -69,9 +69,9 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
         print('Loading from ' + model_name + '...')
         model = load_precise_model(model_name)
     else:
-        from tensorflow.compat.v1.keras.layers import Dense
-        from tensorflow.compat.v1.keras.layers import GRU
-        from tensorflow.compat.v1.keras.models import Sequential
+        from tensorflow.keras.layers import Dense
+        from tensorflow.keras.layers import GRU
+        from tensorflow.keras import Sequential
 
         model = Sequential()
         model.add(GRU(
