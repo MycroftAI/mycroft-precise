@@ -22,7 +22,7 @@ from precise.functions import load_keras, false_pos, false_neg, weighted_log_los
 from precise.params import inject_params, pr
 
 if TYPE_CHECKING:
-    from keras.models import Sequential
+    from tensorflow.keras import Sequential
 
 
 @attr.s()
@@ -51,7 +51,7 @@ def load_precise_model(model_name: str) -> Any:
         print('Warning: Unknown model type, ', model_name)
 
     inject_params(model_name)
-    return load_keras().models.load_model(model_name)
+    return load_keras().models.load_model(model_name, custom_objects={"weighted_log_loss": weighted_log_loss})
 
 
 def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential':
@@ -69,9 +69,9 @@ def create_model(model_name: Optional[str], params: ModelParams) -> 'Sequential'
         print('Loading from ' + model_name + '...')
         model = load_precise_model(model_name)
     else:
-        from keras.layers.core import Dense
-        from keras.layers.recurrent import GRU
-        from keras.models import Sequential
+        from tensorflow.keras.layers import Dense
+        from tensorflow.keras.layers import GRU
+        from tensorflow.keras import Sequential
 
         model = Sequential()
         model.add(GRU(

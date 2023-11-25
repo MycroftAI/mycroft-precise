@@ -54,7 +54,7 @@ Train a new model on a dataset
 
 ...
 """
-from fitipy import Fitipy
+from fitipy import FList
 from keras.callbacks import LambdaCallback
 from os.path import splitext, isfile
 from prettyparse import Usage
@@ -90,12 +90,12 @@ class TrainScript(BaseScript):
         from keras.callbacks import ModelCheckpoint, TensorBoard
         checkpoint = ModelCheckpoint(args.model, monitor=args.metric_monitor,
                                      save_best_only=args.save_best)
-        epoch_fiti = Fitipy(splitext(args.model)[0] + '.epoch')
-        self.epoch = epoch_fiti.read().read(0, int)
+        epoch_fiti = FList(splitext(args.model)[0] + '.epoch')
+        self.epoch = int(epoch_fiti.data[0]) if len(epoch_fiti.data) else 0
 
         def on_epoch_end(_a, _b):
             self.epoch += 1
-            epoch_fiti.write().write(self.epoch, str)
+            epoch_fiti.append(self.epoch)
 
         self.model_base = splitext(self.args.model)[0]
 
@@ -113,7 +113,7 @@ class TrainScript(BaseScript):
 
     @staticmethod
     def load_sample_data(filename, train_data) -> Tuple[set, dict]:
-        samples = Fitipy(filename).read().set()
+        samples = set(FList(filename).data)
         hash_to_ind = {
             calc_sample_hash(inp, outp): ind
             for ind, (inp, outp) in enumerate(zip(*train_data))

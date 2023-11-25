@@ -41,6 +41,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.10',
     ],
     packages=[
         'precise',
@@ -71,11 +72,11 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        'numpy==1.16',
-        'tensorflow>=1.13,<1.14',  # Must be on piwheels
+        'numpy',
+        'tensorflow',  # Must be on piwheels
         'sonopy',
         'pyaudio',
-        'keras<=2.1.5',
+        'keras',
         'h5py',
         'wavio',
         'typing',
